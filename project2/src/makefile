@@ -30,10 +30,21 @@ LDFLAGS = -L/usr/local/lib
 # opencv libraries
 LDLIBS = -lopencv_core -lopencv_highgui -lopencv_video -lopencv_videoio -lopencv_imgproc -lopencv_imgcodecs
 
-
 BINDIR = ../bin
 
-cbir: cbir.o
+
+# dependencies
+IDIR = ../include
+
+_DEPS = img.hpp
+DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
+
+%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+OBJ = cbir.o img.o
+
+cbir: $(OBJ)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
 
 clean:
