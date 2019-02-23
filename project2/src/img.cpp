@@ -10,6 +10,7 @@
 */
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 #include "img.hpp"
@@ -19,6 +20,7 @@ Img::Img(char *newPath) {
   this->path = newPath;
   this->status = 0;
   this->similarity = 0;
+  // printf("The path is %s\n",this->path);
 }
 
 // getters and setters
@@ -50,5 +52,12 @@ void Img::printImgInfo() {
 
 // cbir methods
 void Img::baselineMatching(char *query) {
+  printf("BaselineMatching query %s with %s\n", query, this->path);
   return;
+}
+
+
+// destructor
+Img::~Img() {
+  free(this->path);
 }

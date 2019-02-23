@@ -39,4 +39,8 @@ public:
   // cbir methods
   void baselineMatching(char *query);
 
+
+  // destructor
+  ~Img();
+
 };

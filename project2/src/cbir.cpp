@@ -20,7 +20,9 @@
 
 #include "img.hpp"
 
-void readDB(char *dir);
+char **readDB(char *dir, int *num);
+void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile);
+int imgComparator(const void* p1, const void* p2);
 
 int main(int argc, char *argv[]) {
 
@@ -44,18 +46,54 @@ int main(int argc, char *argv[]) {
   printf("CBIR: Querying %s \nfrom database %s\nusing method %d.\nDisplaying top %d results.\n\n", query, database, method, numResult);
 
   // recursively read all files from database directory
-  readDB(database);
+  char **fileArr;
+  int numFile;
+  fileArr = readDB(database, &numFile);
+  // printf("There are %d files\n", numFile);
+
+  // create the corresponding Img objects
+  Img **imgArr = (Img **)malloc(sizeof(Img *)*numFile);
+  for (int i = 0; i<numFile; i++) {
+    // printf("%s\n", fileArr[i]);
+    imgArr[i] = new Img(fileArr[i]);
+  }
+  free(fileArr);
+
+  // for (int i = 0; i<numFile; i++) {
+  //   imgArr[i]->printImgInfo();
+  // }
+
+  // run cbir baseline matching
+  for (int i = 0; i<numFile; i++) {
+    imgArr[i]->baselineMatching(query);
+  }
+
+  // sort the imgArr based on similarity score
+  qsort((void *)imgArr, numFile, sizeof(Img *), imgComparator);
+  for (int i = 0; i<std::min(numFile, numResult); i++) {
+    imgArr[i]->printImgInfo();
+  }
 
 
 	return(0);
 }
 
 // get all file names of a given directory
-void readDB(char *dir) {
+char **readDB(char *dir, int *num) {
+  int max = 16;
+  int numFile = 0;
+  char **fileArr = (char**)malloc(sizeof(char *)*max);
+  readDB_rec(dir, &fileArr, &max, &numFile);
+  *num = numFile;
+  return fileArr;
+}
 
+
+// helper function for readDB
+void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile) {
   DIR *dirp;
   struct dirent *dp;
-  printf("Accessing directory %s\n", dir);
+  // printf("Accessing directory %s\n", dir);
 
   // open the directory
 	dirp = opendir( dir );
@@ -66,19 +104,40 @@ void readDB(char *dir) {
   // loop over the contents of the directory
 	while( (dp = readdir(dirp)) != NULL ) {
       if (dp->d_name[0] != '.') {
-          char path[256] = "";
+          // printf("The array is %d/%d\n", *numFile, *max);
+          char *path = (char *)malloc(256);
+          strcpy(path, "");
           strcat(path, dir);
-          strcat(path, "/");
+          if (path[strlen(path)-1] != 47) {
+            strcat(path, "/");
+          }
           strcat(path, dp->d_name);
+          // printf("path is now\n%s\n", path);
           if (dp->d_type == DT_DIR) {
-            printf("%s is a directory\n", path);
-            readDB(path);
+            // printf("%s is a directory\n", path);
+            readDB_rec(path, fileArr, max, numFile);
           }
           else if (dp->d_type == DT_REG) {
-  			    printf("%s is a file\n", path);
+            // printf("%s is a file\n", path);
+            // double the file array if necessary
+            if (*numFile == *max) {
+              // printf("Doubling the array\n");
+              *max *= 2;
+              // printf("New max is %d\n", *max);
+              *fileArr = (char **)realloc(*fileArr, sizeof(char *)*(*max));
+            }
+  			    (*fileArr)[*numFile] = path;
+            (*numFile)++;
           }
       }
 	}
 	// close the directory
   closedir(dirp);
+}
+
+int imgComparator(const void* p1, const void* p2) {
+  int img1Similarity = (*(Img **)p1)->getSimilarity();
+  int img2Similarity = (*(Img **)p2)->getSimilarity();
+  // printf("comparing %d and %d\n", img1Similarity, img2Similarity);
+  return img2Similarity-img1Similarity;
 }
