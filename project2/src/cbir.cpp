@@ -7,7 +7,7 @@
   Content-based image retrieval
 
   to compile: make cbir
-  to run: ../bin/cbir ../data/MacbethChart.jpg /Users/Heidi/Desktop/Computer_Vision/CS365/project2/data 5 0
+  to run: ../bin/cbir ../data/MacbethChart.jpg /Users/xiaoyuezheng/Documents/Colby/SP19/CS365/images 5 0
 
 */
 
@@ -135,7 +135,6 @@ void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile) {
 	// close the directory
   closedir(dirp);
 }
-
 
 int imgComparator(const void* p1, const void* p2) {
   int img1Similarity = (*(Img **)p1)->getSimilarity();
