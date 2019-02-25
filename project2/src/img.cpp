@@ -54,7 +54,7 @@ void Img::printImgInfo() {
 // cbir methods
 void Img::baselineMatching(char *query) {
   int halfBlockSize = 2;
-  // printf("BaselineMatching query %s with %s\n", query, this->path);
+  // printf("Baseline Matching query %s with %s\n", query, this->path);
   cv::Mat queryImg = cv::imread(query);
   if(queryImg.data == NULL) {
     printf("Unable to read query image %s\n", query);
@@ -93,6 +93,12 @@ void Img::baselineMatching(char *query) {
   this->similarity = ssd;
 }
 
+void Img::baselineHistogram(char *query) {
+  // printf("Baseline Histogram Matching query %s with %s\n", query, this->path);
+
+
+
+}
 
 // destructor
 Img::~Img() {

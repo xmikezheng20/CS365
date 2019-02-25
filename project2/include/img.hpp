@@ -38,7 +38,7 @@ public:
 
   // cbir methods
   void baselineMatching(char *query);
-
+  void baselineHistogram(char *query);
 
   // destructor
   ~Img();

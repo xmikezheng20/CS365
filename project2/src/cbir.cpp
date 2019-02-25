@@ -63,9 +63,23 @@ int main(int argc, char *argv[]) {
   //   imgArr[i]->printImgInfo();
   // }
 
-  // run cbir baseline matching
-  for (int i = 0; i<numFile; i++) {
-    imgArr[i]->baselineMatching(query);
+  // run cbir
+  switch(method) {
+    case(0):
+      // run baseline matching
+      for (int i = 0; i<numFile; i++) {
+        imgArr[i]->baselineMatching(query);
+      }
+      break;
+    case(1):
+      // run baseline histogram matching
+      // for (int i = 0; i<numFile; i++) {
+      //   imgArr[i]->baselineHistogram(query);
+      // }
+      break;
+    default:
+      printf("Invalid method\n");
+      exit(-1);
   }
 
   // sort the imgArr based on similarity score
@@ -103,34 +117,41 @@ void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile) {
 	}
   // loop over the contents of the directory
 	while( (dp = readdir(dirp)) != NULL ) {
-      if (dp->d_name[0] != '.') {
-          // printf("The array is %d/%d\n", *numFile, *max);
-          char *path = (char *)malloc(256);
-          strcpy(path, "");
-          strcat(path, dir);
-          //directory naming
-          if (path[strlen(path)-1] != 47) {
-            strcat(path, "/");
-          }
-          strcat(path, dp->d_name);
-          // printf("path is now\n%s\n", path);
-          if (dp->d_type == DT_DIR) {
-            // printf("%s is a directory\n", path);
-            readDB_rec(path, fileArr, max, numFile);
-          }
-          else if (dp->d_type == DT_REG) {
-            // printf("%s is a file\n", path);
-            // double the file array if necessary
-            if (*numFile == *max) {
-              // printf("Doubling the array\n");
-              *max *= 2;
-              // printf("New max is %d\n", *max);
-              *fileArr = (char **)realloc(*fileArr, sizeof(char *)*(*max));
-            }
-  			    (*fileArr)[*numFile] = path;
-            (*numFile)++;
-          }
+    if (dp->d_name[0] != '.') {
+      // printf("The array is %d/%d\n", *numFile, *max);
+      char *path = (char *)malloc(256);
+      strcpy(path, "");
+      strcat(path, dir);
+      //directory naming
+      if (path[strlen(path)-1] != 47) {
+        strcat(path, "/");
       }
+      strcat(path, dp->d_name);
+      // printf("path is now\n%s\n", path);
+      if (dp->d_type == DT_DIR) {
+        // printf("%s is a directory\n", path);
+        readDB_rec(path, fileArr, max, numFile);
+      }
+      else if (dp->d_type == DT_REG) {
+        // printf("%s is a file\n", path);
+        // look for images
+        if( strstr(dp->d_name, ".jpg") ||
+            strstr(dp->d_name, ".JPG") ||
+				    strstr(dp->d_name, ".png") ||
+				    strstr(dp->d_name, ".ppm") ||
+				    strstr(dp->d_name, ".tif") ) {
+          // double the file array if necessary
+          if (*numFile == *max) {
+            // printf("Doubling the array\n");
+            *max *= 2;
+            // printf("New max is %d\n", *max);
+            *fileArr = (char **)realloc(*fileArr, sizeof(char *)*(*max));
+          }
+  		    (*fileArr)[*numFile] = path;
+          (*numFile)++;
+        }
+      }
+    }
 	}
 	// close the directory
   closedir(dirp);
