@@ -139,5 +139,5 @@ int imgComparator(const void* p1, const void* p2) {
   int img1Similarity = (*(Img **)p1)->getSimilarity();
   int img2Similarity = (*(Img **)p2)->getSimilarity();
   // printf("comparing %d and %d\n", img1Similarity, img2Similarity);
-  return img2Similarity-img1Similarity;
+  return img1Similarity-img2Similarity;
 }
