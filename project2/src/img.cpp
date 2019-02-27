@@ -15,6 +15,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "img.hpp"
+#include "hist.hpp"
 
 // constructor
 Img::Img(char *newPath) {
@@ -52,6 +53,7 @@ void Img::printImgInfo() {
 }
 
 // cbir methods
+<<<<<<< HEAD
 void Img::baselineMatching(char *query) {
   int halfBlockSize = 2;
   // printf("BaselineMatching query %s with %s\n", query, this->path);
@@ -65,6 +67,10 @@ void Img::baselineMatching(char *query) {
   int queryMidLeft = ((int)queryImg.size().width)/2-halfBlockSize;
   int queryMidUp = ((int)queryImg.size().height)/2-halfBlockSize;
   // printf("query image mid point %d,%d\n", queryMidLeft+2, queryMidUp+2);
+=======
+void Img::baselineMatching(cv::Mat queryBlock, int halfBlockSize) {
+  printf("Baseline Matching with %s\n", this->path);
+>>>>>>> 67dd53c54383ce0f81a9117326f6f55dbdddb9b6
 
   cv::Mat dataImg = cv::imread(this->path);
   if(dataImg.data == NULL) {
@@ -83,7 +89,7 @@ void Img::baselineMatching(char *query) {
   for (int i=0; i<halfBlockSize*2+1; i++) {
     for (int j=0; j<halfBlockSize*2+1; j++) {
       // printf("comparing query (%d,%d) vs. data (%d,%d)\n", queryMidLeft+i,queryMidUp+j,dataMidLeft+i,dataMidUp+j);
-      queryPixel = &(queryImg.at<cv::Vec3b>(queryMidUp+j, queryMidLeft+i));
+      queryPixel = &(queryBlock.at<cv::Vec3b>(j, i));
       dataPixel = &(dataImg.at<cv::Vec3b>(dataMidUp+j, dataMidLeft+i));
       ssd += (queryPixel->val[0]-dataPixel->val[0])*(queryPixel->val[0]-dataPixel->val[0])
             +(queryPixel->val[1]-dataPixel->val[1])*(queryPixel->val[1]-dataPixel->val[1])
@@ -91,9 +97,17 @@ void Img::baselineMatching(char *query) {
     }
   }
   // printf("ssd is %d\n",ssd);
-  this->similarity = ssd;
+  this->similarity = -ssd;
 }
 
+void Img::baselineHistogram(cv::Mat queryHist) {
+  printf("Baseline Histogram Matching with %s\n", this->path);
+  cv::Mat targetHist;
+  targetHist = hist_whole_hs(this->path);
+  // use intersection distance
+  this->similarity = cv::compareHist(queryHist, targetHist, cv::HISTCMP_INTERSECT);
+
+}
 
 // destructor
 Img::~Img() {

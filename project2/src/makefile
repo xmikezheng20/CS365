@@ -42,7 +42,7 @@ DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-OBJ = cbir.o img.o
+OBJ = cbir.o img.o hist.o
 
 cbir: $(OBJ)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)

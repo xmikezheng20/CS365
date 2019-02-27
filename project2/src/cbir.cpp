@@ -19,6 +19,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "img.hpp"
+#include "hist.hpp"
 
 char **readDB(char *dir, int *num);
 void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile);
@@ -63,9 +64,47 @@ int main(int argc, char *argv[]) {
   //   imgArr[i]->printImgInfo();
   // }
 
-  // run cbir baseline matching
-  for (int i = 0; i<numFile; i++) {
-    imgArr[i]->baselineMatching(query);
+  // run cbir
+  cv::Mat queryHist;
+  cv::Mat queryImg, queryBlock;
+  int halfBlockSize, queryMidLeft, queryMidUp;
+
+  cv::Vec3b *queryPixel;
+  cv::Vec3b *queryPixel2;
+
+  switch(method) {
+    case(0):
+      // run baseline matching
+      // get the block of the query image
+      halfBlockSize = 2;
+      queryImg = cv::imread(query);
+      if(queryImg.data == NULL) {
+        printf("Unable to read query image %s\n", query);
+        exit(-1);
+      }
+      // printf("query image size: %d rows x %d columns\n", (int)queryImg.size().height, (int)queryImg.size().width);
+      queryMidLeft = ((int)queryImg.size().width)/2-halfBlockSize;
+      queryMidUp = ((int)queryImg.size().height)/2-halfBlockSize;
+      // printf("query image mid point %d,%d\n", queryMidLeft+2, queryMidUp+2);
+      queryImg(cv::Rect(queryMidLeft,queryMidUp,2*halfBlockSize+1,2*halfBlockSize+1)).copyTo(queryBlock);
+
+      //run baseline matching on the db
+      for (int i = 0; i<numFile; i++) {
+        imgArr[i]->baselineMatching(queryBlock, halfBlockSize);
+      }
+      break;
+    case(1):
+      // calculate whole image hs histogram of the query image
+      queryHist = hist_whole_hs(query);
+
+      // run baseline histogram matching
+      for (int i = 0; i<numFile; i++) {
+        imgArr[i]->baselineHistogram(queryHist);
+      }
+      break;
+    default:
+      printf("Invalid method\n");
+      exit(-1);
   }
 
   // sort the imgArr based on similarity score
@@ -73,6 +112,14 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i<std::min(numFile, numResult); i++) {
     imgArr[i]->printImgInfo();
   }
+
+  cv::Mat bestMatch;
+  bestMatch = cv::imread(imgArr[0]->getPath());
+  cv::imshow( "Best match 1", bestMatch);
+  cv::waitKey(0);
+  bestMatch = cv::imread(imgArr[1]->getPath());
+  cv::imshow( "Best match 2", bestMatch);
+  cv::waitKey(0);
 
 
 	return(0);
@@ -103,34 +150,41 @@ void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile) {
 	}
   // loop over the contents of the directory
 	while( (dp = readdir(dirp)) != NULL ) {
-      if (dp->d_name[0] != '.') {
-          // printf("The array is %d/%d\n", *numFile, *max);
-          char *path = (char *)malloc(256);
-          strcpy(path, "");
-          strcat(path, dir);
-          //directory naming
-          if (path[strlen(path)-1] != 47) {
-            strcat(path, "/");
-          }
-          strcat(path, dp->d_name);
-          // printf("path is now\n%s\n", path);
-          if (dp->d_type == DT_DIR) {
-            // printf("%s is a directory\n", path);
-            readDB_rec(path, fileArr, max, numFile);
-          }
-          else if (dp->d_type == DT_REG) {
-            // printf("%s is a file\n", path);
-            // double the file array if necessary
-            if (*numFile == *max) {
-              // printf("Doubling the array\n");
-              *max *= 2;
-              // printf("New max is %d\n", *max);
-              *fileArr = (char **)realloc(*fileArr, sizeof(char *)*(*max));
-            }
-  			    (*fileArr)[*numFile] = path;
-            (*numFile)++;
-          }
+    if (dp->d_name[0] != '.') {
+      // printf("The array is %d/%d\n", *numFile, *max);
+      char *path = (char *)malloc(256);
+      strcpy(path, "");
+      strcat(path, dir);
+      //directory naming
+      if (path[strlen(path)-1] != 47) {
+        strcat(path, "/");
       }
+      strcat(path, dp->d_name);
+      // printf("path is now\n%s\n", path);
+      if (dp->d_type == DT_DIR) {
+        // printf("%s is a directory\n", path);
+        readDB_rec(path, fileArr, max, numFile);
+      }
+      else if (dp->d_type == DT_REG) {
+        // printf("%s is a file\n", path);
+        // look for images
+        if( strstr(dp->d_name, ".jpg") ||
+            strstr(dp->d_name, ".JPG") ||
+				    strstr(dp->d_name, ".png") ||
+				    strstr(dp->d_name, ".ppm") ||
+				    strstr(dp->d_name, ".tif") ) {
+          // double the file array if necessary
+          if (*numFile == *max) {
+            // printf("Doubling the array\n");
+            *max *= 2;
+            // printf("New max is %d\n", *max);
+            *fileArr = (char **)realloc(*fileArr, sizeof(char *)*(*max));
+          }
+  		    (*fileArr)[*numFile] = path;
+          (*numFile)++;
+        }
+      }
+    }
 	}
 	// close the directory
   closedir(dirp);
@@ -140,5 +194,5 @@ int imgComparator(const void* p1, const void* p2) {
   int img1Similarity = (*(Img **)p1)->getSimilarity();
   int img2Similarity = (*(Img **)p2)->getSimilarity();
   // printf("comparing %d and %d\n", img1Similarity, img2Similarity);
-  return img1Similarity-img2Similarity;
+  return img2Similarity-img1Similarity;
 }
