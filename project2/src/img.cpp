@@ -60,6 +60,7 @@ void Img::baselineMatching(char *query) {
     printf("Unable to read query image %s\n", query);
     exit(-1);
   }
+  
   // printf("query image size: %d rows x %d columns\n", (int)queryImg.size().height, (int)queryImg.size().width);
   int queryMidLeft = ((int)queryImg.size().width)/2-halfBlockSize;
   int queryMidUp = ((int)queryImg.size().height)/2-halfBlockSize;
