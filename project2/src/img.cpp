@@ -53,7 +53,6 @@ void Img::printImgInfo() {
 }
 
 // cbir methods
-<<<<<<< HEAD
 void Img::baselineMatching(char *query) {
   int halfBlockSize = 2;
   // printf("BaselineMatching query %s with %s\n", query, this->path);
@@ -67,10 +66,10 @@ void Img::baselineMatching(char *query) {
   int queryMidLeft = ((int)queryImg.size().width)/2-halfBlockSize;
   int queryMidUp = ((int)queryImg.size().height)/2-halfBlockSize;
   // printf("query image mid point %d,%d\n", queryMidLeft+2, queryMidUp+2);
-=======
+
+  
 void Img::baselineMatching(cv::Mat queryBlock, int halfBlockSize) {
   printf("Baseline Matching with %s\n", this->path);
->>>>>>> 67dd53c54383ce0f81a9117326f6f55dbdddb9b6
 
   cv::Mat dataImg = cv::imread(this->path);
   if(dataImg.data == NULL) {
@@ -110,6 +109,6 @@ void Img::baselineHistogram(cv::Mat queryHist) {
 }
 
 // destructor
-Img::~Img() {
+Img::~Img(){
   free(this->path);
 }

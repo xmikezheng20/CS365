@@ -15,6 +15,7 @@
 
 #include "hist.hpp"
 
+/*create whole hue-saturation histogram*/
 cv::Mat hist_whole_hs(char *path) {
   // printf("Calculating hs histogram of %s\n", path);
   cv::Mat src, hsv;
@@ -49,28 +50,33 @@ cv::Mat hist_whole_hs(char *path) {
   // normalize the histogram
   cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
 
-
-  // double maxVal = 0;
-  // cv::minMaxLoc(hist, 0, &maxVal, 0, 0);
-  //
-  // // draw histogram
-  // int scale = 10;
-  // cv::Mat histImg = cv::Mat::zeros(sbins*scale, hbins*10, CV_8UC3);
-  // for( int h = 0; h < hbins; h++ )
-  //     for( int s = 0; s < sbins; s++ )
-  //     {
-  //         float binVal = hist.at<float>(h, s);
-  //         int intensity = cvRound(binVal*255/maxVal);
-  //         cv::rectangle( histImg, cv::Point(h*scale, s*scale),
-  //                     cv::Point( (h+1)*scale - 1, (s+1)*scale - 1),
-  //                     cv::Scalar::all(intensity),
-  //                     -1 );
-  //     }
-  // cv::namedWindow( "Source", 1 );
-  // cv::imshow( "Source", src );
-  // cv::namedWindow( "H-S Histogram", 1 );
-  // cv::imshow( "H-S Histogram", histImg );
-  // cv::waitKey(0);
+  //draw histogram, could be commented out
+  draw_hist(src, hist, hbins, sbins);
 
   return hist;
+}
+
+/*draw histogram given src, hue bins, saturation bins*/
+void draw_hist(cv::Mat src, cv::Mat hist, int hbins, int sbins){
+  double maxVal = 0;
+  cv::minMaxLoc(hist, 0, &maxVal, 0, 0);
+  
+  // draw histogram
+  int scale = 10;
+  cv::Mat histImg = cv::Mat::zeros(sbins*scale, hbins*10, CV_8UC3);
+  for( int h = 0; h < hbins; h++ )
+      for( int s = 0; s < sbins; s++ )
+      {
+          float binVal = hist.at<float>(h, s);
+          int intensity = cvRound(binVal*255/maxVal);
+          cv::rectangle( histImg, cv::Point(h*scale, s*scale),
+                      cv::Point( (h+1)*scale - 1, (s+1)*scale - 1),
+                      cv::Scalar::all(intensity),
+                      -1 );
+      }
+  cv::namedWindow( "Source", 1 );
+  cv::imshow( "Source", src );
+  cv::namedWindow( "H-S Histogram", 1 );
+  cv::imshow( "H-S Histogram", histImg );
+  cv::waitKey(0);
 }
