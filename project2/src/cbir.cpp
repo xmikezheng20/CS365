@@ -19,6 +19,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "img.hpp"
+#include "hist.hpp"
 
 char **readDB(char *dir, int *num);
 void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile);
@@ -64,18 +65,42 @@ int main(int argc, char *argv[]) {
   // }
 
   // run cbir
+  cv::Mat queryHist;
+  cv::Mat queryImg, queryBlock;
+  int halfBlockSize, queryMidLeft, queryMidUp;
+
+  cv::Vec3b *queryPixel;
+  cv::Vec3b *queryPixel2;
+
   switch(method) {
     case(0):
       // run baseline matching
+      // get the block of the query image
+      halfBlockSize = 2;
+      queryImg = cv::imread(query);
+      if(queryImg.data == NULL) {
+        printf("Unable to read query image %s\n", query);
+        exit(-1);
+      }
+      // printf("query image size: %d rows x %d columns\n", (int)queryImg.size().height, (int)queryImg.size().width);
+      queryMidLeft = ((int)queryImg.size().width)/2-halfBlockSize;
+      queryMidUp = ((int)queryImg.size().height)/2-halfBlockSize;
+      // printf("query image mid point %d,%d\n", queryMidLeft+2, queryMidUp+2);
+      queryImg(cv::Rect(queryMidLeft,queryMidUp,2*halfBlockSize+1,2*halfBlockSize+1)).copyTo(queryBlock);
+
+      //run baseline matching on the db
       for (int i = 0; i<numFile; i++) {
-        imgArr[i]->baselineMatching(query);
+        imgArr[i]->baselineMatching(queryBlock, halfBlockSize);
       }
       break;
     case(1):
+      // calculate whole image hs histogram of the query image
+      queryHist = hist_whole_hs(query);
+
       // run baseline histogram matching
-      // for (int i = 0; i<numFile; i++) {
-      //   imgArr[i]->baselineHistogram(query);
-      // }
+      for (int i = 0; i<numFile; i++) {
+        imgArr[i]->baselineHistogram(queryHist);
+      }
       break;
     default:
       printf("Invalid method\n");
@@ -87,6 +112,14 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i<std::min(numFile, numResult); i++) {
     imgArr[i]->printImgInfo();
   }
+
+  cv::Mat bestMatch;
+  bestMatch = cv::imread(imgArr[0]->getPath());
+  cv::imshow( "Best match 1", bestMatch);
+  cv::waitKey(0);
+  bestMatch = cv::imread(imgArr[1]->getPath());
+  cv::imshow( "Best match 2", bestMatch);
+  cv::waitKey(0);
 
 
 	return(0);
@@ -161,5 +194,5 @@ int imgComparator(const void* p1, const void* p2) {
   int img1Similarity = (*(Img **)p1)->getSimilarity();
   int img2Similarity = (*(Img **)p2)->getSimilarity();
   // printf("comparing %d and %d\n", img1Similarity, img2Similarity);
-  return img1Similarity-img2Similarity;
+  return img2Similarity-img1Similarity;
 }
