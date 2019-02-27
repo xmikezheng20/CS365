@@ -11,6 +11,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include "opencv2/opencv.hpp"
 
 class Img
 {
@@ -37,8 +38,8 @@ public:
   void printImgInfo();
 
   // cbir methods
-  void baselineMatching(char *query);
-  void baselineHistogram(char *query);
+  void baselineMatching(cv::Mat queryBlock, int halfBlockSize);
+  void baselineHistogram(cv::Mat queryHist);
 
   // destructor
   ~Img();
