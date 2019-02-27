@@ -7,7 +7,9 @@
   Content-based image retrieval
 
   to compile: make cbir
-  to run: ../bin/cbir ../data/MacbethChart.jpg /Users/xiaoyuezheng/Documents/Colby/SP19/CS365/images 5 0
+  to run: ../bin/cbir ../data/MacbethChart.jpg ../../../olympus 5 0
+  to run: ../bin/cbir ../data/_DSC1159.jpg ../../../olympus 5 1
+
 
 */
 
@@ -73,8 +75,8 @@ int main(int argc, char *argv[]) {
   cv::Vec3b *queryPixel2;
 
   switch(method) {
+    // case 0: run baseline matching - task1
     case(0):
-      // run baseline matching
       // get the block of the query image
       halfBlockSize = 2;
       queryImg = cv::imread(query);
@@ -93,15 +95,65 @@ int main(int argc, char *argv[]) {
         imgArr[i]->baselineMatching(queryBlock, halfBlockSize);
       }
       break;
-    case(1):
-      // calculate whole image hs histogram of the query image
-      queryHist = hist_whole_hs(query);
 
+    // case 1: calculate whole image hs histogram of the query image - task2
+    case(1):
+      queryHist = hist_whole_hs(query);
       // run baseline histogram matching
       for (int i = 0; i<numFile; i++) {
         imgArr[i]->baselineHistogram(queryHist);
       }
       break;
+
+    // case 2: calculate multi histogram matching - task3
+    case(2):{
+      cv::Mat queryHist1 = multi_hist_whole_hs(query).first;
+      cv::Mat queryHist2 = multi_hist_whole_hs(query).second;
+      //loop through all images and run multi histogram matching
+      for (int i = 0; i<numFile; i++) {
+        imgArr[i]->multiHistogram(queryHist1, queryHist2);
+      }
+      break;
+
+      // //divide the query image into blocks, 
+      // //compute histogram in each block and sum together as a whole histogram
+      // queryImg = cv::imread(query);
+      // // printf("query image size: %d rows x %d columns\n", (int)queryImg.size().height, (int)queryImg.size().width);
+
+      // //first take the vertical center 1/2 from the query image
+      // cv::Mat queryBlockCenter;
+      // queryImg(cv::Rect(((int)queryImg.size().width)/3,
+      //             ((int)queryImg.size().height)/3,
+      //             ((int)queryImg.size().width)/3,
+      //             ((int)queryImg.size().height)/3)).copyTo(queryBlockCenter);
+      // cv::Mat queryHistCenter = hist_whole_hs_img(queryBlockCenter); // first histogram for multi histogram input
+
+      // //then take the edges and corner of the image: 1/4 of the image in all directions
+      // //top
+      // cv::Mat queryBlockEdge1;
+      // queryImg(cv::Rect(0, 0, (int)queryImg.size().width, ((int)queryImg.size().height)/4)).copyTo(queryBlockEdge1);
+      // cv::Mat queryHistEdge1 = hist_whole_hs_img(queryBlockEdge1);
+      // //left
+      // cv::Mat queryBlockEdge2;
+      // queryImg(cv::Rect(0, 0, ((int)queryImg.size().width)/4, ((int)queryImg.size().height))).copyTo(queryBlockEdge2);
+      // cv::Mat queryHistEdge2 = hist_whole_hs_img(queryBlockEdge2);
+      // //bottom
+      // cv::Mat queryBlockEdge3;
+      // queryImg(cv::Rect(0, ((int)queryImg.size().height)*3/4, (int)queryImg.size().width, ((int)queryImg.size().height)/4)).copyTo(queryBlockEdge3);
+      // cv::Mat queryHistEdge3 = hist_whole_hs_img(queryBlockEdge3);
+      // //right
+      // cv::Mat queryBlockEdge4;
+      // queryImg(cv::Rect((int)queryImg.size().width*3/4, 0, (int)queryImg.size().width/4, ((int)queryImg.size().height))).copyTo(queryBlockEdge4);
+      // cv::Mat queryHistEdge4 = hist_whole_hs_img(queryBlockEdge4);
+
+      // cv::Mat queryHistEdge = queryHistEdge1 + queryHistEdge2 + queryHistEdge3 + queryHistEdge4;
+
+
+      break;
+
+    }
+      
+
     default:
       printf("Invalid method\n");
       exit(-1);
@@ -113,6 +165,7 @@ int main(int argc, char *argv[]) {
     imgArr[i]->printImgInfo();
   }
 
+  //show result
   cv::Mat bestMatch;
   bestMatch = cv::imread(imgArr[0]->getPath());
   cv::imshow( "Best match 1", bestMatch);
@@ -125,7 +178,7 @@ int main(int argc, char *argv[]) {
 	return(0);
 }
 
-// get all file names of a given directory
+/* get all file names of a given directory*/
 char **readDB(char *dir, int *num) {
   int max = 16;
   int numFile = 0;
@@ -136,7 +189,7 @@ char **readDB(char *dir, int *num) {
 }
 
 
-// helper function for readDB
+/* helper function for readDB*/
 void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile) {
   DIR *dirp;
   struct dirent *dp;
