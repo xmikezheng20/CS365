@@ -20,39 +20,51 @@
 // constructor
 Img::Img(char *newPath) {
   this->path = newPath;
-  this->status = 0;
-  this->similarity = 0;
+  this->status = 0; // 0 -> image unchecked; 1 -> image checked
+  this->similarity = 0; //the larger similarity is, the closer the images are
   // printf("The path is %s\n",this->path);
 }
 
-// getters and setters
+/* getters and setters*/
+/* get image path (address) */
 char *Img::getPath() {
   return this->path;
 }
+
+/* set image path */
 void Img::setPath(char *newPath) {
   this->path = newPath;
 }
 
+/* get status: 0 -> image unchecked; 1 -> image checked*/
 int Img::getStatus() {
   return this->status;
 }
+
+/*get image status, to see if it is checked*/
 void Img::setStatus(int newStatus) {
   this->status = newStatus;
 }
 
-int Img::getSimilarity() {
+/* return similarity, the larger similarity is, the closer the images are*/
+double Img::getSimilarity() {
   return this->similarity;
 }
+
+/* set similarity*/
 void Img::setSimilarity(int newSimilarity) {
   this->similarity = newSimilarity;
 }
 
-// print
+// print image info
 void Img::printImgInfo() {
-  printf("Image: %s\nStatus: %d\nSimilarity: %d\n\n", this->path, this->status, this->similarity);
+  printf("Image: %s\nStatus: %d\nSimilarity: %f\n\n", this->path, this->status, this->similarity);
 }
 
-// cbir methods
+
+/*baseline histrogram that takes in a query image and an image database, 
+                matches the query image to each database image using a distance metric, 
+                then sorts the database images according to their similarity to the query images. */
 void Img::baselineMatching(cv::Mat queryBlock, int halfBlockSize) {
   printf("Baseline Matching with %s\n", this->path);
 
@@ -84,16 +96,37 @@ void Img::baselineMatching(cv::Mat queryBlock, int halfBlockSize) {
   this->similarity = -ssd;
 }
 
+/* uses a whole-image histogram to determine the similarity 
+between the query image and the DB images. */ 
 void Img::baselineHistogram(cv::Mat queryHist) {
   printf("Baseline Histogram Matching with %s\n", this->path);
   cv::Mat targetHist;
   targetHist = hist_whole_hs(this->path);
   // use intersection distance
-  this->similarity = cv::compareHist(queryHist, targetHist, cv::HISTCMP_INTERSECT);
+
+  // this->similarity = cv::compareHist(queryHist, targetHist, CV_COMP_INTERSECT);
+  this->similarity = cv::compareHist(queryHist, targetHist,  cv::HISTCMP_CORREL);
+  // this->similarity = cv::compareHist(queryHist, targetHist, CV_COMP_CHISQR);
+
+  // this->similarity = cv::compareHist(queryHist, targetHist, cv::HISTCMP_INTERSECT);
+
+}
+
+/*multi histogram matching*/
+void Img::multiHistogram(cv::Mat queryHist1, cv::Mat queryHist2){
+  printf("Multiple Histogram Matching with %s\n", this->path);
+  cv::Mat targetHist1 = multi_hist_whole_hs(this->path).first;
+  cv::Mat targetHist2 = multi_hist_whole_hs(this->path).second;
+  //use chi-square comparison
+  // int similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_INTERSECT);
+  // int similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_INTERSECT); //CV_COMP_CHISQR
+  double similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_CORREL);
+  double similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_CORREL);
+  this->similarity = similarity1 + similarity2/2; //so far, arbituary weight
 
 }
 
 // destructor
-Img::~Img() {
+Img::~Img(){
   free(this->path);
 }

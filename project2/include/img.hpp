@@ -18,7 +18,7 @@ class Img
 private:
   char *path;
   int status; // 1: done; 0 not done.
-  int similarity;
+  float similarity;
 
 public:
   // constructor
@@ -31,15 +31,22 @@ public:
   int getStatus();
   void setStatus(int newStatus);
 
-  int getSimilarity();
+  float getSimilarity();
   void setSimilarity(int newSimilarity);
 
   // print
   void printImgInfo();
 
-  // cbir methods
+  /* cbir methods: */
+  /*baseline histrogram that takes in a query image and an image database, 
+                matches the query image to each database image using a distance metric, 
+                then sorts the database images according to their similarity to the query images. */
   void baselineMatching(cv::Mat queryBlock, int halfBlockSize);
+  /* uses a whole-image histogram to determine the similarity 
+  between the query image and the DB images. */ 
   void baselineHistogram(cv::Mat queryHist);
+  /*multi histogram matching*/
+  void multiHistogram(cv::Mat queryHist1, cv::Mat queryHist2);
 
   // destructor
   ~Img();
