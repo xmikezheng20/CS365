@@ -46,24 +46,25 @@ void Img::setStatus(int newStatus) {
   this->status = newStatus;
 }
 
+
 /* return similarity, the larger similarity is, the closer the images are*/
+
 double Img::getSimilarity() {
   return this->similarity;
 }
-
 /* set similarity*/
-void Img::setSimilarity(int newSimilarity) {
+void Img::setSimilarity(double newSimilarity) {
   this->similarity = newSimilarity;
 }
 
 // print image info
 void Img::printImgInfo() {
-  printf("Image: %s\nStatus: %d\nSimilarity: %f\n\n", this->path, this->status, this->similarity);
+  printf("Image: %s\nStatus: %d\nSimilarity: %.4f\n\n", this->path, this->status, this->similarity);
 }
 
 
-/*baseline histrogram that takes in a query image and an image database, 
-                matches the query image to each database image using a distance metric, 
+/*baseline histrogram that takes in a query image and an image database,
+                matches the query image to each database image using a distance metric,
                 then sorts the database images according to their similarity to the query images. */
 void Img::baselineMatching(cv::Mat queryBlock, int halfBlockSize) {
   printf("Baseline Matching with %s\n", this->path);
@@ -93,11 +94,11 @@ void Img::baselineMatching(cv::Mat queryBlock, int halfBlockSize) {
     }
   }
   // printf("ssd is %d\n",ssd);
-  this->similarity = -ssd;
+  this->similarity = (double)(-ssd);
 }
 
-/* uses a whole-image histogram to determine the similarity 
-between the query image and the DB images. */ 
+/* uses a whole-image histogram to determine the similarity
+between the query image and the DB images. */
 void Img::baselineHistogram(cv::Mat queryHist) {
   printf("Baseline Histogram Matching with %s\n", this->path);
   cv::Mat targetHist;
@@ -124,6 +125,18 @@ void Img::multiHistogram(cv::Mat queryHist1, cv::Mat queryHist2){
   double similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_CORREL);
   this->similarity = similarity1 + similarity2/2; //so far, arbituary weight
 
+}
+
+
+void Img::colorTextureHistogram(std::vector<cv::Mat> queryHists) {
+  printf("Color Texture Histogram Matching with %s\n", this->path);
+  std::vector<cv::Mat> targetHists;
+  targetHists = hist_whole_texture_laws_subset(this->path);
+  // std::cout << "hist0 is " << queryHists[0] <<std::endl;
+  // std::cout << "hist1 is " << queryHists[1] <<std::endl;
+  this->similarity = cv::compareHist(queryHists[0], targetHists[0], cv::HISTCMP_INTERSECT)
+                    + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT);
+  // free(targetHists);
 }
 
 // destructor

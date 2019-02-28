@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
       }
       break;
 
-      // //divide the query image into blocks, 
+      // //divide the query image into blocks,
       // //compute histogram in each block and sum together as a whole histogram
       // queryImg = cv::imread(query);
       // // printf("query image size: %d rows x %d columns\n", (int)queryImg.size().height, (int)queryImg.size().width);
@@ -152,7 +152,20 @@ int main(int argc, char *argv[]) {
       break;
 
     }
-      
+    case(3):
+      // calculate whole image histogram based on color and texture
+      {
+        std::vector<cv::Mat> queryHists;
+        queryHists = hist_whole_texture_laws_subset(query);
+
+        // run color texture histogram matching
+        for (int i = 0; i<numFile; i++) {
+          imgArr[i]->colorTextureHistogram(queryHists);
+        }
+
+        break;
+
+      }
 
     default:
       printf("Invalid method\n");
@@ -246,6 +259,8 @@ void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile) {
 int imgComparator(const void* p1, const void* p2) {
   double img1Similarity = (*(Img **)p1)->getSimilarity();
   double img2Similarity = (*(Img **)p2)->getSimilarity();
-  // printf("comparing %d and %d\n", img1Similarity, img2Similarity);
-  return img2Similarity-img1Similarity;
+  // printf("comparing %.2f and %.2f\n", img1Similarity, img2Similarity);
+  if (img2Similarity-img1Similarity>0) {return 1;}
+  else if (img1Similarity-img2Similarity>0) {return -1;}
+  else {return 0;}
 }
