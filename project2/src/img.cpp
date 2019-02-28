@@ -47,7 +47,7 @@ void Img::setStatus(int newStatus) {
 }
 
 /* return similarity, the larger similarity is, the closer the images are*/
-int Img::getSimilarity() {
+float Img::getSimilarity() {
   return this->similarity;
 }
 
@@ -58,7 +58,7 @@ void Img::setSimilarity(int newSimilarity) {
 
 // print image info
 void Img::printImgInfo() {
-  printf("Image: %s\nStatus: %d\nSimilarity: %d\n\n", this->path, this->status, this->similarity);
+  printf("Image: %s\nStatus: %d\nSimilarity: %f\n\n", this->path, this->status, this->similarity);
 }
 
 
@@ -103,7 +103,12 @@ void Img::baselineHistogram(cv::Mat queryHist) {
   cv::Mat targetHist;
   targetHist = hist_whole_hs(this->path);
   // use intersection distance
-  this->similarity = cv::compareHist(queryHist, targetHist, cv::HISTCMP_INTERSECT);
+
+  // this->similarity = cv::compareHist(queryHist, targetHist, CV_COMP_INTERSECT);
+  this->similarity = cv::compareHist(queryHist, targetHist,  cv::HISTCMP_CORREL);
+  // this->similarity = cv::compareHist(queryHist, targetHist, CV_COMP_CHISQR);
+
+  // this->similarity = cv::compareHist(queryHist, targetHist, cv::HISTCMP_INTERSECT);
 
 }
 
@@ -113,10 +118,11 @@ void Img::multiHistogram(cv::Mat queryHist1, cv::Mat queryHist2){
   cv::Mat targetHist1 = multi_hist_whole_hs(this->path).first;
   cv::Mat targetHist2 = multi_hist_whole_hs(this->path).second;
   //use chi-square comparison
-  int similarity1 = cv::compareHist(queryHist1, targetHist1, CV_COMP_CHISQR);
-  int similarity2 = cv::compareHist(queryHist2, targetHist2, CV_COMP_CHISQR);
-
-  this->similarity = similarity1*2 + similarity2; //so far, arbituary weight
+  // int similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_INTERSECT);
+  // int similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_INTERSECT); //CV_COMP_CHISQR
+  float similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_CORREL);
+  float similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_CORREL);
+  this->similarity = similarity1 + similarity2/2; //so far, arbituary weight
 
 }
 
