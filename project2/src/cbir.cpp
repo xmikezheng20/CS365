@@ -31,52 +31,52 @@ int imgComparator(const void* p1, const void* p2);
 
 int main(int argc, char *argv[]) {
 
-  char query[256];
-  char database[256];
-  int numResult;
-  int method;
+    char query[256];
+    char database[256];
+    int numResult;
+    int method;
 
-	// usage
-	if(argc < 5) {
-		printf("Usage: %s <query> <database> <number of results> <method>\n", argv[0]);
-		exit(-1);
-	}
+    // usage
+    if(argc < 5) {
+    	printf("Usage: %s <query> <database> <number of results> <method>\n", argv[0]);
+    	exit(-1);
+    }
 
-  // read arguments
-	strcpy(query, argv[1]);
-  strcpy(database, argv[2]);
-  numResult = atoi(argv[3]);
-  method = atoi(argv[4]);
+    // read arguments
+    strcpy(query, argv[1]);
+    strcpy(database, argv[2]);
+    numResult = atoi(argv[3]);
+    method = atoi(argv[4]);
 
-  printf("CBIR: Querying %s \nfrom database %s\nusing method %d.\nDisplaying top %d results.\n\n", query, database, method, numResult);
+    printf("CBIR: Querying %s \nfrom database %s\nusing method %d.\nDisplaying top %d results.\n\n", query, database, method, numResult);
 
-  // recursively read all files from database directory
-  char **fileArr;
-  int numFile;
-  fileArr = readDB(database, &numFile);
-  // printf("There are %d files\n", numFile);
+    // recursively read all files from database directory
+    char **fileArr;
+    int numFile;
+    fileArr = readDB(database, &numFile);
+    // printf("There are %d files\n", numFile);
 
-  // create the corresponding Img objects
-  Img **imgArr = (Img **)malloc(sizeof(Img *)*numFile);
-  for (int i = 0; i<numFile; i++) {
+    // create the corresponding Img objects
+    Img **imgArr = (Img **)malloc(sizeof(Img *)*numFile);
+    for (int i = 0; i<numFile; i++) {
     // printf("%s\n", fileArr[i]);
     imgArr[i] = new Img(fileArr[i]);
-  }
-  free(fileArr);
+    }
+    free(fileArr);
 
-  // for (int i = 0; i<numFile; i++) {
-  //   imgArr[i]->printImgInfo();
-  // }
+    // for (int i = 0; i<numFile; i++) {
+    //   imgArr[i]->printImgInfo();
+    // }
 
-  // run cbir
-  cv::Mat queryHist;
-  cv::Mat queryImg, queryBlock;
-  int halfBlockSize, queryMidLeft, queryMidUp;
+    // run cbir
+    cv::Mat queryHist;
+    cv::Mat queryImg, queryBlock;
+    int halfBlockSize, queryMidLeft, queryMidUp;
 
-  cv::Vec3b *queryPixel;
-  cv::Vec3b *queryPixel2;
+    cv::Vec3b *queryPixel;
+    cv::Vec3b *queryPixel2;
 
-  switch(method) {
+    switch(method) {
     // case 0: run baseline matching - task1
     case(0):
       // get the block of the query image
@@ -137,52 +137,52 @@ int main(int argc, char *argv[]) {
     default:
       printf("Invalid method\n");
       exit(-1);
-  }
+    }
 
-  // sort the imgArr based on similarity score
-  qsort((void *)imgArr, numFile, sizeof(Img *), imgComparator);
-  for (int i = 0; i<std::min(numFile, numResult); i++) {
+    // sort the imgArr based on similarity score
+    qsort((void *)imgArr, numFile, sizeof(Img *), imgComparator);
+    for (int i = 0; i<std::min(numFile, numResult); i++) {
     imgArr[i]->printImgInfo();
-  }
+    }
 
-  //show result
-  cv::Mat bestMatch;
-  bestMatch = cv::imread(imgArr[0]->getPath());
-  cv::imshow( "Best match 1", bestMatch);
-  cv::waitKey(0);
-  bestMatch = cv::imread(imgArr[1]->getPath());
-  cv::imshow( "Best match 2", bestMatch);
-  cv::waitKey(0);
+    //show result
+    cv::Mat bestMatch;
+    bestMatch = cv::imread(imgArr[0]->getPath());
+    cv::imshow( "Best match 1", bestMatch);
+    cv::waitKey(0);
+    bestMatch = cv::imread(imgArr[1]->getPath());
+    cv::imshow( "Best match 2", bestMatch);
+    cv::waitKey(0);
 
 
-	return(0);
+    return(0);
 }
 
-/* get all file names of a given directory*/
+    /* get all file names of a given directory*/
 char **readDB(char *dir, int *num) {
-  int max = 16;
-  int numFile = 0;
-  char **fileArr = (char**)malloc(sizeof(char *)*max);
-  readDB_rec(dir, &fileArr, &max, &numFile);
-  *num = numFile;
-  return fileArr;
+    int max = 16;
+    int numFile = 0;
+    char **fileArr = (char**)malloc(sizeof(char *)*max);
+    readDB_rec(dir, &fileArr, &max, &numFile);
+    *num = numFile;
+    return fileArr;
 }
 
 
 /* helper function for readDB*/
 void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile) {
-  DIR *dirp;
-  struct dirent *dp;
-  // printf("Accessing directory %s\n", dir);
+    DIR *dirp;
+    struct dirent *dp;
+    // printf("Accessing directory %s\n", dir);
 
-  // open the directory
-	dirp = opendir( dir );
-	if( dirp == NULL ) {
-		printf("Cannot open directory %s\n", dir);
-		exit(-1);
-	}
-  // loop over the contents of the directory
-	while( (dp = readdir(dirp)) != NULL ) {
+    // open the directory
+    dirp = opendir( dir );
+    if( dirp == NULL ) {
+    	printf("Cannot open directory %s\n", dir);
+    	exit(-1);
+    }
+    // loop over the contents of the directory
+    while( (dp = readdir(dirp)) != NULL ) {
     if (dp->d_name[0] != '.') {
       // printf("The array is %d/%d\n", *numFile, *max);
       char *path = (char *)malloc(256);
@@ -203,9 +203,9 @@ void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile) {
         // look for images
         if( strstr(dp->d_name, ".jpg") ||
             strstr(dp->d_name, ".JPG") ||
-				    strstr(dp->d_name, ".png") ||
-				    strstr(dp->d_name, ".ppm") ||
-				    strstr(dp->d_name, ".tif") ) {
+    			    strstr(dp->d_name, ".png") ||
+    			    strstr(dp->d_name, ".ppm") ||
+    			    strstr(dp->d_name, ".tif") ) {
           // double the file array if necessary
           if (*numFile == *max) {
             // printf("Doubling the array\n");
@@ -213,14 +213,14 @@ void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile) {
             // printf("New max is %d\n", *max);
             *fileArr = (char **)realloc(*fileArr, sizeof(char *)*(*max));
           }
-  		    (*fileArr)[*numFile] = path;
+    		    (*fileArr)[*numFile] = path;
           (*numFile)++;
         }
       }
     }
-	}
-	// close the directory
-  closedir(dirp);
+    }
+    // close the directory
+    closedir(dirp);
 }
 
 int imgComparator(const void* p1, const void* p2) {
