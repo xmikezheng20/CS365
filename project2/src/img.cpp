@@ -40,16 +40,16 @@ void Img::setStatus(int newStatus) {
   this->status = newStatus;
 }
 
-int Img::getSimilarity() {
+double Img::getSimilarity() {
   return this->similarity;
 }
-void Img::setSimilarity(int newSimilarity) {
+void Img::setSimilarity(double newSimilarity) {
   this->similarity = newSimilarity;
 }
 
 // print
 void Img::printImgInfo() {
-  printf("Image: %s\nStatus: %d\nSimilarity: %d\n\n", this->path, this->status, this->similarity);
+  printf("Image: %s\nStatus: %d\nSimilarity: %.4f\n\n", this->path, this->status, this->similarity);
 }
 
 // cbir methods
@@ -81,7 +81,7 @@ void Img::baselineMatching(cv::Mat queryBlock, int halfBlockSize) {
     }
   }
   // printf("ssd is %d\n",ssd);
-  this->similarity = -ssd;
+  this->similarity = (double)(-ssd);
 }
 
 void Img::baselineHistogram(cv::Mat queryHist) {
@@ -91,6 +91,18 @@ void Img::baselineHistogram(cv::Mat queryHist) {
   // use intersection distance
   this->similarity = cv::compareHist(queryHist, targetHist, cv::HISTCMP_INTERSECT);
 
+}
+
+
+void Img::colorTextureHistogram(std::vector<cv::Mat> queryHists) {
+  printf("Color Texture Histogram Matching with %s\n", this->path);
+  std::vector<cv::Mat> targetHists;
+  targetHists = hist_whole_texture_laws_subset(this->path);
+  // std::cout << "hist0 is " << queryHists[0] <<std::endl;
+  // std::cout << "hist1 is " << queryHists[1] <<std::endl;
+  this->similarity = cv::compareHist(queryHists[0], targetHists[0], cv::HISTCMP_INTERSECT)
+                    + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT);
+  // free(targetHists);
 }
 
 // destructor

@@ -36,7 +36,7 @@ BINDIR = ../bin
 # dependencies
 IDIR = ../include
 
-_DEPS = img.hpp
+_DEPS = img.hpp hist.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 %.o: %.c $(DEPS)

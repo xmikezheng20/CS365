@@ -102,6 +102,23 @@ int main(int argc, char *argv[]) {
         imgArr[i]->baselineHistogram(queryHist);
       }
       break;
+
+
+    case(3):
+      // calculate whole image histogram based on color and texture
+      {
+        std::vector<cv::Mat> queryHists;
+        queryHists = hist_whole_texture_laws_subset(query);
+
+        // run color texture histogram matching
+        for (int i = 0; i<numFile; i++) {
+          imgArr[i]->colorTextureHistogram(queryHists);
+        }
+
+        break;
+
+      }
+
     default:
       printf("Invalid method\n");
       exit(-1);
@@ -191,8 +208,10 @@ void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile) {
 }
 
 int imgComparator(const void* p1, const void* p2) {
-  int img1Similarity = (*(Img **)p1)->getSimilarity();
-  int img2Similarity = (*(Img **)p2)->getSimilarity();
-  // printf("comparing %d and %d\n", img1Similarity, img2Similarity);
-  return img2Similarity-img1Similarity;
+  double img1Similarity = (*(Img **)p1)->getSimilarity();
+  double img2Similarity = (*(Img **)p2)->getSimilarity();
+  // printf("comparing %.2f and %.2f\n", img1Similarity, img2Similarity);
+  if (img2Similarity-img1Similarity>0) {return 1;}
+  else if (img1Similarity-img2Similarity>0) {return -1;}
+  else {return 0;}
 }

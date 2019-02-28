@@ -18,7 +18,7 @@ class Img
 private:
   char *path;
   int status; // 1: done; 0 not done.
-  int similarity;
+  double similarity;
 
 public:
   // constructor
@@ -31,8 +31,8 @@ public:
   int getStatus();
   void setStatus(int newStatus);
 
-  int getSimilarity();
-  void setSimilarity(int newSimilarity);
+  double getSimilarity();
+  void setSimilarity(double newSimilarity);
 
   // print
   void printImgInfo();
@@ -40,6 +40,8 @@ public:
   // cbir methods
   void baselineMatching(cv::Mat queryBlock, int halfBlockSize);
   void baselineHistogram(cv::Mat queryHist);
+
+  void colorTextureHistogram(std::vector<cv::Mat> queryHists);
 
   // destructor
   ~Img();
