@@ -128,15 +128,18 @@ void Img::multiHistogram(cv::Mat queryHist1, cv::Mat queryHist2){
 }
 
 
-void Img::colorTextureHistogram(std::vector<cv::Mat> queryHists) {
+void Img::colorTextureHistogram(cv::Mat queryColorHist, std::vector<cv::Mat> queryHists) {
   printf("Color Texture Histogram Matching with %s\n", this->path);
   std::vector<cv::Mat> targetHists;
+  cv::Mat targetColorHist;
+  targetColorHist = hist_whole_hs(this->path);
+
   targetHists = hist_whole_texture_laws_subset(this->path);
   // std::cout << "hist0 is " << queryHists[0] <<std::endl;
   // std::cout << "hist1 is " << queryHists[1] <<std::endl;
-  this->similarity = cv::compareHist(queryHists[0], targetHists[0], cv::HISTCMP_INTERSECT)
-                    + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT);
-  // free(targetHists);
+  this->similarity = (cv::compareHist(queryHists[0], targetHists[0], cv::HISTCMP_INTERSECT)
+                    + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT))*10
+                    + cv::compareHist(queryColorHist, targetColorHist, cv::HISTCMP_INTERSECT);
 }
 
 // destructor

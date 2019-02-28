@@ -155,12 +155,13 @@ int main(int argc, char *argv[]) {
     case(3):
       // calculate whole image histogram based on color and texture
       {
-        std::vector<cv::Mat> queryHists;
-        queryHists = hist_whole_texture_laws_subset(query);
+        std::vector<cv::Mat> queryTextureHists;
+        queryTextureHists = hist_whole_texture_laws_subset(query);
+        cv::Mat queryHSHist = hist_whole_hs(query);
 
         // run color texture histogram matching
         for (int i = 0; i<numFile; i++) {
-          imgArr[i]->colorTextureHistogram(queryHists);
+          imgArr[i]->colorTextureHistogram(queryHSHist, queryTextureHists);
         }
 
         break;

@@ -215,7 +215,8 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
   //
   // calculate histogram
   cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
-  cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+  // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+  hist /= cv::sum(hist)[0];
 
   hists.push_back(hist.clone());
 
@@ -240,7 +241,8 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
 
   // calculate histogram
   cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
-  cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+  // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+  hist /= cv::sum(hist)[0];
 
   hists.push_back(hist.clone());
   //

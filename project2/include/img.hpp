@@ -48,7 +48,7 @@ public:
   /*multi histogram matching*/
   void multiHistogram(cv::Mat queryHist1, cv::Mat queryHist2);
 
-  void colorTextureHistogram(std::vector<cv::Mat> queryHists);
+  void colorTextureHistogram(cv::Mat queryColorHist, std::vector<cv::Mat> queryHists);
 
   // destructor
   ~Img();
