@@ -47,7 +47,7 @@ void Img::setStatus(int newStatus) {
 }
 
 /* return similarity, the larger similarity is, the closer the images are*/
-float Img::getSimilarity() {
+double Img::getSimilarity() {
   return this->similarity;
 }
 
@@ -120,8 +120,8 @@ void Img::multiHistogram(cv::Mat queryHist1, cv::Mat queryHist2){
   //use chi-square comparison
   // int similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_INTERSECT);
   // int similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_INTERSECT); //CV_COMP_CHISQR
-  float similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_CORREL);
-  float similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_CORREL);
+  double similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_CORREL);
+  double similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_CORREL);
   this->similarity = similarity1 + similarity2/2; //so far, arbituary weight
 
 }
