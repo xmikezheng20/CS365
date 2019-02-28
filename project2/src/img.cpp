@@ -105,8 +105,8 @@ void Img::baselineHistogram(cv::Mat queryHist) {
   targetHist = hist_whole_hs(this->path);
   // use intersection distance
 
-  // this->similarity = cv::compareHist(queryHist, targetHist, CV_COMP_INTERSECT);
-  this->similarity = cv::compareHist(queryHist, targetHist,  cv::HISTCMP_CORREL);
+  this->similarity = cv::compareHist(queryHist, targetHist, CV_COMP_INTERSECT);
+  // this->similarity = cv::compareHist(queryHist, targetHist,  cv::HISTCMP_CORREL);
   // this->similarity = cv::compareHist(queryHist, targetHist, CV_COMP_CHISQR);
 
   // this->similarity = cv::compareHist(queryHist, targetHist, cv::HISTCMP_INTERSECT);
@@ -119,11 +119,11 @@ void Img::multiHistogram(cv::Mat queryHist1, cv::Mat queryHist2){
   cv::Mat targetHist1 = multi_hist_whole_hs(this->path).first;
   cv::Mat targetHist2 = multi_hist_whole_hs(this->path).second;
   //use chi-square comparison
-  // int similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_INTERSECT);
-  // int similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_INTERSECT); //CV_COMP_CHISQR
-  double similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_CORREL);
-  double similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_CORREL);
-  this->similarity = similarity1 + similarity2/2; //so far, arbituary weight
+  int similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_INTERSECT);
+  int similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_INTERSECT); //CV_COMP_CHISQR
+  // double similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_CORREL);
+  // double similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_CORREL);
+  this->similarity = similarity1*5 + similarity2; //so far, arbituary weight
 
 }
 

@@ -10,6 +10,8 @@
   to run: ../bin/cbir ../data/MacbethChart.jpg ../../../olympus 5 0
   to run: ../bin/cbir ../data/_DSC1159.jpg ../../../olympus 5 1
 
+  task3: _DSC0435.jpg
+
 
 */
 
