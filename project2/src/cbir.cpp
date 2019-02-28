@@ -115,46 +115,10 @@ int main(int argc, char *argv[]) {
       }
       break;
 
-      // //divide the query image into blocks,
-      // //compute histogram in each block and sum together as a whole histogram
-      // queryImg = cv::imread(query);
-      // // printf("query image size: %d rows x %d columns\n", (int)queryImg.size().height, (int)queryImg.size().width);
-
-      // //first take the vertical center 1/2 from the query image
-      // cv::Mat queryBlockCenter;
-      // queryImg(cv::Rect(((int)queryImg.size().width)/3,
-      //             ((int)queryImg.size().height)/3,
-      //             ((int)queryImg.size().width)/3,
-      //             ((int)queryImg.size().height)/3)).copyTo(queryBlockCenter);
-      // cv::Mat queryHistCenter = hist_whole_hs_img(queryBlockCenter); // first histogram for multi histogram input
-
-      // //then take the edges and corner of the image: 1/4 of the image in all directions
-      // //top
-      // cv::Mat queryBlockEdge1;
-      // queryImg(cv::Rect(0, 0, (int)queryImg.size().width, ((int)queryImg.size().height)/4)).copyTo(queryBlockEdge1);
-      // cv::Mat queryHistEdge1 = hist_whole_hs_img(queryBlockEdge1);
-      // //left
-      // cv::Mat queryBlockEdge2;
-      // queryImg(cv::Rect(0, 0, ((int)queryImg.size().width)/4, ((int)queryImg.size().height))).copyTo(queryBlockEdge2);
-      // cv::Mat queryHistEdge2 = hist_whole_hs_img(queryBlockEdge2);
-      // //bottom
-      // cv::Mat queryBlockEdge3;
-      // queryImg(cv::Rect(0, ((int)queryImg.size().height)*3/4, (int)queryImg.size().width, ((int)queryImg.size().height)/4)).copyTo(queryBlockEdge3);
-      // cv::Mat queryHistEdge3 = hist_whole_hs_img(queryBlockEdge3);
-      // //right
-      // cv::Mat queryBlockEdge4;
-      // queryImg(cv::Rect((int)queryImg.size().width*3/4, 0, (int)queryImg.size().width/4, ((int)queryImg.size().height))).copyTo(queryBlockEdge4);
-      // cv::Mat queryHistEdge4 = hist_whole_hs_img(queryBlockEdge4);
-
-      // cv::Mat queryHistEdge = queryHistEdge1 + queryHistEdge2 + queryHistEdge3 + queryHistEdge4;
-
-
-      break;
-
     }
-    case(3):
-      // calculate whole image histogram based on color and texture
-      {
+
+    //calculate whole image histogram based on color and texture
+    case(3):{
         std::vector<cv::Mat> queryHists;
         queryHists = hist_whole_texture_laws_subset(query);
 
