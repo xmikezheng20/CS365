@@ -152,6 +152,9 @@ int main(int argc, char *argv[]) {
   cv::imshow( "Best match 2", bestMatch);
   cv::waitKey(0);
 
+  bestMatch = cv::imread(imgArr[2]->getPath());
+  cv::imshow( "Best match 3", bestMatch);
+  cv::waitKey(0);
 
 	return(0);
 }

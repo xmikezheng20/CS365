@@ -210,8 +210,9 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
   // cv::divide(filtered, l5l5Response, filtered);
   //
   // average absolute values in 7*7 block to get energy
-  filtered_abs = cv::abs(filtered);
-  cv::blur(filtered_abs, energy, cv::Size(7, 7));
+  // filtered_abs = cv::abs(filtered);
+  // cv::blur(filtered_abs, energy, cv::Size(7, 7));
+  energy = filtered;
   //
   // calculate histogram
   cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
@@ -236,8 +237,9 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
   // cv::divide(filtered, l5l5Response, filtered);
 
   // average absolute values in 7*7 block to get energy
-  filtered_abs = cv::abs(filtered);
-  cv::blur(filtered_abs, energy, cv::Size(7, 7));
+  // filtered_abs = cv::abs(filtered);
+  // cv::blur(filtered_abs, energy, cv::Size(7, 7));
+  energy = filtered;
 
   // calculate histogram
   cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
