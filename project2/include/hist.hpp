@@ -32,3 +32,7 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path);
 // texture histogram of the whole image
 // texture: apply sobelx and sobely
 cv::Mat hist_whole_texture_sobel(char *path);
+
+// apply fourier transform to the source image
+// calculate histogram of the fourier transformed image
+cv::Mat hist_whole_fourier(char *path);

@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 
   // trackbar params
   int method_slider = 0;
-  int method_max = 5;
+  int method_max = 6;
   cv::createTrackbar( "Method", query, &method_slider, method_max);
 
   // display the query and the matches
@@ -175,8 +175,8 @@ Img **update(char *query, int numFile, Img **imgArr, Img **dispImgArr, int metho
           break;
       }
 
-      case(5):
-        // calculate whole image histogram based on color and texture
+     case(5):
+        // calculate whole image histogram based on color and texture (laws filters)
         {
           std::vector<cv::Mat> queryTextureHists;
           queryTextureHists = hist_whole_texture_laws_subset(query);
@@ -190,10 +190,24 @@ Img **update(char *query, int numFile, Img **imgArr, Img **dispImgArr, int metho
           break;
 
         }
+    // case 6: calculate fourier texture and color
+    case(6):
+    {
+        cv::Mat queryTextureHist;
+        queryTextureHist = hist_whole_fourier(query);
+        cv::Mat queryHSHist = hist_whole_hs(query);
 
-        default:
-          printf("Invalid method\n");
-          exit(-1);
+        // run color texture histogram matching
+        for (int i = 0; i<numFile; i++) {
+          imgArr[i]->colorFourierHistogram(queryHSHist, queryTextureHist);
+        }
+
+        break;
+    }
+
+    default:
+      printf("Invalid method\n");
+      exit(-1);
   }
 
   // sort the resulting images based on similarity score

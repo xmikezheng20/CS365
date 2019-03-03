@@ -214,9 +214,9 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
     // cv::divide(filtered, l5l5Response, filtered);
     //
     // average absolute values in 7*7 block to get energy
-    // filtered_abs = cv::abs(filtered);
-    // cv::blur(filtered_abs, energy, cv::Size(7, 7));
-    energy = filtered;
+    filtered_abs = cv::abs(filtered);
+    cv::blur(filtered_abs, energy, cv::Size(7, 7));
+    // energy = filtered;
     //
     // calculate histogram
     cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
@@ -247,9 +247,90 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
     // calculate histogram
     cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
     // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
-    hist /= cv::sum(hist)[0];
+    hist /= (int)(src.size().width)*(int)(src.size().height);
 
     hists.push_back(hist.clone());
+
+    // l5r5
+    float l5r5_data[25] = {1, -4, 6, -4, 1,
+                        4, -16, 24, -16, 4,
+                        6, -24, 36, -24, 6,
+                        4, -16, 24, -16, 4,
+                        1, -4, 6, -4, 1};
+    cv::Mat l5r5 = cv::Mat(5, 5, CV_32F, l5r5_data);
+
+    cv::filter2D(src_gray, filtered, -1, l5r5, cv::Point(-1, -1), 0,
+              cv::BORDER_DEFAULT);
+
+
+    // normalize by l5l5 response
+    // cv::divide(filtered, l5l5Response, filtered);
+
+    // average absolute values in 7*7 block to get energy
+    filtered_abs = cv::abs(filtered);
+    cv::blur(filtered_abs, energy, cv::Size(7, 7));
+    // energy = filtered;
+
+    // calculate histogram
+    cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
+    // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+    hist /= (int)(src.size().width)*(int)(src.size().height);
+
+    hists.push_back(hist.clone());
+
+    // r5l5
+    float r5l5_data[25] = {1, 4, 6, 4, 1,
+                        -4, -16, -24, -16, -4,
+                        6, 24, 36, 24, 6,
+                        -4, -16, -24, -16, -4,
+                        1, 4, 6, 4, 1};
+    cv::Mat r5l5 = cv::Mat(5, 5, CV_32F, r5l5_data);
+
+    cv::filter2D(src_gray, filtered, -1, r5l5, cv::Point(-1, -1), 0,
+              cv::BORDER_DEFAULT);
+
+    // normalize by l5l5 response
+    // cv::divide(filtered, l5l5Response, filtered);
+
+    // average absolute values in 7*7 block to get energy
+    filtered_abs = cv::abs(filtered);
+    cv::blur(filtered_abs, energy, cv::Size(7, 7));
+    // energy = filtered;
+
+    // calculate histogram
+    cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
+    // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+    hist /= (int)(src.size().width)*(int)(src.size().height);
+
+    hists.push_back(hist.clone());
+
+
+    // s5s5
+    float s5s5_data[25] = {1, 0, -2, 0, 1,
+                        0, 0, 0, 0, 0,
+                        -2, 0, 4, 0, -2,
+                        0, 0, 0, 0, 0,
+                        1, 0, -2, 0, 1};
+    cv::Mat s5s5 = cv::Mat(5, 5, CV_32F, s5s5_data);
+
+    cv::filter2D(src_gray, filtered, -1, s5s5, cv::Point(-1, -1), 0,
+              cv::BORDER_DEFAULT);
+
+    // normalize by l5l5 response
+    // cv::divide(filtered, l5l5Response, filtered);
+
+    // average absolute values in 7*7 block to get energy
+    filtered_abs = cv::abs(filtered);
+    cv::blur(filtered_abs, energy, cv::Size(7, 7));
+    // energy = filtered;
+
+    // calculate histogram
+    cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
+    // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+    hist /= (int)(src.size().width)*(int)(src.size().height);
+
+    hists.push_back(hist.clone());
+
     //
     // std::cout << "hist0 is " << hists[0] <<std::endl;
     // std::cout << "hist1 is " << hists[1] <<std::endl;
@@ -267,7 +348,7 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
 
 // texture histogram using sobelx and sobel y
 cv::Mat hist_whole_texture_sobel(char *path) {
-    cv::Mat src, src_gray, image;
+    cv::Mat src, src_gray;
     cv::Mat grad;
     int scale = 1;
     int delta = 0;
@@ -314,4 +395,74 @@ cv::Mat hist_whole_texture_sobel(char *path) {
     // cv::destroyWindow("window");
 
     return hist;
+}
+
+// apply fourier transform to the source image
+// calculate histogram of the fourier transformed image
+// https://docs.opencv.org/3.4/d8/d01/tutorial_discrete_fourier_transform.html
+cv::Mat hist_whole_fourier(char *path) {
+    cv::Mat src, src_gray;
+
+    // read the image
+    src = cv::imread(path);
+    if(src.data == NULL) {
+        printf("Unable to read query image %s\n", path);
+        exit(-1);
+    }
+
+    // Convert the image to grayscale
+    cv::cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
+
+    // calculate discrete fourier transform
+    cv::Mat padded;                            //expand input image to optimal size
+    int m = cv::getOptimalDFTSize( src_gray.rows );
+    int n = cv::getOptimalDFTSize( src_gray.cols ); // on the border add zero values
+    cv::copyMakeBorder(src_gray, padded, 0, m - src_gray.rows, 0, n - src_gray.cols, cv::BORDER_CONSTANT, cv::Scalar::all(0));
+    cv::Mat planes[] = {cv::Mat_<float>(padded), cv::Mat::zeros(padded.size(), CV_32F)};
+    cv::Mat complexI;
+    merge(planes, 2, complexI);         // Add to the expanded another plane with zeros
+    dft(complexI, complexI);            // this way the result may fit in the source matrix
+    // compute the magnitude and switch to logarithmic scale
+    // => log(1 + sqrt(Re(DFT(I))^2 + Im(DFT(I))^2))
+    split(complexI, planes);                   // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
+    magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
+    cv::Mat magI = planes[0];
+    magI += cv::Scalar::all(1);                    // switch to logarithmic scale
+    cv::log(magI, magI);
+    // crop the spectrum, if it has an odd number of rows or columns
+    magI = magI(cv::Rect(0, 0, magI.cols & -2, magI.rows & -2));
+    // rearrange the quadrants of Fourier image  so that the origin is at the image center
+    int cx = magI.cols/2;
+    int cy = magI.rows/2;
+    cv::Mat q0(magI, cv::Rect(0, 0, cx, cy));   // Top-Left - Create a ROI per quadrant
+    cv::Mat q1(magI, cv::Rect(cx, 0, cx, cy));  // Top-Right
+    cv::Mat q2(magI, cv::Rect(0, cy, cx, cy));  // Bottom-Left
+    cv::Mat q3(magI, cv::Rect(cx, cy, cx, cy)); // Bottom-Right
+    cv::Mat tmp;                           // swap quadrants (Top-Left with Bottom-Right)
+    q0.copyTo(tmp);
+    q3.copyTo(q0);
+    tmp.copyTo(q3);
+    q1.copyTo(tmp);                    // swap quadrant (Top-Right with Bottom-Left)
+    q2.copyTo(q1);
+    tmp.copyTo(q2);
+    cv::normalize(magI, magI, 0, 1, cv::NORM_MINMAX); // Transform the matrix with float values into a
+                                        // viewable image form (float between values 0 and 1).
+    // cv::imshow("Input Image"       , src_gray   );    // Show the result
+    // cv::imshow("spectrum magnitude", magI);
+    // cv::waitKey(0);
+
+    // calculate histogram
+    int histSize = 50;
+    float range[] = { 0, 1 }; //the upper boundary is exclusive
+    const float* histRange = { range };
+    cv::Mat hist;
+
+    cv::calcHist( &magI, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
+    hist /= (int)(src.size().width)*(int)(src.size().height);
+
+
+
+    return hist;
+
+
 }

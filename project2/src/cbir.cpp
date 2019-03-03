@@ -159,6 +159,21 @@ int main(int argc, char *argv[]) {
 
         }
 
+        // case 6: calculate fourier texture and color
+        case(6):
+        {
+            cv::Mat queryTextureHist;
+            queryTextureHist = hist_whole_fourier(query);
+            cv::Mat queryHSHist = hist_whole_hs(query);
+
+            // run color texture histogram matching
+            for (int i = 0; i<numFile; i++) {
+              imgArr[i]->colorFourierHistogram(queryHSHist, queryTextureHist);
+            }
+
+            break;
+        }
+
         default:
           printf("Invalid method\n");
           exit(-1);
