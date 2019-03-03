@@ -46,11 +46,13 @@ cv::Mat hist_whole_hs(char *path) {
   cv::Mat hist;
   // channels 0 and 1
   int channels[] = {0,1};
+  // cv::calcHist( &hsv, 0, channels, cv::Mat(), hist, 1, histSize, ranges, true, false);
   cv::calcHist( &hsv, 1, channels, cv::Mat(), hist, 2, histSize, ranges, true, false);
   // normalize the histogram
+  // cv::normalize( hist, hist, 0, src.rows*src.cols, cv::NORM_MINMAX, -1, cv::Mat() );
   cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
 
-  //draw histogram, could be commented out
+  //draw histogram, could be commented out:
   //draw_hist(src, hist, hbins, sbins);
 
   return hist;
@@ -258,3 +260,36 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
 
     return hists;
 }
+
+
+// /*using earth mover's distance, return the value of similarity*/
+// float earth_mover_histogram(char *path){
+//     //compare histogram
+//      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//      int numrows = hbins * sbins;
+//
+//      //make signature
+//      Mat sig1(numrows, 3, CV_32FC1);
+//      Mat sig2(numrows, 3, CV_32FC1);
+//
+//      //fill value into signature
+//      for(int h=0; h< hbins; h++)
+//      {
+//       for(int s=0; s< sbins; ++s)
+//       {
+//        float binval = HistA.at< float>(h,s);
+//        sig1.at< float>( h*sbins + s, 0) = binval;
+//        sig1.at< float>( h*sbins + s, 1) = h;
+//        sig1.at< float>( h*sbins + s, 2) = s;
+//
+//        binval = HistB.at< float>(h,s);
+//        sig2.at< float>( h*sbins + s, 0) = binval;
+//        sig2.at< float>( h*sbins + s, 1) = h;
+//        sig2.at< float>( h*sbins + s, 2) = s;
+//       }
+//      }
+//
+//      //compare similarity of 2images using emd.
+//      float emd = cv::EMD(sig1, sig2, CV_DIST_L2); //emd 0 is best matching.
+//      printf("similarity %5.5f %%\n", (1-emd)*100 );
+// }

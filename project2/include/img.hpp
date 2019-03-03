@@ -50,6 +50,7 @@ public:
 
   void colorTextureHistogram(cv::Mat queryColorHist, std::vector<cv::Mat> queryHists);
 
+  void earthMoverDistance(cv::Mat queryHist);
   // destructor
   ~Img();
 

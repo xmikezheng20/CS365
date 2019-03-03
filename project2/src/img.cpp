@@ -107,10 +107,6 @@ void Img::baselineHistogram(cv::Mat queryHist) {
 
     this->similarity = cv::compareHist(queryHist, targetHist, CV_COMP_INTERSECT);
     // this->similarity = cv::compareHist(queryHist, targetHist,  cv::HISTCMP_CORREL);
-    // this->similarity = cv::compareHist(queryHist, targetHist, CV_COMP_CHISQR);
-
-    // this->similarity = cv::compareHist(queryHist, targetHist, cv::HISTCMP_INTERSECT);
-
 }
 
 /*multi histogram matching*/
@@ -140,6 +136,47 @@ void Img::colorTextureHistogram(cv::Mat queryColorHist, std::vector<cv::Mat> que
     this->similarity = (cv::compareHist(queryHists[0], targetHists[0], cv::HISTCMP_INTERSECT)
                     + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT))*10
                     + cv::compareHist(queryColorHist, targetColorHist, cv::HISTCMP_INTERSECT);
+}
+
+
+/*using earth mover's distance, return the value of similarity*/
+void Img::earthMoverDistance(cv::Mat queryHist) {
+    printf("Earth Mover's distance Matching with %s\n", this->path);
+    cv::Mat targetHist;
+    targetHist = hist_whole_hs(this->path);
+
+     //compare histogram
+     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     int hbins = 30, sbins = 32; //hard coding for now. from hist_whole_hs function
+     int numrows = hbins * sbins;
+
+     //make signature
+     cv::Mat sig1(numrows, 3, CV_32FC1);
+     cv::Mat sig2(numrows, 3, CV_32FC1);
+
+     //fill value into signature
+     for(int h=0; h< hbins; h++)
+     {
+      for(int s=0; s< sbins; ++s)
+      {
+       float binval = queryHist.at< float>(h,s);
+       sig1.at< float>( h*sbins + s, 0) = binval;
+       sig1.at< float>( h*sbins + s, 1) = h;
+       sig1.at< float>( h*sbins + s, 2) = s;
+
+       binval = targetHist.at< float>(h,s);
+       sig2.at< float>( h*sbins + s, 0) = binval;
+       sig2.at< float>( h*sbins + s, 1) = h;
+       sig2.at< float>( h*sbins + s, 2) = s;
+      }
+     }
+
+     //compare similarity of 2images using emd.
+     float emd = cv::EMD(sig1, sig2, CV_DIST_L2); //emd 0 is best matching.
+     printf("similarity %5.5f %%\n", (1-emd)*100 );
+
+     this->similarity = emd;
+
 }
 
 // destructor

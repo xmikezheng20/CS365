@@ -118,9 +118,8 @@ int main(int argc, char *argv[]) {
       break;
 
     }
-    case(3):
-      // calculate whole image histogram based on color and texture
-      {
+    // calculate whole image histogram based on color and texture
+    case(3): {
         std::vector<cv::Mat> queryTextureHists;
         queryTextureHists = hist_whole_texture_laws_subset(query);
         cv::Mat queryHSHist = hist_whole_hs(query);
@@ -133,6 +132,16 @@ int main(int argc, char *argv[]) {
         break;
 
       }
+
+     //earth Mover's Distance
+     case(4):{
+         queryHist = hist_whole_hs(query);
+         // run baseline histogram matching
+         for (int i = 0; i<numFile; i++) {
+           imgArr[i]->earthMoverDistance(queryHist);
+         }
+         break;
+     }
 
     default:
       printf("Invalid method\n");
@@ -150,18 +159,28 @@ int main(int argc, char *argv[]) {
     bestMatch = cv::imread(imgArr[0]->getPath());
     cv::imshow( "Best match 1", bestMatch);
     cv::waitKey(0);
+
     bestMatch = cv::imread(imgArr[1]->getPath());
     cv::imshow( "Best match 2", bestMatch);
     cv::waitKey(0);
 
-  bestMatch = cv::imread(imgArr[2]->getPath());
-  cv::imshow( "Best match 3", bestMatch);
-  cv::waitKey(0);
+    bestMatch = cv::imread(imgArr[2]->getPath());
+    cv::imshow( "Best match 3", bestMatch);
+    cv::waitKey(0);
+
+    bestMatch = cv::imread(imgArr[3]->getPath());
+    cv::imshow( "Best match 4", bestMatch);
+    cv::waitKey(0);
+
+    bestMatch = cv::imread(imgArr[4]->getPath());
+    cv::imshow( "Best match 5", bestMatch);
+    cv::waitKey(0);
 
     return(0);
 }
 
-    /* get all file names of a given directory*/
+
+/* get all file names of a given directory*/
 char **readDB(char *dir, int *num) {
     int max = 16;
     int numFile = 0;
