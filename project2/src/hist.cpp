@@ -82,7 +82,8 @@ cv::Mat hist_whole_hs_img(cv::Mat src) {
     int channels[] = {0,1};
     cv::calcHist( &hsv, 1, channels, cv::Mat(), hist, 2, histSize, ranges, true, false);
     // normalize the histogram
-    cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+    // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+    hist /= (int)(src.size().width)*(int)(src.size().height);
 
     //draw histogram, could be commented out
     //draw_hist(src, hist, hbins, sbins);
@@ -161,8 +162,7 @@ void draw_hist_whole_hs(cv::Mat src, cv::Mat hist, int hbins, int sbins){
     cv::waitKey(0);
 }
 
-// color and texture histogram of the whole image
-// color: HS-histogram
+// texture histogram of the whole image
 // texture: apply multiple texture filters, aggregate 7*7 box to get energy,
 // calculates energy histograms
 std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
@@ -178,8 +178,8 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
     // read the image
     src = cv::imread(path);
     if(src.data == NULL) {
-    printf("Unable to read query image %s\n", path);
-    exit(-1);
+        printf("Unable to read query image %s\n", path);
+        exit(-1);
     }
 
     // convert to grayscale
@@ -210,18 +210,18 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
     cv::filter2D(src_gray, filtered, -1, e5l5, cv::Point(-1, -1), 0,
                cv::BORDER_DEFAULT);
 
-  // // normalize by l5l5 response
-  // cv::divide(filtered, l5l5Response, filtered);
-  //
-  // average absolute values in 7*7 block to get energy
-  // filtered_abs = cv::abs(filtered);
-  // cv::blur(filtered_abs, energy, cv::Size(7, 7));
-  energy = filtered;
-  //
-  // calculate histogram
-  cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
-  // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
-  hist /= (int)(src.size().width)*(int)(src.size().height);
+    // // normalize by l5l5 response
+    // cv::divide(filtered, l5l5Response, filtered);
+    //
+    // average absolute values in 7*7 block to get energy
+    // filtered_abs = cv::abs(filtered);
+    // cv::blur(filtered_abs, energy, cv::Size(7, 7));
+    energy = filtered;
+    //
+    // calculate histogram
+    cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
+    // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+    hist /= (int)(src.size().width)*(int)(src.size().height);
 
     hists.push_back(hist.clone());
 
@@ -265,35 +265,53 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
     return hists;
 }
 
+// texture histogram using sobelx and sobel y
+cv::Mat hist_whole_texture_sobel(char *path) {
+    cv::Mat src, src_gray, image;
+    cv::Mat grad;
+    int scale = 1;
+    int delta = 0;
+    int ddepth = CV_16S;
+    int ksize = 3;
 
-// /*using earth mover's distance, return the value of similarity*/
-// float earth_mover_histogram(char *path){
-//     //compare histogram
-//      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//      int numrows = hbins * sbins;
-//
-//      //make signature
-//      Mat sig1(numrows, 3, CV_32FC1);
-//      Mat sig2(numrows, 3, CV_32FC1);
-//
-//      //fill value into signature
-//      for(int h=0; h< hbins; h++)
-//      {
-//       for(int s=0; s< sbins; ++s)
-//       {
-//        float binval = HistA.at< float>(h,s);
-//        sig1.at< float>( h*sbins + s, 0) = binval;
-//        sig1.at< float>( h*sbins + s, 1) = h;
-//        sig1.at< float>( h*sbins + s, 2) = s;
-//
-//        binval = HistB.at< float>(h,s);
-//        sig2.at< float>( h*sbins + s, 0) = binval;
-//        sig2.at< float>( h*sbins + s, 1) = h;
-//        sig2.at< float>( h*sbins + s, 2) = s;
-//       }
-//      }
-//
-//      //compare similarity of 2images using emd.
-//      float emd = cv::EMD(sig1, sig2, CV_DIST_L2); //emd 0 is best matching.
-//      printf("similarity %5.5f %%\n", (1-emd)*100 );
-// }
+    // read the image
+    src = cv::imread(path);
+    if(src.data == NULL) {
+        printf("Unable to read query image %s\n", path);
+        exit(-1);
+    }
+
+    // Remove noise by blurring with a Gaussian filter ( kernel size = 3 )
+    cv::GaussianBlur(src, src, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
+
+    // Convert the image to grayscale
+    cv::cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
+
+    cv::Mat grad_x, grad_y;
+    cv::Mat abs_grad_x, abs_grad_y;
+    cv::Sobel(src_gray, grad_x, ddepth, 1, 0, ksize, scale, delta, cv::BORDER_DEFAULT);
+    cv::Sobel(src_gray, grad_y, ddepth, 0, 1, ksize, scale, delta, cv::BORDER_DEFAULT);
+
+    // converting back to CV_8U
+    cv::convertScaleAbs(grad_x, abs_grad_x);
+    cv::convertScaleAbs(grad_y, abs_grad_y);
+
+    addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
+
+    // calculate histogram
+    int histSize = 50;
+    float range[] = { 0, 256 }; //the upper boundary is exclusive
+    const float* histRange = { range };
+    cv::Mat hist;
+
+    cv::calcHist( &grad, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
+    hist /= (int)(src.size().width)*(int)(src.size().height);
+
+
+    // cv::namedWindow( "window", 1 );
+    // cv::imshow( "window", grad );
+    // cv::waitKey(0);
+    // cv::destroyWindow("window");
+
+    return hist;
+}

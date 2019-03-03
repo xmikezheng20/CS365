@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 
   // trackbar params
   int method_slider = 0;
-  int method_max = 4;
+  int method_max = 5;
   cv::createTrackbar( "Method", query, &method_slider, method_max);
 
   // display the query and the matches
@@ -149,23 +149,21 @@ Img **update(char *query, int numFile, Img **imgArr, Img **dispImgArr, int metho
         imgArr[i]->multiHistogram(queryHist1, queryHist2);
       }
       break;
-
     }
+    // case 3 : sobel filters and color
     case(3):
-      // calculate whole image histogram based on color and texture
-      {
-        std::vector<cv::Mat> queryTextureHists;
-        queryTextureHists = hist_whole_texture_laws_subset(query);
-        cv::Mat queryHSHist = hist_whole_hs(query);
+        {
+            cv::Mat queryTextureHist;
+            queryTextureHist = hist_whole_texture_sobel(query);
+            cv::Mat queryHSHist = hist_whole_hs(query);
 
-        // run color texture histogram matching
-        for (int i = 0; i<numFile; i++) {
-          imgArr[i]->colorTextureHistogram(queryHSHist, queryTextureHists);
+            // run color texture histogram matching
+            for (int i = 0; i<numFile; i++) {
+              imgArr[i]->colorSobelHistogram(queryHSHist, queryTextureHist);
+            }
+
+            break;
         }
-
-        break;
-
-      }
       //earth Mover's Distance
      case(4):
      {
@@ -177,9 +175,25 @@ Img **update(char *query, int numFile, Img **imgArr, Img **dispImgArr, int metho
           break;
       }
 
-    default:
-      printf("Invalid method\n");
-      exit(-1);
+      case(5):
+        // calculate whole image histogram based on color and texture
+        {
+          std::vector<cv::Mat> queryTextureHists;
+          queryTextureHists = hist_whole_texture_laws_subset(query);
+          cv::Mat queryHSHist = hist_whole_hs(query);
+
+          // run color texture histogram matching
+          for (int i = 0; i<numFile; i++) {
+            imgArr[i]->colorTextureHistogram(queryHSHist, queryTextureHists);
+          }
+
+          break;
+
+        }
+
+        default:
+          printf("Invalid method\n");
+          exit(-1);
   }
 
   // sort the resulting images based on similarity score
