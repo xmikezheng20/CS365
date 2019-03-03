@@ -48,9 +48,12 @@ cv::Mat hist_whole_hs(char *path) {
   int channels[] = {0,1};
   // cv::calcHist( &hsv, 0, channels, cv::Mat(), hist, 1, histSize, ranges, true, false);
   cv::calcHist( &hsv, 1, channels, cv::Mat(), hist, 2, histSize, ranges, true, false);
+  // printf("width*height = %d\n", (int)(src.size().width)*(int)(src.size().height));
+  // printf("sum of hist = %d\n", (int)(cv::sum(hist)[0]));
+
   // normalize the histogram
-  // cv::normalize( hist, hist, 0, src.rows*src.cols, cv::NORM_MINMAX, -1, cv::Mat() );
-  cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+  // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+  hist /= (int)(src.size().width)*(int)(src.size().height);
 
   //draw histogram, could be commented out:
   //draw_hist(src, hist, hbins, sbins);
@@ -207,17 +210,18 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
     cv::filter2D(src_gray, filtered, -1, e5l5, cv::Point(-1, -1), 0,
                cv::BORDER_DEFAULT);
 
-    // // normalize by l5l5 response
-    // cv::divide(filtered, l5l5Response, filtered);
-    //
-    // average absolute values in 7*7 block to get energy
-    filtered_abs = cv::abs(filtered);
-    cv::blur(filtered_abs, energy, cv::Size(7, 7)); //aggregate results
-    //
-    // calculate histogram
-    cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
-    // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
-    hist /= cv::sum(hist)[0];
+  // // normalize by l5l5 response
+  // cv::divide(filtered, l5l5Response, filtered);
+  //
+  // average absolute values in 7*7 block to get energy
+  // filtered_abs = cv::abs(filtered);
+  // cv::blur(filtered_abs, energy, cv::Size(7, 7));
+  energy = filtered;
+  //
+  // calculate histogram
+  cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
+  // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+  hist /= (int)(src.size().width)*(int)(src.size().height);
 
     hists.push_back(hist.clone());
 

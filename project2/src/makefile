@@ -42,10 +42,15 @@ DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-OBJ = cbir.o img.o hist.o
+OBJ_CBIR = cbir.o img.o hist.o
 
-cbir: $(OBJ)
+OBJ_CBIRGUI = cbirGUI.o img.o hist.o
+
+cbir: $(OBJ_CBIR)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
 
+cbirgui: $(OBJ_CBIRGUI)
+	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
+	
 clean:
 	rm -f *.o *~
