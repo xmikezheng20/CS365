@@ -27,6 +27,7 @@ char **readDB(char *dir, int *num);
 void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile);
 int imgComparator(const void* p1, const void* p2);
 void display(char *query, Img **dispImgArr);
+Img **update(char *query, int numFile, Img **imgArr, Img **dispImgArr, int method );
 
 int main(int argc, char *argv[]) {
 
@@ -61,42 +62,126 @@ int main(int argc, char *argv[]) {
   }
   free(fileArr);
 
-  // for (int i = 0; i<numFile; i++) {
-  //   imgArr[i]->printImgInfo();
-  // }
-  cv::Mat queryHist;
-  queryHist = hist_whole_hs(query);
-  // run baseline histogram matching
-  for (int i = 0; i<numFile; i++) {
-    imgArr[i]->baselineHistogram(queryHist);
-  }
-  qsort((void *)imgArr, numFile, sizeof(Img *), imgComparator);
-  // for (int i = 0; i<std::min(numFile, numResult); i++) {
-  //   imgArr[i]->printImgInfo();
-  // }
-
-
-
-
-
-
   // create a window
 	cv::namedWindow(query, 1);
 
   // an array of 20 best images to display
   Img **dispImgArr = (Img **)malloc(sizeof(Img *)*20);
 
-  for (int i = 0; i<20; i++) {
-    dispImgArr[i] = imgArr[i];
-  }
+  // trackbar params
+  int method_slider = 0;
+  int method_max = 3;
+  cv::createTrackbar( "Method", query, &method_slider, method_max);
 
+  // display the query and the matches
+  dispImgArr = update(query, numFile, imgArr, dispImgArr, method_slider);
   display(query, dispImgArr);
 
-  cv::waitKey(0);
+  int key = cv::waitKey(0);
+  while (1) {
+    if (key == 65 || key == 97) {
+      dispImgArr = update(query, numFile, imgArr, dispImgArr, method_slider);
+      display(query, dispImgArr);
+      key = cv::waitKey(0);
+    }
+    else {
+      break;
+    }
+  }
   cv::destroyWindow(query);
   free(dispImgArr);
 
   return (0);
+}
+
+// apply the new cbir operation based on the trackbar values return the new 20
+// best match array
+Img **update(char *query, int numFile, Img **imgArr, Img **dispImgArr, int method ) {
+  printf("Applying new cbir operation with method: %d\n", method);
+  // for (int i = 0; i<numFile; i++) {
+  //   imgArr[i]->printImgInfo();
+  // }
+
+  switch(method) {
+    // case 0: run baseline matching - task1
+    case(0):
+      {
+        // get the block of the query image
+        cv::Mat queryImg, queryBlock;
+        int halfBlockSize, queryMidLeft, queryMidUp;
+        halfBlockSize = 2;
+        queryImg = cv::imread(query);
+        if(queryImg.data == NULL) {
+          printf("Unable to read query image %s\n", query);
+          exit(-1);
+        }
+        // printf("query image size: %d rows x %d columns\n", (int)queryImg.size().height, (int)queryImg.size().width);
+        queryMidLeft = ((int)queryImg.size().width)/2-halfBlockSize;
+        queryMidUp = ((int)queryImg.size().height)/2-halfBlockSize;
+        // printf("query image mid point %d,%d\n", queryMidLeft+2, queryMidUp+2);
+        queryImg(cv::Rect(queryMidLeft,queryMidUp,2*halfBlockSize+1,2*halfBlockSize+1)).copyTo(queryBlock);
+
+        //run baseline matching on the db
+        for (int i = 0; i<numFile; i++) {
+          imgArr[i]->baselineMatching(queryBlock, halfBlockSize);
+        }
+        break;
+      }
+
+    // case 1: calculate whole image hs histogram of the query image - task2
+    case(1):
+      {
+        cv::Mat queryHist = hist_whole_hs(query);
+        // run baseline histogram matching
+        for (int i = 0; i<numFile; i++) {
+          imgArr[i]->baselineHistogram(queryHist);
+        }
+        break;
+      }
+
+    // case 2: calculate multi histogram matching - task3
+    case(2):{
+      cv::Mat queryHist1 = multi_hist_whole_hs(query).first;
+      cv::Mat queryHist2 = multi_hist_whole_hs(query).second;
+      //loop through all images and run multi histogram matching
+      for (int i = 0; i<numFile; i++) {
+        imgArr[i]->multiHistogram(queryHist1, queryHist2);
+      }
+      break;
+
+    }
+    case(3):
+      // calculate whole image histogram based on color and texture
+      {
+        std::vector<cv::Mat> queryTextureHists;
+        queryTextureHists = hist_whole_texture_laws_subset(query);
+        cv::Mat queryHSHist = hist_whole_hs(query);
+
+        // run color texture histogram matching
+        for (int i = 0; i<numFile; i++) {
+          imgArr[i]->colorTextureHistogram(queryHSHist, queryTextureHists);
+        }
+
+        break;
+
+      }
+
+    default:
+      printf("Invalid method\n");
+      exit(-1);
+  }
+
+  // sort the resulting images based on similarity score
+  qsort((void *)imgArr, numFile, sizeof(Img *), imgComparator);
+  // for (int i = 0; i<std::min(numFile, numResult); i++) {
+  //   imgArr[i]->printImgInfo();
+  // }
+
+  for (int i = 0; i<20; i++) {
+    dispImgArr[i] = imgArr[i];
+  }
+
+  return dispImgArr;
 }
 
 // display the query image and the 20 best match images
@@ -147,7 +232,7 @@ void display(char *query, Img **dispImgArr) {
     y = matchImg.rows;
     // Find whether height or width is greater in order to resize the image
     max = (x > y)? x: y;
-    printf("max is %d\n", max);
+    // printf("max is %d\n", max);
     // Find the scaling factor to resize the image
     scale = (float) ( (float) max / 200 );
     // Used to Align the images

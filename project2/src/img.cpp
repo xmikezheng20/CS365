@@ -138,7 +138,7 @@ void Img::colorTextureHistogram(cv::Mat queryColorHist, std::vector<cv::Mat> que
   // std::cout << "hist0 is " << queryHists[0] <<std::endl;
   // std::cout << "hist1 is " << queryHists[1] <<std::endl;
   this->similarity = (cv::compareHist(queryHists[0], targetHists[0], cv::HISTCMP_INTERSECT)
-                    + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT))*100
+                    + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT))*10
                     + cv::compareHist(queryColorHist, targetColorHist, cv::HISTCMP_INTERSECT);
 }
 
