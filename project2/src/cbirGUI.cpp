@@ -7,7 +7,7 @@
   Content-based image retrieval
   GUI
 
-  to compile: make cbirGUI
+  to compile: make cbirgui
   to run: ../bin/cbirgui ../data/MacbethChart.jpg ../../../olympus
 
   display multiple image based on:
@@ -79,6 +79,7 @@ int main(int argc, char *argv[]) {
 
   int key = cv::waitKey(0);
   while (1) {
+     //if key is a or "A"
     if (key == 65 || key == 97) {
       dispImgArr = update(query, numFile, imgArr, dispImgArr, method_slider);
       display(query, dispImgArr);
