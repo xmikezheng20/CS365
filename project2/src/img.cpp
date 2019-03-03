@@ -19,47 +19,47 @@
 
 // constructor
 Img::Img(char *newPath) {
-  this->path = newPath;
-  this->status = 0; // 0 -> image unchecked; 1 -> image checked
-  this->similarity = 0; //the larger similarity is, the closer the images are
-  // printf("The path is %s\n",this->path);
+    this->path = newPath;
+    this->status = 0; // 0 -> image unchecked; 1 -> image checked
+    this->similarity = 0; //the larger similarity is, the closer the images are
+    // printf("The path is %s\n",this->path);
 }
 
 /* getters and setters*/
 /* get image path (address) */
 char *Img::getPath() {
-  return this->path;
+    return this->path;
 }
 
 /* set image path */
 void Img::setPath(char *newPath) {
-  this->path = newPath;
+    this->path = newPath;
 }
 
 /* get status: 0 -> image unchecked; 1 -> image checked*/
 int Img::getStatus() {
-  return this->status;
+    return this->status;
 }
 
 /*get image status, to see if it is checked*/
 void Img::setStatus(int newStatus) {
-  this->status = newStatus;
+    this->status = newStatus;
 }
 
 
 /* return similarity, the larger similarity is, the closer the images are*/
 
 double Img::getSimilarity() {
-  return this->similarity;
+    return this->similarity;
 }
 /* set similarity*/
 void Img::setSimilarity(double newSimilarity) {
-  this->similarity = newSimilarity;
+    this->similarity = newSimilarity;
 }
 
 // print image info
 void Img::printImgInfo() {
-  printf("Image: %s\nStatus: %d\nSimilarity: %.4f\n\n", this->path, this->status, this->similarity);
+    printf("Image: %s\nStatus: %d\nSimilarity: %.4f\n\n", this->path, this->status, this->similarity);
 }
 
 
@@ -84,14 +84,14 @@ void Img::baselineMatching(cv::Mat queryBlock, int halfBlockSize) {
     cv::Vec3b *queryPixel;
     cv::Vec3b *dataPixel;
     for (int i=0; i<halfBlockSize*2+1; i++) {
-    for (int j=0; j<halfBlockSize*2+1; j++) {
-      // printf("comparing query (%d,%d) vs. data (%d,%d)\n", queryMidLeft+i,queryMidUp+j,dataMidLeft+i,dataMidUp+j);
-      queryPixel = &(queryBlock.at<cv::Vec3b>(j, i));
-      dataPixel = &(dataImg.at<cv::Vec3b>(dataMidUp+j, dataMidLeft+i));
-      ssd += (queryPixel->val[0]-dataPixel->val[0])*(queryPixel->val[0]-dataPixel->val[0])
-            +(queryPixel->val[1]-dataPixel->val[1])*(queryPixel->val[1]-dataPixel->val[1])
-            +(queryPixel->val[2]-dataPixel->val[2])*(queryPixel->val[2]-dataPixel->val[2]);
-    }
+        for (int j=0; j<halfBlockSize*2+1; j++) {
+          // printf("comparing query (%d,%d) vs. data (%d,%d)\n", queryMidLeft+i,queryMidUp+j,dataMidLeft+i,dataMidUp+j);
+          queryPixel = &(queryBlock.at<cv::Vec3b>(j, i));
+          dataPixel = &(dataImg.at<cv::Vec3b>(dataMidUp+j, dataMidLeft+i));
+          ssd += (queryPixel->val[0]-dataPixel->val[0])*(queryPixel->val[0]-dataPixel->val[0])
+                +(queryPixel->val[1]-dataPixel->val[1])*(queryPixel->val[1]-dataPixel->val[1])
+                +(queryPixel->val[2]-dataPixel->val[2])*(queryPixel->val[2]-dataPixel->val[2]);
+        }
     }
     // printf("ssd is %d\n",ssd);
     this->similarity = (double)(-ssd);
@@ -115,8 +115,8 @@ void Img::multiHistogram(cv::Mat queryHist1, cv::Mat queryHist2){
     cv::Mat targetHist1 = multi_hist_whole_hs(this->path).first;
     cv::Mat targetHist2 = multi_hist_whole_hs(this->path).second;
     //use chi-square comparison
-    int similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_INTERSECT);
-    int similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_INTERSECT); //CV_COMP_CHISQR
+    double similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_INTERSECT);
+    double similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_INTERSECT); //CV_COMP_CHISQR
     // double similarity1 = cv::compareHist(queryHist1, targetHist1, cv::HISTCMP_CORREL);
     // double similarity2 = cv::compareHist(queryHist2, targetHist2, cv::HISTCMP_CORREL);
     this->similarity = similarity1*5 + similarity2; //so far, arbituary weight
@@ -146,7 +146,6 @@ void Img::earthMoverDistance(cv::Mat queryHist) {
     targetHist = hist_whole_hs(this->path);
 
      //compare histogram
-     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
      int hbins = 30, sbins = 32; //hard coding for now. from hist_whole_hs function
      int numrows = hbins * sbins;
 
@@ -155,27 +154,25 @@ void Img::earthMoverDistance(cv::Mat queryHist) {
      cv::Mat sig2(numrows, 3, CV_32FC1);
 
      //fill value into signature
-     for(int h=0; h< hbins; h++)
-     {
-      for(int s=0; s< sbins; ++s)
-      {
-       float binval = queryHist.at< float>(h,s);
-       sig1.at< float>( h*sbins + s, 0) = binval;
-       sig1.at< float>( h*sbins + s, 1) = h;
-       sig1.at< float>( h*sbins + s, 2) = s;
+     for(int h=0; h< hbins; h++){
+        for(int s=0; s< sbins; ++s){
+        float binval = queryHist.at< float>(h,s);
+        sig1.at< float>( h*sbins + s, 0) = binval;
+        sig1.at< float>( h*sbins + s, 1) = h;
+        sig1.at< float>( h*sbins + s, 2) = s;
 
-       binval = targetHist.at< float>(h,s);
-       sig2.at< float>( h*sbins + s, 0) = binval;
-       sig2.at< float>( h*sbins + s, 1) = h;
-       sig2.at< float>( h*sbins + s, 2) = s;
-      }
+        binval = targetHist.at< float>(h,s);
+        sig2.at< float>( h*sbins + s, 0) = binval;
+        sig2.at< float>( h*sbins + s, 1) = h;
+        sig2.at< float>( h*sbins + s, 2) = s;
+        }
      }
 
      //compare similarity of 2images using emd.
-     float emd = cv::EMD(sig1, sig2, cv::DIST_L2); //emd 0 is best matching.
-     printf("similarity %5.5f %%\n", (1-emd)*100 );
+     double emd = cv::EMD(sig1, sig2, cv::DIST_L2); //emd 0 is best matching.
+     // printf("similarity %5.5f %%\n", (1-emd)*100 );
 
-     this->similarity = emd;
+     this->similarity = -emd;
 
 }
 

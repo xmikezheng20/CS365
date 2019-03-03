@@ -17,48 +17,48 @@
 
 /*create whole hue-saturation histogram for a given path*/
 cv::Mat hist_whole_hs(char *path) {
-  // printf("Calculating hs histogram of %s\n", path);
-  cv::Mat src, hsv;
+    // printf("Calculating hs histogram of %s\n", path);
+    cv::Mat src, hsv;
 
-  // read the image
-  src = cv::imread(path);
-  if(src.data == NULL) {
+    // read the image
+    src = cv::imread(path);
+    if(src.data == NULL) {
     printf("Unable to read query image %s\n", path);
     exit(-1);
-  }
+    }
 
-  // cv::imshow(path, src);
-  // cv::waitKey(0);
+    // cv::imshow(path, src);
+    // cv::waitKey(0);
 
-  // convert to hsv
-  cv::cvtColor(src, hsv, cv::COLOR_BGR2HSV);
+    // convert to hsv
+    cv::cvtColor(src, hsv, cv::COLOR_BGR2HSV);
 
-  // quantize the hue to 30 levels
-  // saturation to 32 levels
-  int hbins = 30, sbins = 32;
-  int histSize[] = {hbins, sbins};
-  // hue varies from 0 to 179
-  float hranges[] = {0, 180};
-  // saturation ranges from 0 to 255
-  float sranges[] = {0, 256};
-  const float* ranges[] = {hranges, sranges};
+    // quantize the hue to 30 levels
+    // saturation to 32 levels
+    int hbins = 30, sbins = 32;
+    int histSize[] = {hbins, sbins};
+    // hue varies from 0 to 179
+    float hranges[] = {0, 180};
+    // saturation ranges from 0 to 255
+    float sranges[] = {0, 256};
+    const float* ranges[] = {hranges, sranges};
 
-  cv::Mat hist;
-  // channels 0 and 1
-  int channels[] = {0,1};
-  // cv::calcHist( &hsv, 0, channels, cv::Mat(), hist, 1, histSize, ranges, true, false);
-  cv::calcHist( &hsv, 1, channels, cv::Mat(), hist, 2, histSize, ranges, true, false);
-  // printf("width*height = %d\n", (int)(src.size().width)*(int)(src.size().height));
-  // printf("sum of hist = %d\n", (int)(cv::sum(hist)[0]));
+    cv::Mat hist;
+    // channels 0 and 1
+    int channels[] = {0,1};
+    // cv::calcHist( &hsv, 0, channels, cv::Mat(), hist, 1, histSize, ranges, true, false);
+    cv::calcHist( &hsv, 1, channels, cv::Mat(), hist, 2, histSize, ranges, true, false);
+    // printf("width*height = %d\n", (int)(src.size().width)*(int)(src.size().height));
+    // printf("sum of hist = %d\n", (int)(cv::sum(hist)[0]));
 
-  // normalize the histogram
-  // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
-  hist /= (int)(src.size().width)*(int)(src.size().height);
+    // normalize the histogram
+    // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+    hist /= (int)(src.size().width)*(int)(src.size().height);
 
-  //draw histogram, could be commented out:
-  //draw_hist(src, hist, hbins, sbins);
+    //draw histogram, could be commented out:
+    //draw_hist(src, hist, hbins, sbins);
 
-  return hist;
+    return hist;
 }
 
 /*create whole hue-saturation histogram for an img*/
@@ -210,18 +210,18 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
     cv::filter2D(src_gray, filtered, -1, e5l5, cv::Point(-1, -1), 0,
                cv::BORDER_DEFAULT);
 
-  // // normalize by l5l5 response
-  // cv::divide(filtered, l5l5Response, filtered);
-  //
-  // average absolute values in 7*7 block to get energy
-  // filtered_abs = cv::abs(filtered);
-  // cv::blur(filtered_abs, energy, cv::Size(7, 7));
-  energy = filtered;
-  //
-  // calculate histogram
-  cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
-  // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
-  hist /= (int)(src.size().width)*(int)(src.size().height);
+    // // normalize by l5l5 response
+    // cv::divide(filtered, l5l5Response, filtered);
+    //
+    // average absolute values in 7*7 block to get energy
+    // filtered_abs = cv::abs(filtered);
+    // cv::blur(filtered_abs, energy, cv::Size(7, 7));
+    energy = filtered;
+    //
+    // calculate histogram
+    cv::calcHist( &energy, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
+    // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+    hist /= (int)(src.size().width)*(int)(src.size().height);
 
     hists.push_back(hist.clone());
 
@@ -264,36 +264,3 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
 
     return hists;
 }
-
-
-// /*using earth mover's distance, return the value of similarity*/
-// float earth_mover_histogram(char *path){
-//     //compare histogram
-//      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//      int numrows = hbins * sbins;
-//
-//      //make signature
-//      Mat sig1(numrows, 3, CV_32FC1);
-//      Mat sig2(numrows, 3, CV_32FC1);
-//
-//      //fill value into signature
-//      for(int h=0; h< hbins; h++)
-//      {
-//       for(int s=0; s< sbins; ++s)
-//       {
-//        float binval = HistA.at< float>(h,s);
-//        sig1.at< float>( h*sbins + s, 0) = binval;
-//        sig1.at< float>( h*sbins + s, 1) = h;
-//        sig1.at< float>( h*sbins + s, 2) = s;
-//
-//        binval = HistB.at< float>(h,s);
-//        sig2.at< float>( h*sbins + s, 0) = binval;
-//        sig2.at< float>( h*sbins + s, 1) = h;
-//        sig2.at< float>( h*sbins + s, 2) = s;
-//       }
-//      }
-//
-//      //compare similarity of 2images using emd.
-//      float emd = cv::EMD(sig1, sig2, CV_DIST_L2); //emd 0 is best matching.
-//      printf("similarity %5.5f %%\n", (1-emd)*100 );
-// }

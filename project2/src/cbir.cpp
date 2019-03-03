@@ -9,6 +9,7 @@
   to compile: make cbir
   to run: ../bin/cbir ../data/MacbethChart.jpg ../../../olympus 5 0
   to run: ../bin/cbir ../data/_DSC1159.jpg ../../../olympus 5 1
+  to run: ../bin/cbir ../data/_DSC1159.jpg ../../../test 5 3
 
   task3: _DSC0435.jpg
 
@@ -205,51 +206,51 @@ void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile) {
     }
     // loop over the contents of the directory
     while( (dp = readdir(dirp)) != NULL ) {
-    if (dp->d_name[0] != '.') {
-      // printf("The array is %d/%d\n", *numFile, *max);
-      char *path = (char *)malloc(256);
-      strcpy(path, "");
-      strcat(path, dir);
-      //directory naming
-      if (path[strlen(path)-1] != 47) {
-        strcat(path, "/");
-      }
-      strcat(path, dp->d_name);
-      // printf("path is now\n%s\n", path);
-      if (dp->d_type == DT_DIR) {
-        // printf("%s is a directory\n", path);
-        readDB_rec(path, fileArr, max, numFile);
-      }
-      else if (dp->d_type == DT_REG) {
-        // printf("%s is a file\n", path);
-        // look for images
-        if( strstr(dp->d_name, ".jpg") ||
-            strstr(dp->d_name, ".JPG") ||
-    			    strstr(dp->d_name, ".png") ||
-    			    strstr(dp->d_name, ".ppm") ||
-    			    strstr(dp->d_name, ".tif") ) {
-          // double the file array if necessary
-          if (*numFile == *max) {
-            // printf("Doubling the array\n");
-            *max *= 2;
-            // printf("New max is %d\n", *max);
-            *fileArr = (char **)realloc(*fileArr, sizeof(char *)*(*max));
+        if (dp->d_name[0] != '.') {
+          // printf("The array is %d/%d\n", *numFile, *max);
+          char *path = (char *)malloc(256);
+          strcpy(path, "");
+          strcat(path, dir);
+          //directory naming
+          if (path[strlen(path)-1] != 47) {
+            strcat(path, "/");
           }
-    		    (*fileArr)[*numFile] = path;
-          (*numFile)++;
+          strcat(path, dp->d_name);
+          // printf("path is now\n%s\n", path);
+          if (dp->d_type == DT_DIR) {
+            // printf("%s is a directory\n", path);
+            readDB_rec(path, fileArr, max, numFile);
+          }
+          else if (dp->d_type == DT_REG) {
+            // printf("%s is a file\n", path);
+            // look for images
+            if( strstr(dp->d_name, ".jpg") ||
+                strstr(dp->d_name, ".JPG") ||
+        			    strstr(dp->d_name, ".png") ||
+        			    strstr(dp->d_name, ".ppm") ||
+        			    strstr(dp->d_name, ".tif") ) {
+              // double the file array if necessary
+              if (*numFile == *max) {
+                // printf("Doubling the array\n");
+                *max *= 2;
+                // printf("New max is %d\n", *max);
+                *fileArr = (char **)realloc(*fileArr, sizeof(char *)*(*max));
+              }
+        		    (*fileArr)[*numFile] = path;
+              (*numFile)++;
+            }
+          }
         }
-      }
-    }
     }
     // close the directory
     closedir(dirp);
 }
 
 int imgComparator(const void* p1, const void* p2) {
-  double img1Similarity = (*(Img **)p1)->getSimilarity();
-  double img2Similarity = (*(Img **)p2)->getSimilarity();
-  // printf("comparing %.2f and %.2f\n", img1Similarity, img2Similarity);
-  if (img2Similarity-img1Similarity>0) {return 1;}
-  else if (img1Similarity-img2Similarity>0) {return -1;}
-  else {return 0;}
+    double img1Similarity = (*(Img **)p1)->getSimilarity();
+    double img2Similarity = (*(Img **)p2)->getSimilarity();
+    // printf("comparing %.2f and %.2f\n", img1Similarity, img2Similarity);
+    if (img2Similarity-img1Similarity>0) {return 1;}
+    else if (img1Similarity-img2Similarity>0) {return -1;}
+    else {return 0;}
 }
