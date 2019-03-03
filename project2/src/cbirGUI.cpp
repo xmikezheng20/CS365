@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
     free(fileArr);
 
     // create a window
+    // cv::namedWindow(query, cv::WINDOW_NORMAL);
     cv::namedWindow(query, cv::WINDOW_AUTOSIZE);
 
     // an array of 20 best images to display

@@ -91,7 +91,6 @@ cv::Mat hist_whole_hs_img(cv::Mat src) {
 }
 
 
-
 /*create multi whole hue-saturation histogram and return two*/
 std::pair<cv::Mat,cv::Mat> multi_hist_whole_hs(char *path){
     cv::Mat src, hsv;
@@ -161,10 +160,10 @@ void draw_hist_whole_hs(cv::Mat src, cv::Mat hist, int hbins, int sbins){
     cv::waitKey(0);
 }
 
-// color and texture histogram of the whole image
-// color: HS-histogram
-// texture: apply multiple texture filters, aggregate 7*7 box to get energy,
-// calculates energy histograms
+/* color and texture histogram of the whole image
+* color: HS-histogram
+* texture: apply multiple texture filters, aggregate 7*7 box to get energy,
+* calculates energy histograms */
 std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
     // printf("Calculating color texture histogram of %s\n", path);
     std::vector<cv::Mat> hists;
@@ -263,4 +262,44 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
 
 
     return hists;
+}
+
+
+/*create whole rgb + saturation histogram for a given path
+* returns a list of 1-d histogram*/
+cv::Mat hist_whole_rgbs(char *path) {
+    // printf("Calculating hs histogram of %s\n", path);
+    cv::Mat src, rgb;
+
+    // read the image
+    src = cv::imread(path);
+    if(src.data == NULL) {
+    printf("Unable to read query image %s\n", path);
+    exit(-1);
+    }
+
+    const int sizes[] = {256,256,256};
+    const int channels[] = {0,1,2};
+    // saturation ranges from 0 to 255
+    const float rgbsRange[] = {0,256};
+    const float* histRange = { rgbsRange };
+
+    cv::Mat histR, histG, histB, histS;
+
+    cv::calcHist( &magI, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
+    hist /= (int)(src.size().width)*(int)(src.size().height);
+
+    // cv::calcHist( &hsv, 0, channels, cv::Mat(), hist, 1, histSize, ranges, true, false);
+    cv::calcHist( &hsv, 1, channels, cv::Mat(), hist, 2, histSize, ranges, true, false);
+    // printf("width*height = %d\n", (int)(src.size().width)*(int)(src.size().height));
+    // printf("sum of hist = %d\n", (int)(cv::sum(hist)[0]));
+
+    // normalize the histogram
+    // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
+    hist /= (int)(src.size().width)*(int)(src.size().height);
+
+    //draw histogram, could be commented out:
+    //draw_hist(src, hist, hbins, sbins);
+
+    return hist;
 }

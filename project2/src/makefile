@@ -51,6 +51,6 @@ cbir: $(OBJ_CBIR)
 
 cbirgui: $(OBJ_CBIRGUI)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
-	
+
 clean:
 	rm -f *.o *~
