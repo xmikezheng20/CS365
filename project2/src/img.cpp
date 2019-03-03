@@ -105,7 +105,7 @@ void Img::baselineHistogram(cv::Mat queryHist) {
     targetHist = hist_whole_hs(this->path);
     // use intersection distance
 
-    this->similarity = cv::compareHist(queryHist, targetHist, CV_COMP_INTERSECT);
+    this->similarity = cv::compareHist(queryHist, targetHist, cv::HISTCMP_INTERSECT);
     // this->similarity = cv::compareHist(queryHist, targetHist,  cv::HISTCMP_CORREL);
 }
 
@@ -172,7 +172,7 @@ void Img::earthMoverDistance(cv::Mat queryHist) {
      }
 
      //compare similarity of 2images using emd.
-     float emd = cv::EMD(sig1, sig2, CV_DIST_L2); //emd 0 is best matching.
+     float emd = cv::EMD(sig1, sig2, cv::DIST_L2); //emd 0 is best matching.
      printf("similarity %5.5f %%\n", (1-emd)*100 );
 
      this->similarity = emd;

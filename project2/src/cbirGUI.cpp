@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 
   // trackbar params
   int method_slider = 0;
-  int method_max = 3;
+  int method_max = 4;
   cv::createTrackbar( "Method", query, &method_slider, method_max);
 
   // display the query and the matches
@@ -164,6 +164,16 @@ Img **update(char *query, int numFile, Img **imgArr, Img **dispImgArr, int metho
 
         break;
 
+      }
+      //earth Mover's Distance
+     case(4):
+     {
+          cv::Mat queryHist = hist_whole_hs(query);
+          // run baseline histogram matching
+          for (int i = 0; i<numFile; i++) {
+            imgArr[i]->earthMoverDistance(queryHist);
+          }
+          break;
       }
 
     default:
