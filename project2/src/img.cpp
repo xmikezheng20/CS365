@@ -190,7 +190,7 @@ void Img::rgbsHistogram(std::vector<cv::Mat> queryHists){
     this->similarity = cv::compareHist(queryHists[0], targetHists[0], cv::HISTCMP_INTERSECT)
                     + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT)*2
                     + cv::compareHist(queryHists[2], targetHists[2], cv::HISTCMP_INTERSECT)
-                    + cv::compareHist(queryHists[3], targetHists[3], cv::HISTCMP_INTERSECT)*0;
+                    + cv::compareHist(queryHists[3], targetHists[3], cv::HISTCMP_INTERSECT)*0.5;
 
 }
 
