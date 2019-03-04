@@ -36,3 +36,5 @@ cv::Mat hist_whole_texture_sobel(char *path);
 // apply fourier transform to the source image
 // calculate histogram of the fourier transformed image
 cv::Mat hist_whole_fourier(char *path);
+
+std::vector<cv::Mat> hist_whole_rgbs(char *path);

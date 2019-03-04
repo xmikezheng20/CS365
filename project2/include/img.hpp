@@ -54,6 +54,9 @@ public:
 
   void earthMoverDistance(cv::Mat queryHist);
 
+  /* comparing red & green & blue & saturation histrograms, giving green more visual weight */
+  void rgbsHistogram(std::vector<cv::Mat> queryHists);
+
   // color + fourier texture histograms
   void colorFourierHistogram(cv::Mat queryColorHist, cv::Mat queryFourierHist);
 
