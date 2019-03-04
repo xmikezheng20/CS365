@@ -266,8 +266,8 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
 
 
 /*create whole rgb + saturation histogram for a given path
-* returns a list of 1-d histogram*/
-cv::Mat hist_whole_rgbs(char *path) {
+* returns a list of a pair of 1-d histogram*/
+std::pair<cv::Mat,cv::Mat> hist_whole_rgbs(char *path) {
     // printf("Calculating hs histogram of %s\n", path);
     cv::Mat src, rgb[3];
 
@@ -287,25 +287,26 @@ cv::Mat hist_whole_rgbs(char *path) {
     float rgbsRange[] = {0,256};    // saturation ranges from 0 to 255
     const float* histRange = { rgbsRange };
 
-    cv::Mat histR, histG, histB, histS;
+    cv::Mat histR, histG, histB, histS; // histrogram for red, green, blue and saturation
+
+    cv::calcHist( &rgb[0], 1, 0, cv::Mat(), histB, 1, &sizes, &histRange, true, false); //blue
+    cv::calcHist( &rgb[1], 1, 0, cv::Mat(), histG, 1, &sizes, &histRange, true, false); //green
+    cv::calcHist( &rgb[2], 1, 0, cv::Mat(), histR, 1, &sizes, &histRange, true, false); //red
+
+    histB /= (int)(src.size().width)*(int)(src.size().height);
+    histG /= (int)(src.size().width)*(int)(src.size().height);
+    histR /= (int)(src.size().width)*(int)(src.size().height);
+
+    cv::Mat hsitR2GB = hsitB + 2*hsitG + histR;
 
 
-    cv::calcHist( &rgb[0], 1, 0, cv::Mat(), histB, 1, &sizes, &histRange, true, false);
-
-    cv::calcHist( &rgb[1], 1, 0, cv::Mat(), histG, 1, &histSize, &histRange, true, false);
-    hist /= (int)(src.size().width)*(int)(src.size().height);
-
-    // cv::calcHist( &hsv, 0, channels, cv::Mat(), hist, 1, histSize, ranges, true, false);
+    // calculate saturation histogram
     cv::calcHist( &hsv, 1, channels, cv::Mat(), hist, 2, histSize, ranges, true, false);
-    // printf("width*height = %d\n", (int)(src.size().width)*(int)(src.size().height));
     // printf("sum of hist = %d\n", (int)(cv::sum(hist)[0]));
 
     // normalize the histogram
-    // cv::normalize( hist, hist, 0, 1, cv::NORM_MINMAX, -1, cv::Mat() );
     hist /= (int)(src.size().width)*(int)(src.size().height);
 
-    //draw histogram, could be commented out:
-    //draw_hist(src, hist, hbins, sbins);
 
     return hist;
 }
