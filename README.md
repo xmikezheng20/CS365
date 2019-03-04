@@ -5,6 +5,34 @@ Mike Zheng and Heidi He
 
 Project 2: Content-Based Image Retrieval
 
+<h1> Instructions> </h1>
+<h2>Compilation and Running </h2>
+Makefile - GUI : make cbirgui
+
+Run: ../bin/cbirgui ../data/<queryImageName> <database>
+
+Makefile - CommandLine: make cbir
+
+Run: ../bin/cbir ../data/<queryImageName> <database> <# of image to report> <method index>
+<h2>GUI: </h2>
+the trackbar on top of the images enables a user to select matching methods, according to the following rules:
+
+0- baseline matching
+
+1- baseline hue-saturation histogram matching
+
+2- multiple histograms matching
+
+3- Sobel filtering + color matching
+
+4- color matching utilizing earth mover distance metric (expensive, takes 20 mins & to be improved)
+
+5- Laws filter subset + color matching
+
+6- Fourier transform + color matching (logically unsound)
+
+7- rgb + saturation in weighted average
+
 <h1>project structure</h1>
 <h2>cbirgui (main):</h2>
 recursively read files from a directory.

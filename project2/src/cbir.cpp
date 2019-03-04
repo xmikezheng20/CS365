@@ -134,8 +134,7 @@ int main(int argc, char *argv[]) {
             break;
         }
       //earth Mover's Distance
-     case(4):
-     {
+     case(4): {
           cv::Mat queryHist = hist_whole_hs(query);
           // run baseline histogram matching
           for (int i = 0; i<numFile; i++) {
