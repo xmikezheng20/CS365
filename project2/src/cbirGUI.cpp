@@ -69,10 +69,10 @@ int main(int argc, char *argv[]) {
     // an array of 20 best images to display
     Img **dispImgArr = (Img **)malloc(sizeof(Img *)*20);
 
-    // trackbar params
-    int method_slider = 0;
-    int method_max = 4;
-    cv::createTrackbar( "Method", query, &method_slider, method_max);
+  // trackbar params
+  int method_slider = 0;
+  int method_max = 7;
+  cv::createTrackbar( "Method", query, &method_slider, method_max);
 
     // display the query and the matches
     dispImgArr = update(query, numFile, imgArr, dispImgArr, method_slider);
@@ -150,23 +150,21 @@ Img **update(char *query, int numFile, Img **imgArr, Img **dispImgArr, int metho
         imgArr[i]->multiHistogram(queryHist1, queryHist2);
       }
       break;
-
     }
+    // case 3 : sobel filters and color
     case(3):
-      // calculate whole image histogram based on color and texture
-      {
-        std::vector<cv::Mat> queryTextureHists;
-        queryTextureHists = hist_whole_texture_laws_subset(query);
-        cv::Mat queryHSHist = hist_whole_hs(query);
+        {
+            cv::Mat queryTextureHist;
+            queryTextureHist = hist_whole_texture_sobel(query);
+            cv::Mat queryHSHist = hist_whole_hs(query);
 
-        // run color texture histogram matching
-        for (int i = 0; i<numFile; i++) {
-          imgArr[i]->colorTextureHistogram(queryHSHist, queryTextureHists);
+            // run color texture histogram matching
+            for (int i = 0; i<numFile; i++) {
+              imgArr[i]->colorSobelHistogram(queryHSHist, queryTextureHist);
+            }
+
+            break;
         }
-
-        break;
-
-      }
       //earth Mover's Distance
      case(4):
      {
@@ -177,6 +175,36 @@ Img **update(char *query, int numFile, Img **imgArr, Img **dispImgArr, int metho
           }
           break;
       }
+
+     case(5):
+        // calculate whole image histogram based on color and texture (laws filters)
+        {
+          std::vector<cv::Mat> queryTextureHists;
+          queryTextureHists = hist_whole_texture_laws_subset(query);
+          cv::Mat queryHSHist = hist_whole_hs(query);
+
+          // run color texture histogram matching
+          for (int i = 0; i<numFile; i++) {
+            imgArr[i]->colorTextureHistogram(queryHSHist, queryTextureHists);
+          }
+
+          break;
+
+        }
+    // case 6: calculate fourier texture and color
+    case(6):
+    {
+        cv::Mat queryTextureHist;
+        queryTextureHist = hist_whole_fourier(query);
+        cv::Mat queryHSHist = hist_whole_hs(query);
+
+        // run color texture histogram matching
+        for (int i = 0; i<numFile; i++) {
+          imgArr[i]->colorFourierHistogram(queryHSHist, queryTextureHist);
+        }
+
+        break;
+    }
 
     default:
       printf("Invalid method\n");

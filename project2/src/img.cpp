@@ -125,7 +125,7 @@ void Img::multiHistogram(cv::Mat queryHist1, cv::Mat queryHist2){
 
 
 void Img::colorTextureHistogram(cv::Mat queryColorHist, std::vector<cv::Mat> queryHists) {
-    printf("Color Texture Histogram Matching with %s\n", this->path);
+    printf("Color Laws Subset Texture Histogram Matching with %s\n", this->path);
     std::vector<cv::Mat> targetHists;
     cv::Mat targetColorHist;
     targetColorHist = hist_whole_hs(this->path);
@@ -134,7 +134,10 @@ void Img::colorTextureHistogram(cv::Mat queryColorHist, std::vector<cv::Mat> que
     // std::cout << "hist0 is " << queryHists[0] <<std::endl;
     // std::cout << "hist1 is " << queryHists[1] <<std::endl;
     this->similarity = (cv::compareHist(queryHists[0], targetHists[0], cv::HISTCMP_INTERSECT)
-                    + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT))*10
+                    + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT)
+                    + cv::compareHist(queryHists[2], targetHists[2], cv::HISTCMP_INTERSECT)
+                    + cv::compareHist(queryHists[3], targetHists[3], cv::HISTCMP_INTERSECT)
+                    + cv::compareHist(queryHists[4], targetHists[4], cv::HISTCMP_INTERSECT))/5
                     + cv::compareHist(queryColorHist, targetColorHist, cv::HISTCMP_INTERSECT);
 }
 
@@ -188,6 +191,28 @@ void Img::rgbsHistogram(std::vector<cv::Mat> queryHists){
                     + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT)*2
                     + cv::compareHist(queryHists[2], targetHists[2], cv::HISTCMP_INTERSECT)
                     + cv::compareHist(queryHists[3], targetHists[3], cv::HISTCMP_INTERSECT)*0;
+
+}
+
+// color + sobel texture filters histograms
+void Img::colorSobelHistogram(cv::Mat queryColorHist, cv::Mat querySobelHist) {
+    printf("Color Sobel Texture Histogram Matching with %s\n", this->path);
+    cv::Mat targetColorHist, targetSobelHist;
+    targetColorHist = hist_whole_hs(this->path);
+    targetSobelHist = hist_whole_texture_sobel(this->path);
+    this->similarity = cv::compareHist(queryColorHist, targetColorHist, cv::HISTCMP_INTERSECT)
+                    + cv::compareHist(querySobelHist, targetSobelHist, cv::HISTCMP_INTERSECT);
+
+}
+
+// color + fourier texture histograms
+void Img::colorFourierHistogram(cv::Mat queryColorHist, cv::Mat queryFourierHist) {
+    printf("Color Fourier Texture Histogram Matching with %s\n", this->path);
+    cv::Mat targetColorHist, targetFourierHist;
+    targetColorHist = hist_whole_hs(this->path);
+    targetFourierHist = hist_whole_fourier(this->path);
+    this->similarity = cv::compareHist(queryColorHist, targetColorHist, cv::HISTCMP_INTERSECT)
+                    + cv::compareHist(queryFourierHist, targetFourierHist, cv::HISTCMP_INTERSECT);
 
 }
 

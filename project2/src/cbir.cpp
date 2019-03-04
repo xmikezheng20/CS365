@@ -119,30 +119,63 @@ int main(int argc, char *argv[]) {
       break;
 
     }
-    // calculate whole image histogram based on color and texture
-    case(3): {
-        std::vector<cv::Mat> queryTextureHists;
-        queryTextureHists = hist_whole_texture_laws_subset(query);
-        cv::Mat queryHSHist = hist_whole_hs(query);
+    // case 3 : sobel filters and color
+    case(3):
+        {
+            cv::Mat queryTextureHist;
+            queryTextureHist = hist_whole_texture_sobel(query);
+            cv::Mat queryHSHist = hist_whole_hs(query);
 
-        // run color texture histogram matching
-        for (int i = 0; i<numFile; i++) {
-          imgArr[i]->colorTextureHistogram(queryHSHist, queryTextureHists);
+            // run color texture histogram matching
+            for (int i = 0; i<numFile; i++) {
+              imgArr[i]->colorSobelHistogram(queryHSHist, queryTextureHist);
+            }
+
+            break;
         }
-
-        break;
-
+      //earth Mover's Distance
+     case(4):
+     {
+          cv::Mat queryHist = hist_whole_hs(query);
+          // run baseline histogram matching
+          for (int i = 0; i<numFile; i++) {
+            imgArr[i]->earthMoverDistance(queryHist);
+          }
+          break;
       }
 
-     //earth Mover's Distance
-     case(4):{
-         queryHist = hist_whole_hs(query);
-         // run baseline histogram matching
-         for (int i = 0; i<numFile; i++) {
-           imgArr[i]->earthMoverDistance(queryHist);
-         }
-         break;
-     }
+      case(5):
+        // calculate whole image histogram based on color and texture
+        {
+          std::vector<cv::Mat> queryTextureHists;
+          queryTextureHists = hist_whole_texture_laws_subset(query);
+          cv::Mat queryHSHist = hist_whole_hs(query);
+
+          // run color texture histogram matching
+          for (int i = 0; i<numFile; i++) {
+            imgArr[i]->colorTextureHistogram(queryHSHist, queryTextureHists);
+          }
+
+          break;
+
+        }
+
+        // case 6: calculate fourier texture and color
+        case(6):
+        {
+            cv::Mat queryTextureHist;
+            queryTextureHist = hist_whole_fourier(query);
+            cv::Mat queryHSHist = hist_whole_hs(query);
+
+            // run color texture histogram matching
+            for (int i = 0; i<numFile; i++) {
+              imgArr[i]->colorFourierHistogram(queryHSHist, queryTextureHist);
+            }
+
+            break;
+        }
+
+
      case(7):{
          printf("getting whole rgbs histogram for query image \n");
          std::vector<cv::Mat> queryHists = hist_whole_rgbs(query);

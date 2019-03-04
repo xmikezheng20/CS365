@@ -25,11 +25,14 @@ std::pair<cv::Mat,cv::Mat> multi_hist_whole_hs(char *path);
 /*draw histogram given src, histogram, hue bins, saturation bins*/
 void draw_hist_whole_hs(cv::Mat src, cv::Mat hist, int hbins, int sbins);
 
-/* texture histogram of the whole image
- texture: apply multiple texture filters, aggregate 7*7 box to get energy,
- calculates energy histograms*/
+// texture histogram of the whole image
+// texture: apply multiple texture filters, aggregate 7*7 box to get energy,
 std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path);
 
-/*create whole rgb + saturation histogram for a given path
-* returns a list of 1-d histogram*/
-std::vector<cv::Mat> hist_whole_rgbs(char *path);
+// texture histogram of the whole image
+// texture: apply sobelx and sobely
+cv::Mat hist_whole_texture_sobel(char *path);
+
+// apply fourier transform to the source image
+// calculate histogram of the fourier transformed image
+cv::Mat hist_whole_fourier(char *path);

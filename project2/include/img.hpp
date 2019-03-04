@@ -50,11 +50,12 @@ public:
 
   void colorTextureHistogram(cv::Mat queryColorHist, std::vector<cv::Mat> queryHists);
 
-  /*using earth mover's distance, return the value of similarity*/
+  void colorSobelHistogram(cv::Mat queryColorHist, cv::Mat querySobelHist);
+
   void earthMoverDistance(cv::Mat queryHist);
 
-  /* comparing red & green & blue & saturation histrograms, giving green more visual weight */
-  void rgbsHistogram(std::vector<cv::Mat> queryHist);
+  // color + fourier texture histograms
+  void colorFourierHistogram(cv::Mat queryColorHist, cv::Mat queryFourierHist);
 
   // destructor
   ~Img();
