@@ -50,7 +50,13 @@ public:
 
   void colorTextureHistogram(cv::Mat queryColorHist, std::vector<cv::Mat> queryHists);
 
+  void colorSobelHistogram(cv::Mat queryColorHist, cv::Mat querySobelHist);
+
   void earthMoverDistance(cv::Mat queryHist);
+
+  // color + fourier texture histograms
+  void colorFourierHistogram(cv::Mat queryColorHist, cv::Mat queryFourierHist);
+
   // destructor
   ~Img();
 
