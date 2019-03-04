@@ -269,7 +269,12 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
 * returns a list of 1-d histogram*/
 cv::Mat hist_whole_rgbs(char *path) {
     // printf("Calculating hs histogram of %s\n", path);
-    cv::Mat src, rgb;
+    cv::Mat src, rgb[3];
+
+    //seperate rgb channals
+    split(src, rgb); //blue rgb[0]
+                    //green rgb[1]
+                     //red rgb[2]
 
     // read the image
     src = cv::imread(path);
@@ -278,15 +283,16 @@ cv::Mat hist_whole_rgbs(char *path) {
     exit(-1);
     }
 
-    const int sizes[] = {256,256,256};
-    const int channels[] = {0,1,2};
-    // saturation ranges from 0 to 255
-    const float rgbsRange[] = {0,256};
+    const int sizes = 256;
+    float rgbsRange[] = {0,256};    // saturation ranges from 0 to 255
     const float* histRange = { rgbsRange };
 
     cv::Mat histR, histG, histB, histS;
 
-    cv::calcHist( &magI, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
+
+    cv::calcHist( &rgb[0], 1, 0, cv::Mat(), histB, 1, &sizes, &histRange, true, false);
+
+    cv::calcHist( &rgb[1], 1, 0, cv::Mat(), histG, 1, &histSize, &histRange, true, false);
     hist /= (int)(src.size().width)*(int)(src.size().height);
 
     // cv::calcHist( &hsv, 0, channels, cv::Mat(), hist, 1, histSize, ranges, true, false);
