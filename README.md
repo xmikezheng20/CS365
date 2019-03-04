@@ -13,7 +13,8 @@ Run: ../bin/cbirgui ../data/<queryImageName> <database>
 
 Makefile - CommandLine: make cbir
 
-Run: ../bin/cbir ../data/<queryImageName> <database> <# of image to report> <method index>
+Run: ../bin/cbir ../data/&lt;queryImageName&gt; &lt;database&gt; &lt;# of image to report&gt; &lt;method index&gt;
+
 <h2>GUI: </h2>
 the trackbar on top of the images enables a user to select matching methods, according to the following rules:
 
