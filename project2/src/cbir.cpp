@@ -143,6 +143,14 @@ int main(int argc, char *argv[]) {
          }
          break;
      }
+     case(7):{
+         printf("getting whole rgbs histogram for query image \n");
+         std::vector<cv::Mat> queryHists = hist_whole_rgbs(query);
+         for (int i = 0; i<numFile; i++) {
+             imgArr[i]->rgbsHistogram(queryHists);
+        }
+        break;
+     }
 
     default:
       printf("Invalid method\n");

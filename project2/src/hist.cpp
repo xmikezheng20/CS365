@@ -266,16 +266,16 @@ std::vector<cv::Mat> hist_whole_texture_laws_subset(char *path) {
 
 
 /*create whole rgb + saturation histogram for a given path
-* returns a list of a pair of 1-d histogram*/
-std::pair<cv::Mat,cv::Mat> hist_whole_rgbs(char *path) {
-    // printf("Calculating hs histogram of %s\n", path);
-    cv::Mat src, rgb[3];
+* returns a list of 1-d histogram*/
+std::vector<cv::Mat> hist_whole_rgbs(char *path) {
+    std::vector<cv::Mat> histList;
+    cv::Mat src, rgb[3], hsv;
 
     //seperate rgb channals
     split(src, rgb); //blue rgb[0]
                     //green rgb[1]
                      //red rgb[2]
-
+    printf("splited rgb channels \n");
     // read the image
     src = cv::imread(path);
     if(src.data == NULL) {
@@ -288,25 +288,39 @@ std::pair<cv::Mat,cv::Mat> hist_whole_rgbs(char *path) {
     const float* histRange = { rgbsRange };
 
     cv::Mat histR, histG, histB, histS; // histrogram for red, green, blue and saturation
-
+    printf("calculate hist for each channel\n");
     cv::calcHist( &rgb[0], 1, 0, cv::Mat(), histB, 1, &sizes, &histRange, true, false); //blue
     cv::calcHist( &rgb[1], 1, 0, cv::Mat(), histG, 1, &sizes, &histRange, true, false); //green
     cv::calcHist( &rgb[2], 1, 0, cv::Mat(), histR, 1, &sizes, &histRange, true, false); //red
 
+    printf("normalize hist for each channel\n");
     histB /= (int)(src.size().width)*(int)(src.size().height);
     histG /= (int)(src.size().width)*(int)(src.size().height);
     histR /= (int)(src.size().width)*(int)(src.size().height);
 
-    cv::Mat hsitR2GB = hsitB + 2*hsitG + histR;
-
+    histList.push_back(histB);
+    histList.push_back(histG);
+    histList.push_back(histR);
 
     // calculate saturation histogram
-    cv::calcHist( &hsv, 1, channels, cv::Mat(), hist, 2, histSize, ranges, true, false);
-    // printf("sum of hist = %d\n", (int)(cv::sum(hist)[0]));
+    // convert to hsv
+    printf("convert to hsv\n");
+    cv::cvtColor(src, hsv, cv::COLOR_BGR2HSV);
 
+    // quantize the hue to 30 levels
+    // saturation to 32 levels
+    int sbins = 30;
+    // saturation ranges from 0 to 255
+    float sRange[] = {0,256};    // saturation ranges from 0 to 255
+    const float* ranges = {sRange};
+
+    cv::calcHist( &hsv, 1, 0, cv::Mat(), histS, 1, &sbins, &ranges, true, false);
     // normalize the histogram
-    hist /= (int)(src.size().width)*(int)(src.size().height);
+    histS /= (int)(src.size().width)*(int)(src.size().height);
+
+    histList.push_back(histS);
 
 
-    return hist;
+    return histList;
+
 }

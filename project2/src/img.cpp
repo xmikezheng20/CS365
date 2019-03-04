@@ -176,6 +176,21 @@ void Img::earthMoverDistance(cv::Mat queryHist) {
 
 }
 
+/* comparing red & green & blue & saturation histrograms, giving green more visual weight */
+void Img::rgbsHistogram(std::vector<cv::Mat> queryHists){
+    printf("Color Texture Histogram Matching with %s\n", this->path);
+    std::vector<cv::Mat> targetHists = hist_whole_rgbs(this->path);
+    //more visual weight for green and add some for saturation
+    this->similarity = cv::compareHist(queryHists[0], targetHists[0], cv::HISTCMP_INTERSECT)
+                    + cv::compareHist(queryHists[1], targetHists[1], cv::HISTCMP_INTERSECT)*2
+                    + cv::compareHist(queryHists[2], targetHists[3], cv::HISTCMP_INTERSECT)
+                    + cv::compareHist(queryHists[3], targetHists[3], cv::HISTCMP_INTERSECT)*0.5;
+
+
+
+
+}
+
 // destructor
 Img::~Img(){
     free(this->path);
