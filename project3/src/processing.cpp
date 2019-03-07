@@ -24,11 +24,11 @@ cv::Mat threshold(cv::Mat src) {
     std::vector<cv::Mat> splited;
     cv::split(src, splited);
 
-    cv::threshold(splited[1], saturation, 70, 255, 0);
-    cv::threshold(splited[2], intensity, 85, 255, 0);
+    cv::threshold(splited[1], saturation, 70, 255, 1);
+    cv::threshold(splited[2], intensity, 85, 255, 1);
 
     // combine saturation and intensity
-    cv::bitwise_and(saturation, intensity, dst);
+    cv::bitwise_or(saturation, intensity, dst);
 
     // cv::namedWindow("test", 1);
     // cv::imshow("test", dst);
@@ -38,7 +38,7 @@ cv::Mat threshold(cv::Mat src) {
 }
 
 // apply morphological operations
-// open*3, close*2
+// close*3, open*2
 cv::Mat morphOps(cv::Mat src) {
     printf("Applying morphological operations\n");
     cv::Mat dst;
@@ -53,8 +53,8 @@ cv::Mat morphOps(cv::Mat src) {
         cv::Size( 2*morph_size_S + 1, 2*morph_size_S+1 ),
         cv::Point( morph_size_S, morph_size_S ) );
 
-    cv::morphologyEx(src, dst, cv::MORPH_OPEN, elementL, cv::Point(-1,-1), 3);
-    cv::morphologyEx(dst, dst, cv::MORPH_CLOSE, elementS, cv::Point(-1,-1), 2);
+    cv::morphologyEx(src, dst, cv::MORPH_CLOSE, elementL, cv::Point(-1,-1), 3);
+    cv::morphologyEx(dst, dst, cv::MORPH_OPEN, elementS, cv::Point(-1,-1), 2);
 
     // cv::namedWindow("test", 1);
     // cv::imshow("test", dst);
