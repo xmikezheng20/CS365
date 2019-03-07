@@ -20,3 +20,10 @@ cv::Mat morphOps(cv::Mat src);
 
 // visualize the connected components labeled image
 cv::Mat visConnectedComponents(cv::Mat labeled, int numLabels);
+
+// create a binary image of the specified region
+cv::Mat extractRegion(cv::Mat labeled, int regionId);
+
+// find contour of region, discard small region, extract features
+// return 0 if region is valid, 1 if region is discarded
+int extractFeature(cv::Mat region, int regionId, double **feature);

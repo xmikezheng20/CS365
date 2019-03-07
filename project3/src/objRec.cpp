@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
 		cv::Mat frame;
 		cv::Mat thresholded, morphed, labeled, labeledVis;
 		int numLabels;
+		cv::Mat region;
 
 		for(;;) {
 			*capdev >> frame; // get a new frame from the camera, treat as a stream
@@ -93,6 +94,7 @@ int main(int argc, char *argv[]) {
 			// connected component analysis
 			labeled = cv::Mat(morphed.size(), CV_32S);
 			numLabels = cv::connectedComponents(morphed, labeled, 8);
+			// visualize connected component analysis
 			labeledVis = visConnectedComponents(labeled, numLabels);
 
 
@@ -126,6 +128,7 @@ int main(int argc, char *argv[]) {
 		cv::Mat thresholded, morphed, labeled, labeledVis;
 		int numLabels;
 		int key;
+		cv::Mat region;
 
 		for (int i=0; i<numFile; i++) {
 
@@ -144,7 +147,23 @@ int main(int argc, char *argv[]) {
 			// connected component analysis
 			labeled = cv::Mat(morphed.size(), CV_32S);
 			numLabels = cv::connectedComponents(morphed, labeled, 8);
+			// visualize connected component analysis
 			labeledVis = visConnectedComponents(labeled, numLabels);
+			// separate each region, if region is too small, then discard it
+			// otherwise, calculate features and visualize
+			if (numLabels>1) {
+				for (int i=1; i<numLabels; i++) {
+					region = extractRegion(labeled, i);
+					// find contour of region, discard small region, extract features
+					double *feature;
+					int featureStatus = extractFeature(region, i, &feature);
+					// status 0: valid region; status 1: discard
+					if (featureStatus == 0) {
+						printf("Feature successfully extracted\n");
+					}
+
+				}
+			}
 
 
 

@@ -92,3 +92,37 @@ cv::Mat visConnectedComponents(cv::Mat labeled, int numLabels) {
 
     return dst;
 }
+
+// create a binary image of the specified region
+cv::Mat extractRegion(cv::Mat labeled, int regionId) {
+    printf("Extracting region %d\n", regionId);
+    cv::Mat region;
+    region = cv::Mat(labeled.size(), CV_8UC1);
+    for (int r = 0; r<region.rows; r++) {
+        for (int c= 0; c<region.cols; c++) {
+            int label = labeled.at<int>(r, c);
+            uchar &pixel = region.at<uchar>(r, c);
+            if (label == regionId) {
+                pixel = 255;
+            } else {
+                pixel = 0;
+            }
+        }
+    }
+
+    // cv::namedWindow("test", 1);
+    // cv::imshow("test", region);
+    // cv::waitKey(0);
+    return region;
+}
+
+// find contour of region, discard small region, extract features
+// return 0 if region is valid, 1 if region is discarded
+int extractFeature(cv::Mat region, int regionId, double **feature) {
+    printf("Extracting feature from region %d\n", regionId);
+
+
+    
+
+    return 0;
+}
