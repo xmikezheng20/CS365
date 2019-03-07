@@ -14,3 +14,6 @@
 
 // threshold for high saturation dark regions
 cv::Mat threshold(cv::Mat src);
+
+// apply morphological operations
+cv::Mat morphOps(cv::Mat src);

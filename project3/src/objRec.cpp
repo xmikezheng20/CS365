@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
 		cv::namedWindow("Processed", 1);
 		cv::moveWindow("Processed", 200, 0);
 		cv::Mat frame;
-		cv::Mat thresholded;
+		cv::Mat thresholded, morphed;
 
 		for(;;) {
 			*capdev >> frame; // get a new frame from the camera, treat as a stream
@@ -87,7 +87,9 @@ int main(int argc, char *argv[]) {
 
 			// threshold the image
 			thresholded = threshold(frame);
-			cv::imshow("Processed", thresholded);
+			// apply morphological operations
+			morphed = morphOps(thresholded);
+			cv::imshow("Processed", morphed);
 
 			if(cv::waitKey(10) == 'q') {
 				break;
@@ -114,7 +116,7 @@ int main(int argc, char *argv[]) {
 		cv::namedWindow("Processed", 1);
 		cv::moveWindow("Processed", 700, 0);
 		cv::Mat img;
-		cv::Mat thresholded;
+		cv::Mat thresholded, morphed;
 		int key;
 
 		for (int i=0; i<numFile; i++) {
@@ -129,7 +131,9 @@ int main(int argc, char *argv[]) {
 
 			// threshold the image
 			thresholded = threshold(img);
-			cv::imshow("Processed", thresholded);
+			// apply morphological operations
+			morphed = morphOps(thresholded);
+			cv::imshow("Processed", morphed);
 
 
 			key = cv::waitKey(0);

@@ -16,7 +16,7 @@
 
 // threshold for high saturation dark regions
 cv::Mat threshold(cv::Mat src) {
-    printf("thresholding\n");
+    printf("Thresholding\n");
     cv::Mat hsv, saturation, intensity, dst;
 
     // get saturation
@@ -25,7 +25,7 @@ cv::Mat threshold(cv::Mat src) {
     cv::split(src, splited);
 
     cv::threshold(splited[1], saturation, 70, 255, 0);
-    cv::threshold(splited[2], intensity, 55, 255, 0);
+    cv::threshold(splited[2], intensity, 85, 255, 0);
 
     // combine saturation and intensity
     cv::bitwise_and(saturation, intensity, dst);
@@ -35,4 +35,31 @@ cv::Mat threshold(cv::Mat src) {
     // cv::waitKey(0);
 
     return dst;
+}
+
+// apply morphological operations
+// open*3, close*2
+cv::Mat morphOps(cv::Mat src) {
+    printf("Applying morphological operations\n");
+    cv::Mat dst;
+    int morph_elem = 0; // 0: Rect - 1: Cross - 2: Ellipse
+    int morph_size_L = 3;
+    int morph_size_S = 2;
+    cv::Mat elementL = cv::getStructuringElement( morph_elem,
+        cv::Size( 2*morph_size_L + 1, 2*morph_size_L+1 ),
+        cv::Point( morph_size_L, morph_size_L ) );
+
+    cv::Mat elementS = cv::getStructuringElement( morph_elem,
+        cv::Size( 2*morph_size_S + 1, 2*morph_size_S+1 ),
+        cv::Point( morph_size_S, morph_size_S ) );
+
+    cv::morphologyEx(src, dst, cv::MORPH_OPEN, elementL, cv::Point(-1,-1), 3);
+    cv::morphologyEx(dst, dst, cv::MORPH_CLOSE, elementS, cv::Point(-1,-1), 2);
+
+    // cv::namedWindow("test", 1);
+    // cv::imshow("test", dst);
+    // cv::waitKey(0);
+
+    return dst;
+
 }
