@@ -3,9 +3,9 @@ Colby College CS365 SP19 Projects
 
 Mike Zheng and Heidi He
 
-Project 2: Content-Based Image Retrieval
+<h1> Project 2: Content-Based Image Retrieval </h1>
 
-<h1> Instructions> </h1>
+<h1> Instructions </h1>
 <h2>Compilation and Running </h2>
 Makefile - GUI : make cbirgui
 
@@ -66,3 +66,5 @@ the class that processes all histogram functions. the functions usually take in 
 Makefile: make cbirgui
 
 Run: ../bin/cbirgui ../data/<queryImageName> <database>
+
+<h1> Project 3: 2D Object Recognition </h1>
