@@ -73,7 +73,8 @@ int main(int argc, char *argv[]) {
 		cv::namedWindow("Processed", 1);
 		cv::moveWindow("Processed", 200, 0);
 		cv::Mat frame;
-		cv::Mat thresholded, morphed;
+		cv::Mat thresholded, morphed, labeled, labeledVis;
+		int numLabels;
 
 		for(;;) {
 			*capdev >> frame; // get a new frame from the camera, treat as a stream
@@ -89,7 +90,13 @@ int main(int argc, char *argv[]) {
 			thresholded = threshold(frame);
 			// apply morphological operations
 			morphed = morphOps(thresholded);
-			cv::imshow("Processed", morphed);
+			// connected component analysis
+			labeled = cv::Mat(morphed.size(), CV_32S);
+			numLabels = cv::connectedComponents(morphed, labeled, 8);
+			labeledVis = visConnectedComponents(labeled, numLabels);
+
+
+			cv::imshow("Processed", labeledVis);
 
 			if(cv::waitKey(10) == 'q') {
 				break;
@@ -116,7 +123,8 @@ int main(int argc, char *argv[]) {
 		cv::namedWindow("Processed", 1);
 		cv::moveWindow("Processed", 700, 0);
 		cv::Mat img;
-		cv::Mat thresholded, morphed;
+		cv::Mat thresholded, morphed, labeled, labeledVis;
+		int numLabels;
 		int key;
 
 		for (int i=0; i<numFile; i++) {
@@ -133,7 +141,14 @@ int main(int argc, char *argv[]) {
 			thresholded = threshold(img);
 			// apply morphological operations
 			morphed = morphOps(thresholded);
-			cv::imshow("Processed", morphed);
+			// connected component analysis
+			labeled = cv::Mat(morphed.size(), CV_32S);
+			numLabels = cv::connectedComponents(morphed, labeled, 8);
+			labeledVis = visConnectedComponents(labeled, numLabels);
+
+
+
+			cv::imshow("Processed", labeledVis);
 
 
 			key = cv::waitKey(0);

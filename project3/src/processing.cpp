@@ -63,3 +63,32 @@ cv::Mat morphOps(cv::Mat src) {
     return dst;
 
 }
+
+// visualize the connected components labeled image
+cv::Mat visConnectedComponents(cv::Mat labeled, int numLabels) {
+    printf("Visualizing connected components labels\n");
+    std::vector<cv::Vec3b> colors(numLabels);
+    colors[0] = cv::Vec3b(0, 0, 0);//background
+    colors[1] = cv::Vec3b(0, 0, 255);//label 1:red
+    colors[2] = cv::Vec3b(0, 255, 0);//label 2:green
+    colors[3] = cv::Vec3b(255, 0, 0);//label 3:blue
+    for(int label = 4; label < numLabels; ++label){
+        colors[label] = cv::Vec3b( (rand()&255), (rand()&255), (rand()&255) );
+    }
+    // visualize the labels
+    cv::Mat dst;
+    dst = cv::Mat(labeled.size(), CV_8UC3);
+    for(int r = 0; r < dst.rows; ++r){
+        for(int c = 0; c < dst.cols; ++c){
+            int label = labeled.at<int>(r, c);
+            cv::Vec3b &pixel = dst.at<cv::Vec3b>(r, c);
+            pixel = colors[label];
+         }
+     }
+
+    // cv::namedWindow("test", 1);
+    // cv::imshow("test", dst);
+    // cv::waitKey(0);
+
+    return dst;
+}

@@ -17,3 +17,6 @@ cv::Mat threshold(cv::Mat src);
 
 // apply morphological operations
 cv::Mat morphOps(cv::Mat src);
+
+// visualize the connected components labeled image
+cv::Mat visConnectedComponents(cv::Mat labeled, int numLabels);
