@@ -76,6 +76,11 @@ int main(int argc, char *argv[]) {
 		cv::Mat thresholded, morphed, labeled, labeledVis;
 		int numLabels;
 		cv::Mat region;
+		cv::Mat contoursVis;
+		std::vector<std::vector<cv::Point>> contoursVector;
+		std::vector<cv::Vec4i> hierarchyVector;
+		std::vector<int> skipLabels;
+		std::vector<std::vector<double>> featureArray;
 
 		for(;;) {
 			*capdev >> frame; // get a new frame from the camera, treat as a stream
@@ -95,12 +100,39 @@ int main(int argc, char *argv[]) {
 			labeled = cv::Mat(morphed.size(), CV_32S);
 			numLabels = cv::connectedComponents(morphed, labeled, 8);
 			// visualize connected component analysis
-			labeledVis = visConnectedComponents(labeled, numLabels);
+			skipLabels.clear();
+			labeledVis = visConnectedComponents(labeled, numLabels, skipLabels);
+			// contour based metrics
+			// separate each region, if region is too small, then discard it
+			// otherwise, calculate features and visualize
+			contoursVector.clear();
+			hierarchyVector.clear();
+			if (numLabels>1) {
+				for (int i=1; i<numLabels; i++) {
+					// handle each region indivually to make index consistent
+					region = extractRegion(labeled, i);
+					// find contour of region, discard small region, extract features
+					std::vector<double> feature;
+					std::vector<std::vector<cv::Point>> contours;
+  					std::vector<cv::Vec4i> hierarchy;
+					int featureStatus = extractFeature(region, i, contours, hierarchy, feature);
+					// status 0: valid region; status 1: discard
+					if (featureStatus == 0) {
+						printf("Feature successfully extracted\n");
+						contoursVector.push_back(contours[0]);
+						hierarchyVector.push_back(hierarchy[0]);
+						featureArray.push_back(feature);
+					} else {
+						skipLabels.push_back(i);
+					}
+				}
+				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector);
+			}
 
 
-			cv::imshow("Processed", labeledVis);
+			cv::imshow("Processed", contoursVis);
 
-			if(cv::waitKey(10) == 'q') {
+			if(cv::waitKey(20) == 'q') {
 				break;
 			}
 
@@ -129,6 +161,11 @@ int main(int argc, char *argv[]) {
 		int numLabels;
 		int key;
 		cv::Mat region;
+		cv::Mat contoursVis;
+		std::vector<std::vector<cv::Point>> contoursVector;
+	    std::vector<cv::Vec4i> hierarchyVector;
+		std::vector<int> skipLabels;
+		std::vector<std::vector<double>> featureArray;
 
 		for (int i=0; i<numFile; i++) {
 
@@ -148,27 +185,36 @@ int main(int argc, char *argv[]) {
 			labeled = cv::Mat(morphed.size(), CV_32S);
 			numLabels = cv::connectedComponents(morphed, labeled, 8);
 			// visualize connected component analysis
-			labeledVis = visConnectedComponents(labeled, numLabels);
+			skipLabels.clear();
+			labeledVis = visConnectedComponents(labeled, numLabels, skipLabels);
+			// contour based metrics
 			// separate each region, if region is too small, then discard it
 			// otherwise, calculate features and visualize
+			contoursVector.clear();
+			hierarchyVector.clear();
 			if (numLabels>1) {
 				for (int i=1; i<numLabels; i++) {
+					// handle each region indivually to make index consistent
 					region = extractRegion(labeled, i);
 					// find contour of region, discard small region, extract features
-					double *feature;
-					int featureStatus = extractFeature(region, i, &feature);
+					std::vector<double> feature;
+					std::vector<std::vector<cv::Point>> contours;
+  					std::vector<cv::Vec4i> hierarchy;
+					int featureStatus = extractFeature(region, i, contours, hierarchy, feature);
 					// status 0: valid region; status 1: discard
 					if (featureStatus == 0) {
 						printf("Feature successfully extracted\n");
+						contoursVector.push_back(contours[0]);
+						hierarchyVector.push_back(hierarchy[0]);
+						featureArray.push_back(feature);
+					} else {
+						skipLabels.push_back(i);
 					}
-
 				}
+				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector);
 			}
 
-
-
-			cv::imshow("Processed", labeledVis);
-
+			cv::imshow("Processed", contoursVis);
 
 			key = cv::waitKey(0);
 			// quit when pressed q
@@ -176,6 +222,16 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 
+		}
+
+		// print out the feature vectors of the image set
+		printf("aspectRatio, extent, solidity, class\n");
+		for (int i=0; i<featureArray.size();i++) {
+			char *p = strrchr(fileArr[i], '/');
+			p++;
+			char *q = strchr(p, '.');
+			*q = '\0';
+			printf("%.4f, %.4f, %.4f, %s\n", featureArray[i][0], featureArray[i][1], featureArray[i][2], p);
 		}
 
 		free(fileArr);
