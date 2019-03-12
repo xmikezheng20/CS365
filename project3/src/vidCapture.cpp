@@ -4,6 +4,8 @@
 	Simple example of video capture and manipulation
 	Based on OpenCV tutorials
 
+	the program: use the webcam and save an image 
+
 	Compile command (macos)
 
 	clang++ -o vid -I /opt/local/include vidDisplay.cpp -L /opt/local/lib -lopencv_core -lopencv_highgui -lopencv_video -lopencv_videoio
