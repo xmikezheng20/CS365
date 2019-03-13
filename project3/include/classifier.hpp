@@ -13,28 +13,41 @@
 #include <dirent.h>
 #include <opencv2/opencv.hpp>
 
-#include "classifier.hpp"
-
 /*parent class Classifier*/
 class Classifier{
-    protected int type; //the type of classifier
+private:
+    int type; //the type of classifier
 
 public:
-    Classifier(int curType): type(curType){}
-    /*getter and setter*/
+    // constructor
+    Classifier(int type);
+
+    // type setter and getter
     int getType();
     void setType(int newType);
 
     /*compute the confusion matrix*/
-    std::vector<double> confusion_matrix(std::vector<double> targets,
-                                        std::vector<double> outputs);
+    /*Takes in two standard vectors of zero-index numeric categories and
+        computes the confusion matrix. The rows represent true
+        categories, and the columns represent the classifier output.*/
+    std::vector<std::vector<int>> confusion_matrix(
+        std::vector<int> truecats, std::vector<int> classcats);
+
+};
+
+/* classifier using the Euclidean distance */
+class ScaledEuclidean: public Classifier {
+public:
+    // constructor
+    ScaledEuclidean();
 
 };
 
 /* KNN classifier inherits Classifier */
 class KNN: public Classifier{
 public:
-    KNN(int curType): Classifier(curType){}
+    // constructor
+    KNN();
 
 };
 
@@ -42,7 +55,7 @@ public:
 /* NaiveBayes classifier inherits Classifier */
 class NaiveBayes: public Classifier{
 public:
-    NaiveBayes(int curType): Classifier(curType) {}
-
+    // constructor
+    NaiveBayes();
 
 };

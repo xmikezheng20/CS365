@@ -36,13 +36,13 @@ BINDIR = ../bin
 # dependencies
 IDIR = ../include
 
-_DEPS = processing.hpp
+_DEPS = processing.hpp classifier.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-OBJ_objRec = objRec.o processing.o
+OBJ_objRec = objRec.o processing.o classifier.o
 
 objRec: $(OBJ_objRec)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
