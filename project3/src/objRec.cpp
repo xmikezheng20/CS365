@@ -9,6 +9,8 @@
 		for video: ../bin/objRec ../data/objDB.csv 0
 		for still images: ../bin/objRec ../data/objDB.csv 1 ../../../training/
 
+
+
 	based on
 
 	Bruce A. Maxwell
@@ -58,7 +60,7 @@ int main(int argc, char *argv[]) {
 		cv::VideoCapture *capdev;
 
 		// open the video device
-		capdev = new cv::VideoCapture(0);
+		capdev = new cv::VideoCapture(0); //default 0 for using webcam
 		if( !capdev->isOpened() ) {
 			printf("Unable to open video device\n");
 			return(-1);

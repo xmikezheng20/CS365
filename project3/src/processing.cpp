@@ -44,8 +44,8 @@ cv::Mat morphOps(cv::Mat src) {
     printf("Applying morphological operations\n");
     cv::Mat dst;
     int morph_elem = 0; // 0: Rect - 1: Cross - 2: Ellipse
-    int morph_size_L = 3;
-    int morph_size_S = 2;
+    int morph_size_L = 3; // 7*7
+    int morph_size_S = 2; // 5*5
     cv::Mat elementL = cv::getStructuringElement( morph_elem,
         cv::Size( 2*morph_size_L + 1, 2*morph_size_L+1 ),
         cv::Point( morph_size_L, morph_size_L ) );
@@ -148,6 +148,7 @@ int extractFeature(cv::Mat region, int regionId,
     double l2square = (vtx[1].x-vtx[2].x)*(vtx[1].x-vtx[2].x)
                         + (vtx[1].y-vtx[2].y)*(vtx[1].y-vtx[2].y);
 
+    //larger value as width
     if (l1square>l2square) {
         aspectRatio = sqrt(l1square/l2square);
     } else {
