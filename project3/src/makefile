@@ -50,5 +50,8 @@ objRec: $(OBJ_objRec)
 vidCapture: vidCapture.o
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
 
+classifierTest: classifierTest.o classifier.o
+	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
+
 clean:
 	rm -f *.o *~
