@@ -15,7 +15,7 @@
 
 /*parent class Classifier*/
 class Classifier{
-private:
+protected:
     int type; //the type of classifier
 
 public:
@@ -37,6 +37,8 @@ public:
 
 /* classifier using the Euclidean distance */
 class ScaledEuclidean: public Classifier {
+private
+
 public:
     // constructor
     ScaledEuclidean();
