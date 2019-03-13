@@ -37,8 +37,6 @@ public:
 
 /* classifier using the Euclidean distance */
 class ScaledEuclidean: public Classifier {
-private
-
 public:
     // constructor
     ScaledEuclidean();
