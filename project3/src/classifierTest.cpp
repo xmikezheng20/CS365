@@ -44,68 +44,9 @@ int main(int argc, char *argv[]) {
     return (0);
 }
 
-// read objDB to std::vector<std::vector<double>>
-void readObjDB(char *path, std::vector<std::vector<double>> &objDBData,
-	std::vector<int> &objDBCategory, std::map<std::string, int> &objDBDict ) {
-	printf("reading %s\n", path);
-
-	// read the file
-    FILE *fp;
-    fp = fopen(path, "r");
-    if (fp==NULL) {
-      printf("File not valid\n");
-      exit(0);
-    }
-
-	std::vector<double> feature;
-	int numCategory = 0;
-	// parse the file
-	char buf[256];
-	fgets(buf, 256, fp);
-	while (fgets(buf, 256, fp)!=NULL) {
-		feature.clear();
-		int idx = 0;
-		// printf("%s", buf);
-		// split
-		char *pch;
-		pch = strtok(buf,",");
-		while (pch != NULL)
-		{
-			// printf("%s\n",pch);
-			// strip
-			// https://www.unix.com/programming/21264-how-trim-white-space-around-string-c-program.html
-			char ptr[strlen(pch)+1];
-			int i,j=0;
-			for(i=0;pch[i]!='\0';i++)
-			{
-				if (pch[i] != ' ' && pch[i] != '\t' && pch[i] != '\n')
-				ptr[j++]=pch[i];
-			}
-			ptr[j]='\0';
-			pch=ptr;
-			// store the training sample
-			if (idx<3) {
-				feature.push_back(atof(pch));
-			}else {
-				// if not exist
-				if (objDBDict.count(pch)==0) {
-					objDBDict[pch] = numCategory++;
-				}
-				objDBCategory.push_back(objDBDict[pch]);
-			}
-			idx++;
-
-			pch = strtok(NULL,",");
-		}
-		objDBData.push_back(feature);
-	}
-
-}
-
 // test Scaled Euclidean classifier
 void test0() {
     printf("Testing Scaled Euclidean classifier\n");
-    ScaledEuclidean euclideanClassifier = ScaledEuclidean();
 
 	// get the training set
 	char filename[] = "../data/objDB.csv";
@@ -115,22 +56,42 @@ void test0() {
 
 	readObjDB(filename, objDBData, objDBCategory, objDBCategoryDict);
 
-	// check feature
-	for (int i=0; i<objDBData.size(); i++) {
-		printf("%.2f, %.2f, %.2f\n", objDBData[i][0],objDBData[i][1],objDBData[i][2]);
-	}
+	// build the scaled euclidean classifier
+	ScaledEuclidean euclideanClassifier = ScaledEuclidean();
+	euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+	// // check feature
+	// for (int i=0; i<objDBData.size(); i++) {
+	// 	printf("%.2f, %.2f, %.2f\n", objDBData[i][0],objDBData[i][1],objDBData[i][2]);
+	// }
+	//
+	// // check category
+	// for (int i=0; i<objDBCategory.size(); i++) {
+	// 	printf("%d\n", objDBCategory[i]);
+	// }
+	//
+	// // check dict
+	// for(std::map<std::string, int>::value_type& x : objDBCategoryDict)
+	// {
+	//     std::cout << x.first << "," << x.second << std::endl;
+	// }
 
-	// check category
-	for (int i=0; i<objDBCategory.size(); i++) {
-		printf("%d\n", objDBCategory[i]);
-	}
+	// make a test object feature vector
+	std::vector<double> newObj;
+	int cat;
+	newObj.push_back(3.8);
+	newObj.push_back(0.3);
+	newObj.push_back(0.5);
 
-	// check dict
-	for(std::map<std::string, int>::value_type& x : objDBCategoryDict)
+	cat = euclideanClassifier.classify(newObj);
+
+	printf("Feature vector %.2f, %.2f, %.2f\n",newObj[0],newObj[1], newObj[2]);
+	printf("Category idx: %d\n", cat);
+	for(std::map<std::string, int>::value_type& x : euclideanClassifier.getObjDBDict())
 	{
-	    std::cout << x.first << "," << x.second << std::endl;
+		if (x.second == cat) {
+			printf("Category : %s\n", x.first.c_str());
+		}
 	}
-
 
 
 }
