@@ -33,4 +33,5 @@ int extractFeature(cv::Mat region, int regionId,
 // visualize contour and features
 cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
     std::vector<std::vector<cv::Point>> &contoursVector,
-    std::vector<cv::Vec4i> &hierarchyVector);
+    std::vector<cv::Vec4i> &hierarchyVector,
+    std::vector<std::vector<double>> feature, std::vector<std::string> &catsVector);

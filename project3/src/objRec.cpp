@@ -33,6 +33,7 @@
 #include <opencv2/opencv.hpp>
 
 #include "processing.hpp"
+#include "classifier.hpp"
 
 char **readDB(char *dir, int *num);
 void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile);
@@ -53,6 +54,25 @@ int main(int argc, char *argv[]) {
 	mode = atoi(argv[2]);
 
 	printf("Object database path: %s\n", objDB);
+
+	// read training data
+	std::vector<std::vector<double>> objDBData;
+	std::vector<int> objDBCategory;
+	std::map<std::string, int> objDBCategoryDict;
+
+	readObjDB(objDB, objDBData, objDBCategory, objDBCategoryDict);
+
+	// build the scaled euclidean classifier
+	ScaledEuclidean euclideanClassifier = ScaledEuclidean();
+	euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+
+
+
+
+
+
+
+
 
 	if (mode == 0) {
 		printf("Video capture\n");
@@ -128,7 +148,7 @@ int main(int argc, char *argv[]) {
 						skipLabels.push_back(i);
 					}
 				}
-				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector);
+				// contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector);
 			}
 
 
@@ -168,6 +188,8 @@ int main(int argc, char *argv[]) {
 	    std::vector<cv::Vec4i> hierarchyVector;
 		std::vector<int> skipLabels;
 		std::vector<std::vector<double>> featureArray;
+		std::vector<std::string> catsVector;
+		std::vector<std::vector<double>> featureVector;
 
 		for (int i=0; i<numFile; i++) {
 
@@ -194,6 +216,8 @@ int main(int argc, char *argv[]) {
 			// otherwise, calculate features and visualize
 			contoursVector.clear();
 			hierarchyVector.clear();
+			catsVector.clear();
+			featureVector.clear();
 			if (numLabels>1) {
 				for (int i=1; i<numLabels; i++) {
 					// handle each region indivually to make index consistent
@@ -208,13 +232,31 @@ int main(int argc, char *argv[]) {
 						printf("Feature successfully extracted\n");
 						contoursVector.push_back(contours[0]);
 						hierarchyVector.push_back(hierarchy[0]);
+						featureVector.push_back(feature);
 						featureArray.push_back(feature);
+
+						int cat;
+						cat = euclideanClassifier.classify(feature);
+
+						printf("Feature vector %.2f, %.2f, %.2f\n",feature[0],feature[1], feature[2]);
+						printf("Category idx: %d\n", cat);
+						for(std::map<std::string, int>::value_type& x : euclideanClassifier.getObjDBDict())
+						{
+							if (x.second == cat) {
+								printf("Category : %s\n", x.first.c_str());
+								catsVector.push_back(x.first.c_str());
+							}
+						}
+
 					} else {
 						skipLabels.push_back(i);
 					}
 				}
-				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector);
+				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector, featureVector, catsVector);
 			}
+
+
+
 
 			cv::imshow("Processed", contoursVis);
 
@@ -226,15 +268,15 @@ int main(int argc, char *argv[]) {
 
 		}
 
-		// print out the feature vectors of the image set
-		printf("aspectRatio, extent, solidity, class\n");
-		for (int i=0; i<featureArray.size();i++) {
-			char *p = strrchr(fileArr[i], '/');
-			p++;
-			char *q = strchr(p, '.');
-			*q = '\0';
-			printf("%.4f, %.4f, %.4f, %s\n", featureArray[i][0], featureArray[i][1], featureArray[i][2], p);
-		}
+		// // print out the feature vectors of the image set
+		// printf("aspectRatio, extent, solidity, class\n");
+		// for (int i=0; i<featureArray.size();i++) {
+		// 	char *p = strrchr(fileArr[i], '/');
+		// 	p++;
+		// 	char *q = strchr(p, '.');
+		// 	*q = '\0';
+		// 	printf("%.4f, %.4f, %.4f, %s\n", featureArray[i][0], featureArray[i][1], featureArray[i][2], p);
+		// }
 
 		free(fileArr);
 	}

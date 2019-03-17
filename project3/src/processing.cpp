@@ -178,7 +178,8 @@ int extractFeature(cv::Mat region, int regionId,
 // visualize contour and features
 cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
     std::vector<std::vector<cv::Point>> &contoursVector,
-    std::vector<cv::Vec4i> &hierarchyVector) {
+    std::vector<cv::Vec4i> &hierarchyVector,
+    std::vector<std::vector<double>> feature, std::vector<std::string> &catsVector) {
     printf("Visualizing contours and features\n");
 
     // visualize the labels
@@ -213,6 +214,21 @@ cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
         //     cv::line(merged, hull[j], hull[(j+1)%(hull.size())], cv::Scalar(255, 0, 0), 1, cv::LINE_AA);
         // }
 
+        // compute center
+        cv::Moments moments = cv::moments(contoursVector[i]);
+        int cX = int(moments.m10 / moments.m00);
+        int cY = int(moments.m01 / moments.m00);
+
+        // put category text
+        cv::putText(merged, catsVector[i], cv::Point(cX-20, cY-20), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 255), 2);
+        // put feature text
+        char featureStr[256];
+        sprintf(featureStr, "Aspect Ratio: %.2f", feature[i][0]);
+        cv::putText(merged, featureStr, cv::Point(cX-20, cY), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
+        sprintf(featureStr, "Extent: %.2f", feature[i][1]);
+        cv::putText(merged, featureStr, cv::Point(cX-20, cY+15), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
+        sprintf(featureStr, "Solidity: %.2f", feature[i][2]);
+        cv::putText(merged, featureStr, cv::Point(cX-20, cY+30), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
     }
 
     return merged;
