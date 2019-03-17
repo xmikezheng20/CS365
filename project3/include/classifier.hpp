@@ -17,6 +17,9 @@
 class Classifier{
 protected:
     int type; //the type of classifier
+    std::vector<std::vector<double>> objDBData;
+    std::vector<int> objDBCategory;
+    std::map<std::string, int> objDBDict;
 
 public:
     // constructor
@@ -33,14 +36,13 @@ public:
     std::vector<std::vector<int>> confusion_matrix(
         std::vector<int> truecats, std::vector<int> classcats);
 
+    void print_confusion_matrix(std::vector<std::vector<int>> conf_mat);
+
 };
 
 /* classifier using the Euclidean distance */
 class ScaledEuclidean: public Classifier {
 private:
-    std::vector<std::vector<double>> objDBData;
-    std::vector<int> objDBCategory;
-    std::map<std::string, int> objDBDict;
     std::vector<double> stdevs;
     int size, numFeature;
 

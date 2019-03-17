@@ -220,7 +220,9 @@ cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
         int cY = int(moments.m01 / moments.m00);
 
         // put category text
-        cv::putText(merged, catsVector[i], cv::Point(cX-20, cY-20), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 255), 2);
+        if (catsVector.size()>0) {
+            cv::putText(merged, catsVector[i], cv::Point(cX-20, cY-20), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 255), 2);
+        }
         // put feature text
         char featureStr[256];
         sprintf(featureStr, "Aspect Ratio: %.2f", feature[i][0]);

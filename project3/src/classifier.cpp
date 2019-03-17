@@ -31,10 +31,53 @@ void Classifier::setType(int newType) {
 std::vector<std::vector<int>> Classifier::confusion_matrix(
     std::vector<int> truecats, std::vector<int> classcats) {
 
+    // initialize matrix
     std::vector<std::vector<int>> conf_mat;
+    for (int i=0; i<this->objDBDict.size();i++){
+        std::vector<int> tmp;
+        for (int j=0; j<this->objDBDict.size();j++) {
+            tmp.push_back(0);
+        }
+        conf_mat.push_back(tmp);
+    }
+
+    // fill matrix
+    for (int i=0;i<truecats.size();i++) {
+        conf_mat[truecats[i]][classcats[i]]++;
+    }
 
 
     return conf_mat;
+}
+
+// print out the confusion matrix
+void Classifier::print_confusion_matrix(std::vector<std::vector<int>> conf_mat) {
+    printf("Confusion matrix: column-true, row-classify\n");
+    // get the keys
+    std::vector<std::string> keys;
+    for(std::map<std::string, int>::value_type& x : this->objDBDict)
+    {
+        keys.push_back(x.first);
+    }
+
+    // first line
+    printf("        ");
+    for (int i=0; i<keys.size();i++) {
+        printf("|%8s",keys[i].c_str());
+    }
+    printf("\n");
+    for (int i=0; i<keys.size();i++) {
+        printf("----------");
+    }
+    printf("\n");
+    // other lines
+    for (int i=0; i<keys.size();i++) {
+        printf("%8s", keys[i].c_str());
+        for (int j=0;j<keys.size();j++) {
+            printf("|%8d",conf_mat[i][j]);
+        }
+        printf("\n");
+    }
 }
 
 // scaled euclidean classifier
@@ -55,7 +98,7 @@ void ScaledEuclidean::build(std::vector<std::vector<double>> &objDBData,
         std::vector<std::vector<double>> featurels;
         std::vector<double> tmp;
 
-        // calculate standard deviations
+        // printf("Reshaping feature matrix\n");
         for (int i=0;i<this->numFeature;i++){
             for (int j=0;j<this->size;j++) {
                 tmp.push_back(this->objDBData[j][i]);
@@ -64,6 +107,8 @@ void ScaledEuclidean::build(std::vector<std::vector<double>> &objDBData,
             tmp.clear();
         }
 
+        // calculate standard deviations
+        // printf("calculating stdev\n");
         this->stdevs = stdev(featurels);
         return;
     }
