@@ -232,14 +232,14 @@ cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
         // put centroid
         cv::circle(merged, cv::Point(cX, cY), 5, cv::Scalar(255, 255, 255), -1);
         // // fit ellipse
-        cv::Point2f ellipsevtx[4];
-        cv::RotatedRect ellipsebox = cv::fitEllipse(contoursVector[i]);
-        ellipsebox.points(ellipsevtx);
-        cv::ellipse(merged, ellipsebox, cv::Scalar(255, 255, 255));
-
-        // major/minor axis
-        cv::line(merged, cv::Point((ellipsevtx[0].x+ellipsevtx[1].x)/2,(ellipsevtx[0].y+ellipsevtx[1].y)/2), cv::Point((ellipsevtx[2].x+ellipsevtx[3].x)/2,(ellipsevtx[2].y+ellipsevtx[3].y)/2), cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-        cv::line(merged, cv::Point((ellipsevtx[0].x+ellipsevtx[3].x)/2,(ellipsevtx[0].y+ellipsevtx[3].y)/2), cv::Point((ellipsevtx[1].x+ellipsevtx[2].x)/2,(ellipsevtx[1].y+ellipsevtx[2].y)/2), cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+        // cv::Point2f ellipsevtx[4];
+        // cv::RotatedRect ellipsebox = cv::fitEllipse(contoursVector[i]);
+        // ellipsebox.points(ellipsevtx);
+        // cv::ellipse(merged, ellipsebox, cv::Scalar(255, 255, 255));
+        //
+        // // major/minor axis
+        // cv::line(merged, cv::Point((ellipsevtx[0].x+ellipsevtx[1].x)/2,(ellipsevtx[0].y+ellipsevtx[1].y)/2), cv::Point((ellipsevtx[2].x+ellipsevtx[3].x)/2,(ellipsevtx[2].y+ellipsevtx[3].y)/2), cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+        // cv::line(merged, cv::Point((ellipsevtx[0].x+ellipsevtx[3].x)/2,(ellipsevtx[0].y+ellipsevtx[3].y)/2), cv::Point((ellipsevtx[1].x+ellipsevtx[2].x)/2,(ellipsevtx[1].y+ellipsevtx[2].y)/2), cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
 
         // put category text
         if (catsVector.size()>0) {
