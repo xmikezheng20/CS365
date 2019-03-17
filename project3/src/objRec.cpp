@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
 		std::vector<cv::Vec4i> hierarchyVector;
 		std::vector<int> skipLabels;
 		std::vector<std::vector<double>> completeFeatureArray;
-		std::vector<int> completeCatsArray;
+		std::vector<int> classCatsArray;
 		std::vector<std::string> catsVector;
 		std::vector<std::vector<double>> featureVector;
 
@@ -141,14 +141,14 @@ int main(int argc, char *argv[]) {
 			catsVector.clear();
 			featureVector.clear();
 			if (numLabels>1) {
-				for (int i=1; i<numLabels; i++) {
+				for (int j=1; j<numLabels; j++) {
 					// handle each region indivually to make index consistent
-					region = extractRegion(labeled, i);
+					region = extractRegion(labeled, j);
 					// find contour of region, discard small region, extract features
 					std::vector<double> feature;
 					std::vector<std::vector<cv::Point>> contours;
   					std::vector<cv::Vec4i> hierarchy;
-					int featureStatus = extractFeature(region, i, contours, hierarchy, feature);
+					int featureStatus = extractFeature(region, j, contours, hierarchy, feature);
 					// status 0: valid region; status 1: discard
 					if (featureStatus == 0) {
 						printf("Feature successfully extracted\n");
@@ -157,33 +157,50 @@ int main(int argc, char *argv[]) {
 						featureVector.push_back(feature);
 						completeFeatureArray.push_back(feature);
 
-						int cat;
-						cat = euclideanClassifier.classify(feature);
+						if (state == 1) {
+							// classify!
+							int cat;
+							cat = euclideanClassifier.classify(feature);
 
-						printf("Feature vector %.2f, %.2f, %.2f\n",feature[0],feature[1], feature[2]);
-						printf("Category idx: %d\n", cat);
-						completeCatsArray.push_back(cat);
-						for(std::map<std::string, int>::value_type& x : euclideanClassifier.getObjDBDict())
-						{
-							if (x.second == cat) {
-								printf("Category : %s\n", x.first.c_str());
-								catsVector.push_back(x.first.c_str());
+							printf("Feature vector %.2f, %.2f, %.2f\n",feature[0],feature[1], feature[2]);
+							printf("Category idx: %d\n", cat);
+							for(std::map<std::string, int>::value_type& x : euclideanClassifier.getObjDBDict())
+							{
+								if (x.second == cat) {
+									printf("Category : %s\n", x.first.c_str());
+									catsVector.push_back(x.first.c_str());
+								}
 							}
 						}
 
 					} else {
-						skipLabels.push_back(i);
+						skipLabels.push_back(j);
 					}
 				}
-				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector, featureVector, catsVector);
+				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector, featureVector, catsVector, state);
 			}
 
 
 			cv::imshow("Processed", contoursVis);
 
-			if(cv::waitKey(20) == 'q') {
+			int key = cv::waitKey(20);
+			if(key == 81 or key == 113) {
 				break;
 			}
+			// b to enter build mode
+			else if (key == 66 or key == 98) {
+				state = 0;
+			}
+			// c to enter classify mode
+			else if (key == 67 or key == 99) {
+				if (state == 0) {
+					printf("Building new classifier\n");
+					readObjDB(objDB, objDBData, objDBCategory, objDBCategoryDict);
+					euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+				}
+				state = 1;
+			}
+
 
 		}
 
@@ -301,10 +318,10 @@ int main(int argc, char *argv[]) {
 						}
 
 					} else {
-						skipLabels.push_back(i);
+						skipLabels.push_back(j);
 					}
 				}
-				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector, featureVector, catsVector);
+				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector, featureVector, catsVector, state);
 			}
 
 
@@ -333,9 +350,13 @@ int main(int argc, char *argv[]) {
 
 		}
 
-		// print out the confusion matrix
-		std::vector<std::vector<int>> euclidean_conf_mat = euclideanClassifier.confusion_matrix(trueCatsArray, classCatsArray);
-		euclideanClassifier.print_confusion_matrix(euclidean_conf_mat);
+		if (mode == 1) {
+			// print out the confusion matrix
+			if (trueCatsArray.size()>0) {
+				std::vector<std::vector<int>> euclidean_conf_mat = euclideanClassifier.confusion_matrix(trueCatsArray, classCatsArray);
+				euclideanClassifier.print_confusion_matrix(euclidean_conf_mat);
+			}
+		}
 
 
 

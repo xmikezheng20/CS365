@@ -179,7 +179,8 @@ int extractFeature(cv::Mat region, int regionId,
 cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
     std::vector<std::vector<cv::Point>> &contoursVector,
     std::vector<cv::Vec4i> &hierarchyVector,
-    std::vector<std::vector<double>> feature, std::vector<std::string> &catsVector) {
+    std::vector<std::vector<double>> feature, std::vector<std::string> &catsVector,
+    int state) {
     printf("Visualizing contours and features\n");
 
     // visualize the labels
@@ -197,6 +198,14 @@ cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
 
     cv::Mat merged;
     cv::bitwise_or(dst, drawing, merged);
+
+    // write state
+    if (state == 0) {
+        cv::putText(merged, "Training mode", cv::Point((int)merged.size().width/2-60, 30), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(255, 255, 255), 1);
+    }
+    else if (state == 1) {
+        cv::putText(merged, "Testing mode", cv::Point((int)merged.size().width/2-60, 30), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(255, 255, 255), 1);
+    }
 
     // draw bounding rectangle
     // Find the minimum area enclosing bounding box
