@@ -303,6 +303,7 @@ int main(int argc, char *argv[]) {
 			catsVector.clear();
 			featureVector.clear();
 			if (numLabels>1) {
+				int k=0;
 				for (int j=1; j<numLabels; j++) {
 					// handle each region indivually to make index consistent
 					region = extractRegion(labeled, j);
@@ -313,6 +314,7 @@ int main(int argc, char *argv[]) {
 					int featureStatus = extractFeature(region, j, contours, hierarchy, feature);
 					// status 0: valid region; status 1: discard
 					if (featureStatus == 0) {
+						k++;
 						printf("Feature successfully extracted\n");
 						contoursVector.push_back(contours[0]);
 						hierarchyVector.push_back(hierarchy[0]);
@@ -340,11 +342,12 @@ int main(int argc, char *argv[]) {
 							knnCat = knnClassifier.classify(feature);
 
 							// only save the first category as the category of the image
-							if (j==1){
+							if (k==1){
 								euclideanClassCatsArray.push_back(euclideanCat);
 								naiveBayesClassCatsArray.push_back(naiveBayesCat);
 								knnClassCatsArray.push_back(knnCat);
 								trueCatsArray.push_back(euclideanClassifier.getObjDBDict()[p]);
+								// printf("%d %d %d\n", euclideanClassifier.getObjDBDict()[p], euclideanCat, naiveBayesCat);
 							}
 
 							printf("Feature vector %.2f, %.2f, %.2f\n",feature[0],feature[1], feature[2]);
