@@ -4,7 +4,7 @@
 	Simple example of video capture and manipulation
 	Based on OpenCV tutorials
 
-	the program: use the webcam and save an image 
+	the program: use the webcam and save an image
 
 	Compile command (macos)
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// open the video device
-	capdev = new cv::VideoCapture(0);
+	capdev = new cv::VideoCapture(1);
 	if( !capdev->isOpened() ) {
 		printf("Unable to open video device\n");
 		return(-1);

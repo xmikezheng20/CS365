@@ -52,6 +52,10 @@ std::vector<std::vector<int>> Classifier::confusion_matrix(
         conf_mat[truecats[i]][classcats[i]]++;
     }
 
+    // for (int i=0;i<truecats.size();i++) {
+    //     printf("%d %d\n", truecats[i], classcats[i]);
+    // }
+
     return conf_mat;
 }
 
@@ -61,9 +65,17 @@ void Classifier::print_confusion_matrix(std::vector<std::vector<int>> conf_mat) 
     printf("Confusion matrix: column-true, row-classify\n");
     // get the keys
     std::vector<std::string> keys;
+
+    std::map<int, std::string> tmpmap;
+
     for(std::map<std::string, int>::value_type& x : this->objDBDict)
     {
-        keys.push_back(x.first);
+        tmpmap[x.second] = x.first;
+    }
+
+    for(std::map<int, std::string>::value_type& x : tmpmap)
+    {
+        keys.push_back(x.second);
     }
 
     // first line
