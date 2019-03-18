@@ -81,7 +81,7 @@ void Classifier::print_confusion_matrix(std::vector<std::vector<int>> conf_mat) 
     // first line
     printf("        ");
     for (int i=0; i<keys.size();i++) {
-        printf("|%8s",keys[i].c_str());
+        printf("|%8.8s",keys[i].c_str());
     }
     printf("\n");
     for (int i=0; i<keys.size();i++) {
@@ -90,7 +90,7 @@ void Classifier::print_confusion_matrix(std::vector<std::vector<int>> conf_mat) 
     printf("\n");
     // other lines
     for (int i=0; i<keys.size();i++) {
-        printf("%8s", keys[i].c_str());
+        printf("%8.8s", keys[i].c_str());
         for (int j=0;j<keys.size();j++) {
             printf("|%8d",conf_mat[i][j]);
         }
