@@ -28,14 +28,18 @@
 
 */
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <dirent.h>
 #include <opencv2/opencv.hpp>
 
 #include "processing.hpp"
+#include "classifier.hpp"
 
 char **readDB(char *dir, int *num);
 void readDB_rec(char *dir, char ***fileArr, int *max, int *numFile);
+void writeDB(char *filename, char *cat, std::vector<double> feature);
+int createDB(char *filename);
 
 
 int main(int argc, char *argv[]) {
@@ -53,6 +57,32 @@ int main(int argc, char *argv[]) {
 	mode = atoi(argv[2]);
 
 	printf("Object database path: %s\n", objDB);
+	// if db not exist, create one
+	int exist = createDB(objDB);
+
+	// read training data
+	std::vector<std::vector<double>> objDBData;
+	std::vector<int> objDBCategory;
+	std::map<std::string, int> objDBCategoryDict;
+
+	// build the scaled euclidean classifier
+	ScaledEuclidean euclideanClassifier = ScaledEuclidean();
+
+	// build naive bayes classifier
+	NaiveBayes naiveBayesClassifier = NaiveBayes();
+
+	// state: training (0) vs testing (1)
+	int state;
+	if (exist == 0) {
+		state = 0;
+	}
+	else {
+		state = 1;
+		readObjDB(objDB, objDBData, objDBCategory, objDBCategoryDict);
+		euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+		naiveBayesClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+	}
+
 
 	if (mode == 0) {
 		printf("Video capture\n");
@@ -82,7 +112,11 @@ int main(int argc, char *argv[]) {
 		std::vector<std::vector<cv::Point>> contoursVector;
 		std::vector<cv::Vec4i> hierarchyVector;
 		std::vector<int> skipLabels;
-		std::vector<std::vector<double>> featureArray;
+		std::vector<std::vector<double>> completeFeatureArray;
+		std::vector<int> classCatsArray;
+		std::vector<std::string> euclideanCatsVector, naiveBayesCatsVector;
+		std::vector<std::vector<std::string>> catsVector;
+		std::vector<std::vector<double>> featureVector;
 
 		for(;;) {
 			*capdev >> frame; // get a new frame from the camera, treat as a stream
@@ -109,34 +143,82 @@ int main(int argc, char *argv[]) {
 			// otherwise, calculate features and visualize
 			contoursVector.clear();
 			hierarchyVector.clear();
+			euclideanCatsVector.clear();
+			naiveBayesCatsVector.clear();
+			catsVector.clear();
+			featureVector.clear();
 			if (numLabels>1) {
-				for (int i=1; i<numLabels; i++) {
+				for (int j=1; j<numLabels; j++) {
 					// handle each region indivually to make index consistent
-					region = extractRegion(labeled, i);
+					region = extractRegion(labeled, j);
 					// find contour of region, discard small region, extract features
 					std::vector<double> feature;
 					std::vector<std::vector<cv::Point>> contours;
   					std::vector<cv::Vec4i> hierarchy;
-					int featureStatus = extractFeature(region, i, contours, hierarchy, feature);
+					int featureStatus = extractFeature(region, j, contours, hierarchy, feature);
 					// status 0: valid region; status 1: discard
 					if (featureStatus == 0) {
 						printf("Feature successfully extracted\n");
 						contoursVector.push_back(contours[0]);
 						hierarchyVector.push_back(hierarchy[0]);
-						featureArray.push_back(feature);
+						featureVector.push_back(feature);
+						completeFeatureArray.push_back(feature);
+
+						if (state == 1) {
+							// classify!
+							int euclideanCat, naiveBayesCat;
+							euclideanCat = euclideanClassifier.classify(feature);
+							naiveBayesCat = naiveBayesClassifier.classify(feature);
+
+							printf("Feature vector %.2f, %.2f, %.2f\n",feature[0],feature[1], feature[2]);
+							printf("Category idx: Euclidean: %d; Naive Bayes: %d\n", euclideanCat, naiveBayesCat);
+							for(std::map<std::string, int>::value_type& x : euclideanClassifier.getObjDBDict())
+							{
+								if (x.second == euclideanCat) {
+									printf("Category: Euclidean: %s\n", x.first.c_str());
+									euclideanCatsVector.push_back(x.first.c_str());
+								}
+							}
+							for(std::map<std::string, int>::value_type& x : naiveBayesClassifier.getObjDBDict())
+							{
+								if (x.second == naiveBayesCat) {
+									printf("Category: Naive Bayes: %s\n", x.first.c_str());
+									naiveBayesCatsVector.push_back(x.first.c_str());
+								}
+							}
+						}
+
 					} else {
-						skipLabels.push_back(i);
+						skipLabels.push_back(j);
 					}
 				}
-				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector);
+				catsVector.push_back(euclideanCatsVector);
+				catsVector.push_back(naiveBayesCatsVector);
+				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector, featureVector, catsVector, state);
 			}
 
 
 			cv::imshow("Processed", contoursVis);
 
-			if(cv::waitKey(20) == 'q') {
+			int key = cv::waitKey(20);
+			if(key == 81 or key == 113) {
 				break;
 			}
+			// b to enter build mode
+			else if (key == 66 or key == 98) {
+				state = 0;
+			}
+			// c to enter classify mode
+			else if (key == 67 or key == 99) {
+				if (state == 0) {
+					printf("Building new classifier\n");
+					readObjDB(objDB, objDBData, objDBCategory, objDBCategoryDict);
+					euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+					naiveBayesClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+				}
+				state = 1;
+			}
+
 
 		}
 
@@ -167,9 +249,15 @@ int main(int argc, char *argv[]) {
 		std::vector<std::vector<cv::Point>> contoursVector;
 	    std::vector<cv::Vec4i> hierarchyVector;
 		std::vector<int> skipLabels;
-		std::vector<std::vector<double>> featureArray;
+		std::vector<std::vector<double>> completeFeatureArray;
+		std::vector<int> euclideanClassCatsArray, naiveBayesClassCatsArray;
+		std::vector<std::string> euclideanCatsVector, naiveBayesCatsVector;
+		std::vector<std::vector<std::string>> catsVector;
+		std::vector<std::vector<double>> featureVector;
+		std::vector<int> trueCatsArray;
 
 		for (int i=0; i<numFile; i++) {
+			printf("state: %d\n", state);
 
 			img = cv::imread(fileArr[i]);
 			if(img.data == NULL) {
@@ -194,27 +282,82 @@ int main(int argc, char *argv[]) {
 			// otherwise, calculate features and visualize
 			contoursVector.clear();
 			hierarchyVector.clear();
+			euclideanCatsVector.clear();
+			naiveBayesCatsVector.clear();
+			catsVector.clear();
+			featureVector.clear();
 			if (numLabels>1) {
-				for (int i=1; i<numLabels; i++) {
+				for (int j=1; j<numLabels; j++) {
 					// handle each region indivually to make index consistent
-					region = extractRegion(labeled, i);
+					region = extractRegion(labeled, j);
 					// find contour of region, discard small region, extract features
 					std::vector<double> feature;
 					std::vector<std::vector<cv::Point>> contours;
   					std::vector<cv::Vec4i> hierarchy;
-					int featureStatus = extractFeature(region, i, contours, hierarchy, feature);
+					int featureStatus = extractFeature(region, j, contours, hierarchy, feature);
 					// status 0: valid region; status 1: discard
 					if (featureStatus == 0) {
 						printf("Feature successfully extracted\n");
 						contoursVector.push_back(contours[0]);
 						hierarchyVector.push_back(hierarchy[0]);
-						featureArray.push_back(feature);
+						featureVector.push_back(feature);
+						completeFeatureArray.push_back(feature);
+
+						// write this feature vector to database along with the category
+						char tmp[256];
+						strcpy(tmp, fileArr[i]);
+						char *p = strrchr(tmp, '/');
+						p++;
+						char *q = strchr(p, '.');
+						*q = '\0';
+
+						if (state == 0) {
+							// write this feature vector to database along with the category
+							writeDB(objDB, p, feature);
+						}
+
+						else if (state == 1) {
+							// classify!
+							int euclideanCat, naiveBayesCat;
+							euclideanCat = euclideanClassifier.classify(feature);
+							naiveBayesCat = naiveBayesClassifier.classify(feature);
+
+							// only save the first category as the category of the image
+							if (j==1){
+								euclideanClassCatsArray.push_back(euclideanCat);
+								naiveBayesClassCatsArray.push_back(naiveBayesCat);
+								trueCatsArray.push_back(euclideanClassifier.getObjDBDict()[p]);
+							}
+
+							printf("Feature vector %.2f, %.2f, %.2f\n",feature[0],feature[1], feature[2]);
+							printf("Category idx: Euclidean: %d; Naive Bayes: %d\n", euclideanCat, naiveBayesCat);
+							for(std::map<std::string, int>::value_type& x : euclideanClassifier.getObjDBDict())
+							{
+								if (x.second == euclideanCat) {
+									printf("Category: Euclidean: %s\n", x.first.c_str());
+									euclideanCatsVector.push_back(x.first.c_str());
+								}
+							}
+							for(std::map<std::string, int>::value_type& x : naiveBayesClassifier.getObjDBDict())
+							{
+								if (x.second == naiveBayesCat) {
+									printf("Category: Naive Bayes: %s\n", x.first.c_str());
+									naiveBayesCatsVector.push_back(x.first.c_str());
+								}
+							}
+						}
+
 					} else {
-						skipLabels.push_back(i);
+						skipLabels.push_back(j);
 					}
 				}
-				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector);
+				catsVector.push_back(euclideanCatsVector);
+				catsVector.push_back(naiveBayesCatsVector);
+				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector, featureVector, catsVector, state);
 			}
+
+
+
 
 			cv::imshow("Processed", contoursVis);
 
@@ -223,18 +366,44 @@ int main(int argc, char *argv[]) {
 			if (key == 81 or key == 113) {
 				break;
 			}
+			// b to enter build mode
+			else if (key == 66 or key == 98) {
+				state = 0;
+			}
+			// c to enter classify mode
+			else if (key == 67 or key == 99) {
+				if (state == 0) {
+					printf("Building new classifier\n");
+					readObjDB(objDB, objDBData, objDBCategory, objDBCategoryDict);
+					euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+					naiveBayesClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+				}
+				state = 1;
+			}
 
 		}
 
-		// print out the feature vectors of the image set
-		printf("aspectRatio, extent, solidity, class\n");
-		for (int i=0; i<featureArray.size();i++) {
-			char *p = strrchr(fileArr[i], '/');
-			p++;
-			char *q = strchr(p, '.');
-			*q = '\0';
-			printf("%.4f, %.4f, %.4f, %s\n", featureArray[i][0], featureArray[i][1], featureArray[i][2], p);
+		if (mode == 1) {
+			// print out the confusion matrix
+			if (trueCatsArray.size()>0) {
+				std::vector<std::vector<int>> euclidean_conf_mat = euclideanClassifier.confusion_matrix(trueCatsArray, euclideanClassCatsArray);
+				euclideanClassifier.print_confusion_matrix(euclidean_conf_mat);
+				std::vector<std::vector<int>> nbc_conf_mat = naiveBayesClassifier.confusion_matrix(trueCatsArray, naiveBayesClassCatsArray);
+				naiveBayesClassifier.print_confusion_matrix(nbc_conf_mat);
+			}
 		}
+
+
+
+		// // print out the feature vectors of the image set
+		// printf("aspectRatio, extent, solidity, class\n");
+		// for (int i=0; i<completeFeatureArray.size();i++) {
+		// 	char *p = strrchr(fileArr[i], '/');
+		// 	p++;
+		// 	char *q = strchr(p, '.');
+		// 	*q = '\0';
+		// 	printf("%.4f, %.4f, %.4f, %s\n", completeFeatureArray[i][0], completeFeatureArray[i][1], completeFeatureArray[i][2], p);
+		// }
 
 		free(fileArr);
 	}
@@ -245,6 +414,34 @@ int main(int argc, char *argv[]) {
 	return(0);
 }
 
+// write the training feature and cats to the feature db
+void writeDB(char *filename, char *cat, std::vector<double> feature) {
+	FILE *fp;
+    fp = fopen(filename, "a");
+    if (fp==NULL) {
+      printf("File not valid\n");
+      exit(0);
+    }
+	fprintf(fp, "%.6f,%.6f,%.6f,%s\n",feature[0],feature[1],feature[2],cat);
+
+	fclose(fp);
+
+}
+
+// check if db exist, if not, create one
+int createDB(char *filename) {
+	FILE *fp;
+	// read the file
+    if (!(fp=fopen(filename, "r"))) {
+      printf("Creating database\n");
+	  fp=fopen(filename, "w");
+	  fprintf(fp, "aspectRatio, extent, solidity, class\n");
+	  fclose(fp);
+	  return 0;
+    }
+	return 1;
+
+}
 
 /* get all file names of a given directory*/
 char **readDB(char *dir, int *num) {

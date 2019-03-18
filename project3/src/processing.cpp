@@ -178,7 +178,9 @@ int extractFeature(cv::Mat region, int regionId,
 // visualize contour and features
 cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
     std::vector<std::vector<cv::Point>> &contoursVector,
-    std::vector<cv::Vec4i> &hierarchyVector) {
+    std::vector<cv::Vec4i> &hierarchyVector,
+    std::vector<std::vector<double>> feature, std::vector<std::vector<std::string>> &catsVector,
+    int state) {
     printf("Visualizing contours and features\n");
 
     // visualize the labels
@@ -197,6 +199,14 @@ cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
     cv::Mat merged;
     cv::bitwise_or(dst, drawing, merged);
 
+    // write state
+    if (state == 0) {
+        cv::putText(merged, "Training mode", cv::Point((int)merged.size().width/2-60, 30), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(255, 255, 255), 1);
+    }
+    else if (state == 1) {
+        cv::putText(merged, "Testing mode", cv::Point((int)merged.size().width/2-60, 30), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(255, 255, 255), 1);
+    }
+
     // draw bounding rectangle
     // Find the minimum area enclosing bounding box
     for (int i=0; i<contoursVector.size(); i++) {
@@ -207,12 +217,47 @@ cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
         for(int j = 0; j < 4; j++ ){
             cv::line(merged, vtx[j], vtx[(j+1)%4], cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
         }
+        // fit convex hull
         // std::vector<cv::Point> hull;
         // cv::convexHull(contoursVector[i], hull);
         // for(int j = 0; j < hull.size(); j++ ){
         //     cv::line(merged, hull[j], hull[(j+1)%(hull.size())], cv::Scalar(255, 0, 0), 1, cv::LINE_AA);
         // }
 
+        // compute center
+        cv::Moments moments = cv::moments(contoursVector[i]);
+        int cX = int(moments.m10 / moments.m00);
+        int cY = int(moments.m01 / moments.m00);
+
+        // put centroid
+        cv::circle(merged, cv::Point(cX, cY), 5, cv::Scalar(255, 255, 255), -1);
+        // // fit ellipse
+        // cv::Point2f ellipsevtx[4];
+        // cv::RotatedRect ellipsebox = cv::fitEllipse(contoursVector[i]);
+        // ellipsebox.points(ellipsevtx);
+        // cv::ellipse(merged, ellipsebox, cv::Scalar(255, 255, 255));
+        //
+        // // major/minor axis
+        // cv::line(merged, cv::Point((ellipsevtx[0].x+ellipsevtx[1].x)/2,(ellipsevtx[0].y+ellipsevtx[1].y)/2), cv::Point((ellipsevtx[2].x+ellipsevtx[3].x)/2,(ellipsevtx[2].y+ellipsevtx[3].y)/2), cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+        // cv::line(merged, cv::Point((ellipsevtx[0].x+ellipsevtx[3].x)/2,(ellipsevtx[0].y+ellipsevtx[3].y)/2), cv::Point((ellipsevtx[1].x+ellipsevtx[2].x)/2,(ellipsevtx[1].y+ellipsevtx[2].y)/2), cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+
+        // put category text
+        char catsStr[256];
+        if (catsVector[0].size()>0) {
+            sprintf(catsStr, "Euclidean: %s", catsVector[0][i].c_str());
+            cv::putText(merged, catsStr, cv::Point(cX-60, cY-20), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 255), 2);
+            sprintf(catsStr, "Naive Bayes: %s", catsVector[0][i].c_str());
+            cv::putText(merged, catsStr, cv::Point(cX-60, cY-40), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 255), 2);
+
+        }
+        // put feature text
+        char featureStr[256];
+        sprintf(featureStr, "Aspect Ratio: %.2f", feature[i][0]);
+        cv::putText(merged, featureStr, cv::Point(cX-20, cY), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
+        sprintf(featureStr, "Extent: %.2f", feature[i][1]);
+        cv::putText(merged, featureStr, cv::Point(cX-20, cY+15), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
+        sprintf(featureStr, "Solidity: %.2f", feature[i][2]);
+        cv::putText(merged, featureStr, cv::Point(cX-20, cY+30), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
     }
 
     return merged;
