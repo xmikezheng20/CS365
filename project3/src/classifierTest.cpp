@@ -21,6 +21,8 @@ std::vector<std::vector<double>> readObjDB(char *path);
 
 // test Scaled Euclidean classifier
 void test0();
+// test KNN classifier
+void test1();
 
 int main(int argc, char *argv[]) {
 
@@ -35,6 +37,9 @@ int main(int argc, char *argv[]) {
     switch(testIdx) {
         case 0:
             test0();
+            break;
+		case 1:
+            test1();
             break;
         default:
             printf("Unknown test idx, exiting\n");
@@ -131,6 +136,41 @@ void test0() {
 	    std::cout << x.first << "," << x.second << std::endl;
 	}
 
+}
+
+// test KNN classifier
+void test1() {
+	printf("Testing KNN classifier\n");
+
+	// get the training set
+	char filename[] = "../data/objDB.csv";
+	std::vector<std::vector<double>> objDBData;
+	std::vector<int> objDBCategory;
+	std::map<std::string, int> objDBCategoryDict;
+
+	readObjDB(filename, objDBData, objDBCategory, objDBCategoryDict);
+
+	// build KNN classifier
+	KNN knn = KNN();
+	knn.build(objDBData, objDBCategory, objDBCategoryDict, 9);
+
+	// make a test object feature vector
+	std::vector<double> newObj;
+	int cat;
+	newObj.push_back(9.1);
+	newObj.push_back(0.8);
+	newObj.push_back(0.8);
+
+	cat = knn.classify(newObj);
+
+	printf("Feature vector %.2f, %.2f, %.2f\n",newObj[0],newObj[1], newObj[2]);
+	printf("Category idx: %d\n", cat);
+	for(std::map<std::string, int>::value_type& x : knn.getObjDBDict())
+	{
+		if (x.second == cat) {
+			printf("Category : %s\n", x.first.c_str());
+		}
+	}
 
 
 }
