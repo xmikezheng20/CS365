@@ -58,7 +58,7 @@ std::vector<std::vector<int>> Classifier::confusion_matrix(
 
 // print out the confusion matrix
 void Classifier::print_confusion_matrix(std::vector<std::vector<int>> conf_mat) {
-    printf("Confusion matrix: column-true, row-classify\n");
+    printf("Confusion matrix for classifier type %d: column-true, row-classify\n", this->type);
     // get the keys
     std::vector<std::string> keys;
     for(std::map<std::string, int>::value_type& x : this->objDBDict)
@@ -144,10 +144,10 @@ int KNN::classify(std::vector<double> curObj){
     std::sort(distCatPairs.begin(), distCatPairs.end());
     //get K nearest neighbors
     std::vector<int> neighbors;
-    printf("K is %d\n", this->K);
+    // printf("K is %d\n", this->K);
     for(int i=0; i<this->K; i++){
-        printf("distance is %f\n",distCatPairs[i].first );
-        printf("index is %d\n",distCatPairs[i].second );
+        // printf("distance is %f\n",distCatPairs[i].first );
+        // printf("index is %d\n",distCatPairs[i].second );
         neighbors.push_back(distCatPairs[i].second);
     }
 
