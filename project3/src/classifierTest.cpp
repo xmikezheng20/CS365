@@ -21,6 +21,8 @@ std::vector<std::vector<double>> readObjDB(char *path);
 
 // test Scaled Euclidean classifier
 void test0();
+// test Naive Bayes Classifier
+void test2();
 
 int main(int argc, char *argv[]) {
 
@@ -36,6 +38,9 @@ int main(int argc, char *argv[]) {
         case 0:
             test0();
             break;
+		case 2:
+			test2();
+			break;
         default:
             printf("Unknown test idx, exiting\n");
     }
@@ -87,6 +92,43 @@ void test0() {
 	printf("Feature vector %.2f, %.2f, %.2f\n",newObj[0],newObj[1], newObj[2]);
 	printf("Category idx: %d\n", cat);
 	for(std::map<std::string, int>::value_type& x : euclideanClassifier.getObjDBDict())
+	{
+		if (x.second == cat) {
+			printf("Category : %s\n", x.first.c_str());
+		}
+	}
+
+
+}
+
+// test naive bayes classifier
+void test2() {
+	printf("Testing Naive Bayes classifier\n");
+
+	// get the training set
+	char filename[] = "../data/objDB.csv";
+	std::vector<std::vector<double>> objDBData;
+	std::vector<int> objDBCategory;
+	std::map<std::string, int> objDBCategoryDict;
+
+	readObjDB(filename, objDBData, objDBCategory, objDBCategoryDict);
+
+	// build the scaled euclidean classifier
+	NaiveBayes naiveBayesClassifier = NaiveBayes();
+	naiveBayesClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+
+	// make a test object feature vector
+	std::vector<double> newObj;
+	int cat;
+	newObj.push_back(9);
+	newObj.push_back(0.8);
+	newObj.push_back(0.9);
+
+	cat = naiveBayesClassifier.classify(newObj);
+
+	printf("Feature vector %.2f, %.2f, %.2f\n",newObj[0],newObj[1], newObj[2]);
+	printf("Category idx: %d\n", cat);
+	for(std::map<std::string, int>::value_type& x : naiveBayesClassifier.getObjDBDict())
 	{
 		if (x.second == cat) {
 			printf("Category : %s\n", x.first.c_str());

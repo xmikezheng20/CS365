@@ -27,6 +27,10 @@ void Classifier::setType(int newType) {
     this->type = newType;
 }
 
+std::map<std::string, int> Classifier::getObjDBDict() {
+    return this->objDBDict;
+}
+
 /*compute the confusion matrix*/
 std::vector<std::vector<int>> Classifier::confusion_matrix(
     std::vector<int> truecats, std::vector<int> classcats) {
@@ -228,4 +232,57 @@ void readObjDB(char *path, std::vector<std::vector<double>> &objDBData,
 		objDBData.push_back(feature);
 	}
 
+}
+
+
+// naive bayes classifier from OpenCV (normal bayes)
+// constructor
+NaiveBayes::NaiveBayes():Classifier::Classifier(2){;}
+
+// build the classifier
+void NaiveBayes::build(std::vector<std::vector<double>> &objDBData,
+    std::vector<int> &objDBCategory, std::map<std::string, int> &objDBDict) {
+    this->objDBData = objDBData;
+    this->objDBCategory = objDBCategory;
+    this->objDBDict = objDBDict;
+
+    this->size = this->objDBData.size();
+    this->numFeature = this->objDBData[0].size();
+
+    this->nbc = cv::ml::NormalBayesClassifier::create();
+
+    // copy vector of vector to mat
+    cv::Mat trainingData = cv::Mat(this->size,this->numFeature,CV_32F);
+    for (int i=0; i<this->size; i++) {
+        for (int j=0; j<this->numFeature; j++) {
+            trainingData.at<float>(i,j) = float(this->objDBData[i][j]);
+        }
+    }
+
+    cv::Mat trainingCats = cv::Mat(this->size, 1, CV_32SC1);
+    for (int i=0; i<this->size; i++) {
+        trainingCats.at<int>(i,0) = float(this->objDBCategory[i]);
+    }
+
+    this->nbc->train(trainingData,cv::ml::ROW_SAMPLE, trainingCats);
+
+}
+
+// Classify
+int NaiveBayes::classify(std::vector<double> newObj) {
+    cv::Mat newObjMat = cv::Mat(1,this->numFeature,CV_32F);
+    for (int i=0;i<this->numFeature;i++) {
+        newObjMat.at<float>(0,i) = newObj[i];
+    }
+
+    // std::cout<<newObjMat<<std::endl;
+
+    cv::Mat outputs, outputProbs;
+
+    this->nbc->predictProb(newObjMat, outputs, outputProbs);
+    int cat = int(outputs.at<int>(0,0));
+    // std::cout<<outputs<<std::endl;
+    // std::cout<<outputProbs<<std::endl;
+
+    return cat;
 }

@@ -179,7 +179,7 @@ int extractFeature(cv::Mat region, int regionId,
 cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
     std::vector<std::vector<cv::Point>> &contoursVector,
     std::vector<cv::Vec4i> &hierarchyVector,
-    std::vector<std::vector<double>> feature, std::vector<std::string> &catsVector,
+    std::vector<std::vector<double>> feature, std::vector<std::vector<std::string>> &catsVector,
     int state) {
     printf("Visualizing contours and features\n");
 
@@ -242,8 +242,13 @@ cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
         // cv::line(merged, cv::Point((ellipsevtx[0].x+ellipsevtx[3].x)/2,(ellipsevtx[0].y+ellipsevtx[3].y)/2), cv::Point((ellipsevtx[1].x+ellipsevtx[2].x)/2,(ellipsevtx[1].y+ellipsevtx[2].y)/2), cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
 
         // put category text
-        if (catsVector.size()>0) {
-            cv::putText(merged, catsVector[i], cv::Point(cX-20, cY-20), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 255), 2);
+        char catsStr[256];
+        if (catsVector[0].size()>0) {
+            sprintf(catsStr, "Euclidean: %s", catsVector[0][i].c_str());
+            cv::putText(merged, catsStr, cv::Point(cX-60, cY-20), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 255), 2);
+            sprintf(catsStr, "Naive Bayes: %s", catsVector[0][i].c_str());
+            cv::putText(merged, catsStr, cv::Point(cX-60, cY-40), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 255), 2);
+
         }
         // put feature text
         char featureStr[256];

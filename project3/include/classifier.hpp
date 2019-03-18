@@ -29,6 +29,8 @@ public:
     int getType();
     void setType(int newType);
 
+    std::map<std::string, int> getObjDBDict();
+
     /*compute the confusion matrix*/
     /*Takes in two standard vectors of zero-index numeric categories and
         computes the confusion matrix. The rows represent true
@@ -49,10 +51,6 @@ private:
 public:
     // constructor
     ScaledEuclidean();
-
-    std::map<std::string, int> getObjDBDict() {
-        return this->objDBDict;
-    }
 
     // build classifier
     void build(std::vector<std::vector<double>> &objDBData,
@@ -77,9 +75,20 @@ public:
 
 /* NaiveBayes classifier inherits Classifier */
 class NaiveBayes: public Classifier{
+private:
+    cv::Ptr<cv::ml::NormalBayesClassifier> nbc;
+    int size, numFeature;
 public:
     // constructor
     NaiveBayes();
+
+    // build the classifier
+    void build(std::vector<std::vector<double>> &objDBData,
+        std::vector<int> &objDBCategory, std::map<std::string, int> &objDBDict);
+
+    // Classify
+    int classify(std::vector<double> newObj);
+
 
 };
 
