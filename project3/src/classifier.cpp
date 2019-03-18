@@ -371,6 +371,7 @@ void NaiveBayes::build(std::vector<std::vector<double>> &objDBData,
     this->nbc = cv::ml::NormalBayesClassifier::create();
 
     // copy vector of vector to mat
+    // min/max normalize
     cv::Mat trainingData = cv::Mat(this->size,this->numFeature,CV_32F);
     for (int i=0; i<this->size; i++) {
         for (int j=0; j<this->numFeature; j++) {
@@ -391,6 +392,7 @@ void NaiveBayes::build(std::vector<std::vector<double>> &objDBData,
 int NaiveBayes::classify(std::vector<double> newObj) {
     cv::Mat newObjMat = cv::Mat(1,this->numFeature,CV_32F);
     for (int i=0;i<this->numFeature;i++) {
+        // min/max normalize
         newObjMat.at<float>(0,i) = newObj[i];
     }
 

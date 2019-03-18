@@ -89,12 +89,17 @@ int main(int argc, char *argv[]) {
 
 
 	if (mode == 0) {
+		if(exist == 0){
+			printf("Error: no database\n" );
+			exit(0);
+		}
+		state = 1;
 		printf("Video capture\n");
 
 		cv::VideoCapture *capdev;
 
 		// open the video device
-		capdev = new cv::VideoCapture(0); //default 0 for using webcam
+		capdev = new cv::VideoCapture(1); //default 0 for using webcam
 		if( !capdev->isOpened() ) {
 			printf("Unable to open video device\n");
 			return(-1);
@@ -215,23 +220,9 @@ int main(int argc, char *argv[]) {
 			cv::imshow("Processed", contoursVis);
 
 			int key = cv::waitKey(20);
+			//q/Q for exit
 			if(key == 81 or key == 113) {
 				break;
-			}
-			// b to enter build mode
-			else if (key == 66 or key == 98) {
-				state = 0;
-			}
-			// c to enter classify mode
-			else if (key == 67 or key == 99) {
-				if (state == 0) {
-					printf("Building new classifier\n");
-					readObjDB(objDB, objDBData, objDBCategory, objDBCategoryDict);
-					euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
-					naiveBayesClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
-					knnClassifier.build(objDBData, objDBCategory, objDBCategoryDict, 5);
-				}
-				state = 1;
 			}
 
 
