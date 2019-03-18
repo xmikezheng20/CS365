@@ -17,6 +17,9 @@
 class Classifier{
 protected:
     int type; //the type of classifier
+    std::vector<std::vector<double>> objDBData;
+    std::vector<int> objDBCategory;
+    std::map<std::string, int> objDBDict;
 
 public:
     // constructor
@@ -45,9 +48,27 @@ public:
 
 /* KNN classifier inherits Classifier */
 class KNN: public Classifier{
+private:
+    int size, numFeature, K;
+
 public:
     // constructor
     KNN();
+
+    /*Builds the classifier give the data points in objectDBData and the categories*/
+    void build(std::vector<std::vector<double>> &objDBData,
+        std::vector<int> &objDBCategory, std::map<std::string, int> &objDBDict, int K = 5);
+
+    /*classify through KNN, return int for category*/
+    int classify(std::vector<double> curObj);
+
+    /*calculates euclidean distance between two data points*/
+    double euclidean_distance(std::vector<double> dataPoint1, std::vector<double> dataPoint2 );
+
+    /*get object dictionary*/
+    std::map<std::string, int> getObjDBDict() {
+        return this->objDBDict;
+    }
 
 };
 
