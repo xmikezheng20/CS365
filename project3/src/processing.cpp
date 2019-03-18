@@ -246,8 +246,10 @@ cv::Mat visFeature(cv::Mat labeled, int numLabels, std::vector<int> skipLabels,
         if (catsVector[0].size()>0) {
             sprintf(catsStr, "Euclidean: %s", catsVector[0][i].c_str());
             cv::putText(merged, catsStr, cv::Point(cX-60, cY-20), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 255), 2);
-            sprintf(catsStr, "Naive Bayes: %s", catsVector[0][i].c_str());
+            sprintf(catsStr, "Naive Bayes: %s", catsVector[1][i].c_str());
             cv::putText(merged, catsStr, cv::Point(cX-60, cY-40), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 255), 2);
+            sprintf(catsStr, "KNN: %s", catsVector[2][i].c_str());
+            cv::putText(merged, catsStr, cv::Point(cX-60, cY-60), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 255), 2);
 
         }
         // put feature text

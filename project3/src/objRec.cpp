@@ -71,6 +71,9 @@ int main(int argc, char *argv[]) {
 	// build naive bayes classifier
 	NaiveBayes naiveBayesClassifier = NaiveBayes();
 
+	// build KNN classifier
+	KNN knnClassifier = KNN();
+
 	// state: training (0) vs testing (1)
 	int state;
 	if (exist == 0) {
@@ -81,6 +84,7 @@ int main(int argc, char *argv[]) {
 		readObjDB(objDB, objDBData, objDBCategory, objDBCategoryDict);
 		euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
 		naiveBayesClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+		knnClassifier.build(objDBData, objDBCategory, objDBCategoryDict, 5);
 	}
 
 
@@ -114,7 +118,7 @@ int main(int argc, char *argv[]) {
 		std::vector<int> skipLabels;
 		std::vector<std::vector<double>> completeFeatureArray;
 		std::vector<int> classCatsArray;
-		std::vector<std::string> euclideanCatsVector, naiveBayesCatsVector;
+		std::vector<std::string> euclideanCatsVector, naiveBayesCatsVector, knnCatsVector;
 		std::vector<std::vector<std::string>> catsVector;
 		std::vector<std::vector<double>> featureVector;
 
@@ -145,6 +149,7 @@ int main(int argc, char *argv[]) {
 			hierarchyVector.clear();
 			euclideanCatsVector.clear();
 			naiveBayesCatsVector.clear();
+			knnCatsVector.clear();
 			catsVector.clear();
 			featureVector.clear();
 			if (numLabels>1) {
@@ -166,12 +171,13 @@ int main(int argc, char *argv[]) {
 
 						if (state == 1) {
 							// classify!
-							int euclideanCat, naiveBayesCat;
+							int euclideanCat, naiveBayesCat, knnCat;
 							euclideanCat = euclideanClassifier.classify(feature);
 							naiveBayesCat = naiveBayesClassifier.classify(feature);
+							knnCat = knnClassifier.classify(feature);
 
 							printf("Feature vector %.2f, %.2f, %.2f\n",feature[0],feature[1], feature[2]);
-							printf("Category idx: Euclidean: %d; Naive Bayes: %d\n", euclideanCat, naiveBayesCat);
+							printf("Category idx: Euclidean: %d; Naive Bayes: %d; knn: %d\n", euclideanCat, naiveBayesCat, knnCat);
 							for(std::map<std::string, int>::value_type& x : euclideanClassifier.getObjDBDict())
 							{
 								if (x.second == euclideanCat) {
@@ -186,6 +192,13 @@ int main(int argc, char *argv[]) {
 									naiveBayesCatsVector.push_back(x.first.c_str());
 								}
 							}
+							for(std::map<std::string, int>::value_type& x : knnClassifier.getObjDBDict())
+							{
+								if (x.second == knnCat) {
+									printf("Category: KNN: %s\n", x.first.c_str());
+									knnCatsVector.push_back(x.first.c_str());
+								}
+							}
 						}
 
 					} else {
@@ -194,6 +207,7 @@ int main(int argc, char *argv[]) {
 				}
 				catsVector.push_back(euclideanCatsVector);
 				catsVector.push_back(naiveBayesCatsVector);
+				catsVector.push_back(knnCatsVector);
 				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector, featureVector, catsVector, state);
 			}
 
@@ -215,6 +229,7 @@ int main(int argc, char *argv[]) {
 					readObjDB(objDB, objDBData, objDBCategory, objDBCategoryDict);
 					euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
 					naiveBayesClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+					knnClassifier.build(objDBData, objDBCategory, objDBCategoryDict, 5);
 				}
 				state = 1;
 			}
@@ -250,8 +265,8 @@ int main(int argc, char *argv[]) {
 	    std::vector<cv::Vec4i> hierarchyVector;
 		std::vector<int> skipLabels;
 		std::vector<std::vector<double>> completeFeatureArray;
-		std::vector<int> euclideanClassCatsArray, naiveBayesClassCatsArray;
-		std::vector<std::string> euclideanCatsVector, naiveBayesCatsVector;
+		std::vector<int> euclideanClassCatsArray, naiveBayesClassCatsArray, knnClassCatsArray;
+		std::vector<std::string> euclideanCatsVector, naiveBayesCatsVector, knnCatsVector;
 		std::vector<std::vector<std::string>> catsVector;
 		std::vector<std::vector<double>> featureVector;
 		std::vector<int> trueCatsArray;
@@ -284,6 +299,7 @@ int main(int argc, char *argv[]) {
 			hierarchyVector.clear();
 			euclideanCatsVector.clear();
 			naiveBayesCatsVector.clear();
+			knnCatsVector.clear();
 			catsVector.clear();
 			featureVector.clear();
 			if (numLabels>1) {
@@ -318,19 +334,21 @@ int main(int argc, char *argv[]) {
 
 						else if (state == 1) {
 							// classify!
-							int euclideanCat, naiveBayesCat;
+							int euclideanCat, naiveBayesCat, knnCat;
 							euclideanCat = euclideanClassifier.classify(feature);
 							naiveBayesCat = naiveBayesClassifier.classify(feature);
+							knnCat = knnClassifier.classify(feature);
 
 							// only save the first category as the category of the image
 							if (j==1){
 								euclideanClassCatsArray.push_back(euclideanCat);
 								naiveBayesClassCatsArray.push_back(naiveBayesCat);
+								knnClassCatsArray.push_back(knnCat);
 								trueCatsArray.push_back(euclideanClassifier.getObjDBDict()[p]);
 							}
 
 							printf("Feature vector %.2f, %.2f, %.2f\n",feature[0],feature[1], feature[2]);
-							printf("Category idx: Euclidean: %d; Naive Bayes: %d\n", euclideanCat, naiveBayesCat);
+							printf("Category idx: Euclidean: %d; Naive Bayes: %d; knn: %d\n", euclideanCat, naiveBayesCat, knnCat);
 							for(std::map<std::string, int>::value_type& x : euclideanClassifier.getObjDBDict())
 							{
 								if (x.second == euclideanCat) {
@@ -345,6 +363,13 @@ int main(int argc, char *argv[]) {
 									naiveBayesCatsVector.push_back(x.first.c_str());
 								}
 							}
+							for(std::map<std::string, int>::value_type& x : knnClassifier.getObjDBDict())
+							{
+								if (x.second == knnCat) {
+									printf("Category: KNN: %s\n", x.first.c_str());
+									knnCatsVector.push_back(x.first.c_str());
+								}
+							}
 						}
 
 					} else {
@@ -353,6 +378,7 @@ int main(int argc, char *argv[]) {
 				}
 				catsVector.push_back(euclideanCatsVector);
 				catsVector.push_back(naiveBayesCatsVector);
+				catsVector.push_back(knnCatsVector);
 				contoursVis = visFeature(labeled, numLabels, skipLabels, contoursVector, hierarchyVector, featureVector, catsVector, state);
 			}
 
@@ -377,6 +403,7 @@ int main(int argc, char *argv[]) {
 					readObjDB(objDB, objDBData, objDBCategory, objDBCategoryDict);
 					euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
 					naiveBayesClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
+					knnClassifier.build(objDBData, objDBCategory, objDBCategoryDict, 5);
 				}
 				state = 1;
 			}
@@ -390,6 +417,8 @@ int main(int argc, char *argv[]) {
 				euclideanClassifier.print_confusion_matrix(euclidean_conf_mat);
 				std::vector<std::vector<int>> nbc_conf_mat = naiveBayesClassifier.confusion_matrix(trueCatsArray, naiveBayesClassCatsArray);
 				naiveBayesClassifier.print_confusion_matrix(nbc_conf_mat);
+				std::vector<std::vector<int>> knn_conf_mat = knnClassifier.confusion_matrix(trueCatsArray, knnClassCatsArray);
+				knnClassifier.print_confusion_matrix(knn_conf_mat);
 			}
 		}
 
