@@ -37,6 +37,14 @@ std::map<std::string, int> Classifier::getObjDBDict() {
 std::vector<std::vector<int>> Classifier::confusion_matrix(
     std::vector<int> truecats, std::vector<int> classcats) {
 
+    //true cat & class cat array append -1
+    // truecats.insert(truecats.end(), -1);
+    // classcats.insert(classcats.end(), -1);
+
+    //clear dictionary
+    this->objDBDict.erase("unknown");
+    printf("successfully erased unknown label\n");
+    printf("truecats size: %lu; classcat size: %lu\n", truecats.size(), classcats.size() );
     // initialize matrix
     std::vector<std::vector<int>> conf_mat;
     for (int i=0; i<this->objDBDict.size();i++){
@@ -46,11 +54,12 @@ std::vector<std::vector<int>> Classifier::confusion_matrix(
         }
         conf_mat.push_back(tmp);
     }
-
+    printf("DEBUG 2\n");
     // fill matrix
     for (int i=0;i<truecats.size();i++) {
         conf_mat[truecats[i]][classcats[i]]++;
     }
+    printf("DEBUG 3\n");
 
     // for (int i=0;i<truecats.size();i++) {
     //     printf("%d %d\n", truecats[i], classcats[i]);
@@ -113,6 +122,7 @@ void KNN::build(std::vector<std::vector<double>> &objDBData,
 
     this->size = this->objDBData.size();
     this->numFeature = this->objDBData[0].size();
+    this->MINDIST = 0.1;
 
     printf("built KNN classifier\n");
 }
@@ -130,11 +140,21 @@ double KNN::euclidean_distance(std::vector<double> dataPoint1, std::vector<doubl
         // printf("dataPoint1,2 %f %f\n", dataPoint1[i], dataPoint2[i]);
         distance += (dataPoint1[i]-dataPoint2[i]) * (dataPoint1[i]-dataPoint2[i]);
     }
-
+    // printf("distance is %f\n", sqrt(distance));
     // printf("finished euclidean distance \n");
     return sqrt(distance);
 }
 
+int KNN::check_unknown_label(std::vector<std::pair<double, int>> dcPairs){
+    //nomalize the distribution
+    for(int i=0; i<this->K; i++){
+        if(dcPairs[i].first < this->MINDIST){
+            return 1;
+        }
+    }
+    //if unknown_label, return 0
+    return 0;
+}
 
 /*classify through KNN, return int for category*/
 int KNN::classify(std::vector<double> curObj){
@@ -152,8 +172,15 @@ int KNN::classify(std::vector<double> curObj){
         distCatPairs.push_back(curPair);
     }
 
+
     // sort  distance - cat pair by distance
     std::sort(distCatPairs.begin(), distCatPairs.end());
+
+    //check unknown label
+    if (!check_unknown_label(distCatPairs)){
+        printf("discovered unknown label\n");
+        return -1;// category is -1 for unknown label
+    }
     //get K nearest neighbors
     std::vector<int> neighbors;
     // printf("K is %d\n", this->K);
@@ -213,9 +240,10 @@ void ScaledEuclidean::build(std::vector<std::vector<double>> &objDBData,
         this->objDBData = objDBData;
         this->objDBCategory = objDBCategory;
         this->objDBDict = objDBDict;
-
         this->size = this->objDBData.size();
         this->numFeature = this->objDBData[0].size();
+
+        this->MINDIST = 15;
 
         // reshape the feature matrix
         std::vector<std::vector<double>> featurels;
@@ -288,6 +316,11 @@ int ScaledEuclidean::classify(std::vector<double> newObj) {
             cat = this->objDBCategory[i];
         }
     }
+    //for unknown label check
+    printf("!!!min dist is %f\n", dist);
+    if(dist>this->MINDIST){
+        return -1;
+    }
 
     return cat;
 }
@@ -320,6 +353,8 @@ void readObjDB(char *path, std::vector<std::vector<double>> &objDBData,
 		// split
 		char *pch;
 		pch = strtok(buf,",");
+        //insert the unknown label to dictionary
+        objDBDict.insert( std::pair<std::string,int>("unknown",-1) );
 		while (pch != NULL)
 		{
 			// printf("%s\n",pch);
@@ -348,9 +383,18 @@ void readObjDB(char *path, std::vector<std::vector<double>> &objDBData,
 
 			pch = strtok(NULL,",");
 		}
+
+
 		objDBData.push_back(feature);
 	}
 
+
+    // objDBDict.insert( {'unknown',-1});
+    //print dictionary for debug
+    for(auto it = objDBDict.cbegin(); it != objDBDict.cend(); ++it){
+        std::cout << it->first << " " << it->second << " " << "\n";
+    }
+    printf("DEBUG 5 - finished readObjDB\n");
 }
 
 

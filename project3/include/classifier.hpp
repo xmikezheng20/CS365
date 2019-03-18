@@ -40,6 +40,8 @@ public:
 
     void print_confusion_matrix(std::vector<std::vector<int>> conf_mat);
 
+    // virtual int check_unknown_label(){};
+
 };
 
 /* classifier using the Euclidean distance */
@@ -47,6 +49,7 @@ class ScaledEuclidean: public Classifier {
 private:
     std::vector<double> stdevs;
     int size, numFeature;
+    double MINDIST;
 
 public:
     // constructor
@@ -68,6 +71,7 @@ public:
 class KNN: public Classifier{
 private:
     int size, numFeature, K;
+    double MINDIST;
 
 public:
     // constructor
@@ -86,7 +90,11 @@ public:
     /*get object dictionary*/
     std::map<std::string, int> getObjDBDict() {
         return this->objDBDict;
-    }
+    };
+
+    /* check unknown label*/
+    int check_unknown_label(std::vector<std::pair<double, int>> dcPairs);
+
 
 };
 

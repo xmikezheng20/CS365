@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
 		euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
 		naiveBayesClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
 		knnClassifier.build(objDBData, objDBCategory, objDBCategoryDict, 5);
+		printf("finished building\n");
 	}
 
 
@@ -229,8 +230,10 @@ int main(int argc, char *argv[]) {
 		}
 
 		delete capdev;
-
 	}
+
+
+	//picture mode
 	else if (mode == 1) {
 		printf("Still images\n");
 		char imgDir[256];
@@ -359,6 +362,7 @@ int main(int argc, char *argv[]) {
 							}
 							for(std::map<std::string, int>::value_type& x : knnClassifier.getObjDBDict())
 							{
+								// printf("DEBUG 1\n");
 								if (x.second == knnCat) {
 									printf("Category: KNN: %s\n", x.first.c_str());
 									knnCatsVector.push_back(x.first.c_str());
