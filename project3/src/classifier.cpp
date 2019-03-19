@@ -74,7 +74,7 @@ std::vector<std::vector<int>> Classifier::confusion_matrix(
 
 // print out the confusion matrix
 void Classifier::print_confusion_matrix(std::vector<std::vector<int>> conf_mat) {
-    printf("Confusion matrix for classifier type %d: column-true, row-classify\n", this->type);
+    printf("Confusion matrix for classifier type %d: column-predict, row-true\n", this->type);
     // get the keys
     std::vector<std::string> keys;
 
