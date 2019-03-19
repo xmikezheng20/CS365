@@ -125,7 +125,7 @@ void KNN::build(std::vector<std::vector<double>> &objDBData,
 
     this->size = this->objDBData.size();
     this->numFeature = this->objDBData[0].size();
-    this->MINDIST = 0.7;
+    this->MINDIST = 5;
 
     // reshape the feature matrix
     std::vector<std::vector<double>> featurels;
@@ -170,7 +170,7 @@ int KNN::check_unknown_label(std::vector<std::pair<double, int>> dcPairs){
     // for (int i=0; i<K; i++) {
     //     printf("%.4f %d\n", dcPairs[i].first, dcPairs[i].second);
     // }
-    // printf("%.4f\n", dcPairs[0].first);
+    printf("min dist %.4f\n", dcPairs[0].first);
     if(dcPairs[0].first < this->MINDIST){
         return 1;
     }
@@ -270,7 +270,7 @@ void ScaledEuclidean::build(std::vector<std::vector<double>> &objDBData,
         this->size = this->objDBData.size();
         this->numFeature = this->objDBData[0].size();
 
-        this->MINDIST = 0.7;
+        this->MINDIST = 5;
 
         // reshape the feature matrix
         std::vector<std::vector<double>> featurels;
@@ -353,7 +353,7 @@ int ScaledEuclidean::classify(std::vector<double> newObj) {
     //for unknown label check
     // printf("!!!min dist is %f\n", min);
     if(min>this->MINDIST){
-        printf("Unknown obj\n");
+        printf("Unknown obj with min dist %.2f\n", min);
         return this->objDBDict.size()-1;
     }
 
