@@ -36,7 +36,18 @@ std::map<std::string, int> Classifier::getObjDBDict() {
 /*compute the confusion matrix*/
 std::vector<std::vector<int>> Classifier::confusion_matrix(
     std::vector<int> truecats, std::vector<int> classcats) {
+    // for (int i = 0;i<truecats.size();i++) {
+    //     printf("%d %d\n", truecats[i], classcats[i]);
+    // }
 
+    //true cat & class cat array append -1
+    // truecats.insert(truecats.end(), -1);
+    // classcats.insert(classcats.end(), -1);
+
+    //clear dictionary
+    // this->objDBDict.erase("unknown");
+    // printf("successfully erased unknown label\n");
+    // printf("truecats size: %lu; classcat size: %lu\n", truecats.size(), classcats.size() );
     // initialize matrix
     std::vector<std::vector<int>> conf_mat;
     for (int i=0; i<this->objDBDict.size();i++){
@@ -46,11 +57,12 @@ std::vector<std::vector<int>> Classifier::confusion_matrix(
         }
         conf_mat.push_back(tmp);
     }
-
+    // printf("DEBUG 2\n");
     // fill matrix
     for (int i=0;i<truecats.size();i++) {
         conf_mat[truecats[i]][classcats[i]]++;
     }
+    // printf("DEBUG 3\n");
 
     // for (int i=0;i<truecats.size();i++) {
     //     printf("%d %d\n", truecats[i], classcats[i]);
@@ -89,7 +101,7 @@ void Classifier::print_confusion_matrix(std::vector<std::vector<int>> conf_mat) 
     }
     printf("\n");
     // other lines
-    for (int i=0; i<keys.size();i++) {
+    for (int i=0; i<keys.size()-1;i++) {
         printf("%8.8s", keys[i].c_str());
         for (int j=0;j<keys.size();j++) {
             printf("|%8d",conf_mat[i][j]);
@@ -113,8 +125,27 @@ void KNN::build(std::vector<std::vector<double>> &objDBData,
 
     this->size = this->objDBData.size();
     this->numFeature = this->objDBData[0].size();
+    this->MINDIST = 0.7;
 
-    printf("built KNN classifier\n");
+    // reshape the feature matrix
+    std::vector<std::vector<double>> featurels;
+    std::vector<double> tmp;
+
+    // printf("Reshaping feature matrix\n");
+    for (int i=0;i<this->numFeature;i++){
+        for (int j=0;j<this->size;j++) {
+            tmp.push_back(this->objDBData[j][i]);
+        }
+        featurels.push_back(tmp);
+        tmp.clear();
+    }
+
+    // calculate standard deviations
+    // printf("calculating stdev\n");
+    this->stdevs = stdev(featurels);
+
+
+    // printf("built KNN classifier\n");
 }
 
 /*calculates euclidean distance between two data points*/
@@ -128,21 +159,32 @@ double KNN::euclidean_distance(std::vector<double> dataPoint1, std::vector<doubl
     double distance = 0;
     for(int i=0; i<this->numFeature; i++){
         // printf("dataPoint1,2 %f %f\n", dataPoint1[i], dataPoint2[i]);
-        distance += (dataPoint1[i]-dataPoint2[i]) * (dataPoint1[i]-dataPoint2[i]);
+        distance += (dataPoint1[i]-dataPoint2[i]) * (dataPoint1[i]-dataPoint2[i]) / this->stdevs[i]/ this->stdevs[i];
     }
-
+    // printf("distance is %f\n", sqrt(distance));
     // printf("finished euclidean distance \n");
     return sqrt(distance);
 }
 
+int KNN::check_unknown_label(std::vector<std::pair<double, int>> dcPairs){
+    // for (int i=0; i<K; i++) {
+    //     printf("%.4f %d\n", dcPairs[i].first, dcPairs[i].second);
+    // }
+    // printf("%.4f\n", dcPairs[0].first);
+    if(dcPairs[0].first < this->MINDIST){
+        return 1;
+    }
+    //if unknown_label, return 0
+    return 0;
+}
 
 /*classify through KNN, return int for category*/
 int KNN::classify(std::vector<double> curObj){
-    printf("classifing through KNN\n" );
+    printf("Classify using KNN\n" );
     std::vector<double> distances;
     std::vector<std::pair<double, int>> distCatPairs;
 
-    printf("this size is %d\n", this->size);
+    // printf("this size is %d\n", this->size);
     //get euclidian distance
     for(int i=0; i< this->size; i++){
         std::vector<double> curRow = this->objDBData[i];
@@ -152,8 +194,15 @@ int KNN::classify(std::vector<double> curObj){
         distCatPairs.push_back(curPair);
     }
 
+
     // sort  distance - cat pair by distance
     std::sort(distCatPairs.begin(), distCatPairs.end());
+
+    //check unknown label
+    if (!check_unknown_label(distCatPairs)){
+        printf("discovered unknown label\n");
+        return this->objDBDict.size()-1;// category is max for unknown label
+    }
     //get K nearest neighbors
     std::vector<int> neighbors;
     // printf("K is %d\n", this->K);
@@ -192,6 +241,11 @@ int KNN::classify(std::vector<double> curObj){
         }
     }
 
+    printf("KNN result %d/%d with min dist %.2f\n", count, K, distCatPairs[0].first);
+    // another way to classify unknown
+    if (count < int(K/2)+1) {
+        return this->objDBDict.size()-1;
+    }
     return majority;
 }
 
@@ -213,9 +267,10 @@ void ScaledEuclidean::build(std::vector<std::vector<double>> &objDBData,
         this->objDBData = objDBData;
         this->objDBCategory = objDBCategory;
         this->objDBDict = objDBDict;
-
         this->size = this->objDBData.size();
         this->numFeature = this->objDBData[0].size();
+
+        this->MINDIST = 0.7;
 
         // reshape the feature matrix
         std::vector<std::vector<double>> featurels;
@@ -233,23 +288,28 @@ void ScaledEuclidean::build(std::vector<std::vector<double>> &objDBData,
         // calculate standard deviations
         // printf("calculating stdev\n");
         this->stdevs = stdev(featurels);
+        // for (int i=0; i<this->numFeature; i++){
+        //     printf("STDEV %d: %.2f\n", i, this->stdevs[i]);
+        // }
         return;
     }
 
 // helper function that calculates standard deviation of a matrix columnwise
-std::vector<double> ScaledEuclidean::stdev(std::vector<std::vector<double>> featurels) {
+std::vector<double> stdev(std::vector<std::vector<double>> featurels) {
     std::vector<double> stdevs;
     double stdev;
     std::vector<double> means;
     double sum;
+    int numFeature = featurels.size();
+    int size = featurels[0].size();
 
     // calculate mean
-    for (int i=0;i<this->numFeature;i++) {
+    for (int i=0;i<numFeature;i++) {
         sum = 0;
-        for (int j=0;j<this->size;j++) {
+        for (int j=0;j<size;j++) {
             sum += featurels[i][j];
         }
-        means.push_back(sum/this->size);
+        means.push_back(sum/size);
     }
 
     // for (int i=0; i<means.size(); i++) {
@@ -257,12 +317,12 @@ std::vector<double> ScaledEuclidean::stdev(std::vector<std::vector<double>> feat
     // }
 
     // calculate stdev
-    for (int i=0;i<this->numFeature;i++) {
+    for (int i=0;i<numFeature;i++) {
         sum = 0;
         for (int j=0;j<size;j++) {
             sum += (featurels[i][j]-means[i])*(featurels[i][j]-means[i]);
         }
-        stdevs.push_back(sqrt(sum/(this->size-1)));
+        stdevs.push_back(sqrt(sum/(size-1)));
     }
     // for (int i=0; i<stdevs.size(); i++) {
     //     printf("stdev of feature %d: %.4f\n",i,stdevs[i]);
@@ -274,6 +334,7 @@ std::vector<double> ScaledEuclidean::stdev(std::vector<std::vector<double>> feat
 
 // Classify a feature vector
 int ScaledEuclidean::classify(std::vector<double> newObj) {
+    printf("Classify using Scaled Euclidean Classifier\n");
     double dist, scaledDiff;
     double min = 100000;
     int cat = -1;
@@ -288,7 +349,15 @@ int ScaledEuclidean::classify(std::vector<double> newObj) {
             cat = this->objDBCategory[i];
         }
     }
+    min = sqrt(min);
+    //for unknown label check
+    // printf("!!!min dist is %f\n", min);
+    if(min>this->MINDIST){
+        printf("Unknown obj\n");
+        return this->objDBDict.size()-1;
+    }
 
+    printf("Min dist: %.2f\n", min);
     return cat;
 }
 
@@ -335,7 +404,7 @@ void readObjDB(char *path, std::vector<std::vector<double>> &objDBData,
 			ptr[j]='\0';
 			pch=ptr;
 			// store the training sample
-			if (idx<3) {
+			if (idx<6) {
 				feature.push_back(atof(pch));
 			}else {
 				// if not exist
@@ -348,9 +417,22 @@ void readObjDB(char *path, std::vector<std::vector<double>> &objDBData,
 
 			pch = strtok(NULL,",");
 		}
+        // printf("Feature length %lu\n", feature.size());
+
+
 		objDBData.push_back(feature);
 	}
+    //insert the unknown label to dictionary
+    objDBDict["unknown"] = objDBDict.size();
 
+
+
+    // // objDBDict.insert( {'unknown',-1});
+    // //print dictionary for debug
+    // for(auto it = objDBDict.cbegin(); it != objDBDict.cend(); ++it){
+    //     std::cout << it->first << " " << it->second << " " << "\n";
+    // }
+    // printf("DEBUG 5 - finished readObjDB\n");
 }
 
 
@@ -368,15 +450,42 @@ void NaiveBayes::build(std::vector<std::vector<double>> &objDBData,
     this->size = this->objDBData.size();
     this->numFeature = this->objDBData[0].size();
 
+    for (int i=0; i<this->numFeature; i++) {
+        this->mins.push_back(10000);
+        this->maxs.push_back(0);
+    }
+
     this->nbc = cv::ml::NormalBayesClassifier::create();
 
     // copy vector of vector to mat
+    // min/max normalize
     cv::Mat trainingData = cv::Mat(this->size,this->numFeature,CV_32F);
     for (int i=0; i<this->size; i++) {
         for (int j=0; j<this->numFeature; j++) {
-            trainingData.at<float>(i,j) = float(this->objDBData[i][j]);
+            float val = float(this->objDBData[i][j]);
+            if (val<this->mins[j]) {
+                this->mins[j] = val;
+            } else if (val>this->maxs[j]) {
+                this->maxs[j] = val;
+            }
         }
     }
+
+    // check min max
+    for (int i=0; i<this->numFeature; i++) {
+        // printf("Feature %d has min %.4f, max %.4f\n", i, this->mins[i], this->maxs[i]);
+        this->ranges.push_back(this->maxs[i]-this->mins[i]);
+    }
+
+    // update mat
+    for (int i=0; i<this->size; i++) {
+        for (int j=0; j<this->numFeature; j++) {
+            float val = float(this->objDBData[i][j]);
+            trainingData.at<float>(i,j) = (val-this->mins[j])/this->ranges[j];
+        }
+    }
+
+    // std::cout<<trainingData<<std::endl;
 
     cv::Mat trainingCats = cv::Mat(this->size, 1, CV_32SC1);
     for (int i=0; i<this->size; i++) {
@@ -389,9 +498,11 @@ void NaiveBayes::build(std::vector<std::vector<double>> &objDBData,
 
 // Classify
 int NaiveBayes::classify(std::vector<double> newObj) {
+    printf("Classify using NBC\n");
     cv::Mat newObjMat = cv::Mat(1,this->numFeature,CV_32F);
     for (int i=0;i<this->numFeature;i++) {
-        newObjMat.at<float>(0,i) = newObj[i];
+        // min/max normalize
+        newObjMat.at<float>(0,i) = (float(newObj[i])-this->mins[i])/this->ranges[i];
     }
 
     // std::cout<<newObjMat<<std::endl;

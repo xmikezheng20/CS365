@@ -40,6 +40,8 @@ public:
 
     void print_confusion_matrix(std::vector<std::vector<int>> conf_mat);
 
+    // virtual int check_unknown_label(){};
+
 };
 
 /* classifier using the Euclidean distance */
@@ -47,6 +49,7 @@ class ScaledEuclidean: public Classifier {
 private:
     std::vector<double> stdevs;
     int size, numFeature;
+    double MINDIST;
 
 public:
     // constructor
@@ -55,9 +58,6 @@ public:
     // build classifier
     void build(std::vector<std::vector<double>> &objDBData,
     	std::vector<int> &objDBCategory, std::map<std::string, int> &objDBDict);
-
-    // helper function that calculates standard deviation of a matrix columnwise
-    std::vector<double> stdev(std::vector<std::vector<double>> featurels);
 
     // Classify
     int classify(std::vector<double> newObj);
@@ -68,6 +68,8 @@ public:
 class KNN: public Classifier{
 private:
     int size, numFeature, K;
+    double MINDIST;
+    std::vector<double> stdevs;
 
 public:
     // constructor
@@ -86,7 +88,11 @@ public:
     /*get object dictionary*/
     std::map<std::string, int> getObjDBDict() {
         return this->objDBDict;
-    }
+    };
+
+    /* check unknown label*/
+    int check_unknown_label(std::vector<std::pair<double, int>> dcPairs);
+
 
 };
 
@@ -96,6 +102,7 @@ class NaiveBayes: public Classifier{
 private:
     cv::Ptr<cv::ml::NormalBayesClassifier> nbc;
     int size, numFeature;
+    std::vector<float> mins, maxs, ranges;
 public:
     // constructor
     NaiveBayes();
@@ -112,8 +119,8 @@ public:
 
 
 
-
-
-
 void readObjDB(char *path, std::vector<std::vector<double>> &objDBData,
 	std::vector<int> &objDBCategory, std::map<std::string, int> &objDBDict );
+
+// helper function that calculates standard deviation of a matrix columnwise
+std::vector<double> stdev(std::vector<std::vector<double>> featurels);

@@ -170,7 +170,19 @@ int extractFeature(cv::Mat region, int regionId,
 
     feature.push_back(solidity);
 
-    printf("Aspect ratio %.2f, extent %.2f, solidity %.2f\n", aspectRatio, extent, solidity);
+    // hu Moments
+    cv::Moments moments = cv::moments(contours[0]);
+    double hu[7];
+    cv::HuMoments(moments, hu);
+    // for (int i=0; i<7; i++) {
+    //     printf("Hu moments %d is %.4f\n", i, hu[i]);
+    // }
+    // use first three hu moments
+    for (int i=0; i<3; i++) {
+        feature.push_back(hu[i]);
+    }
+
+    printf("Aspect ratio %.2f, extent %.2f, solidity %.2f, hu0: %.2f, hu1 %.2f, hu2: %.2f\n", aspectRatio, extent, solidity, hu[0], hu[1], hu[2]);
 
     return 0;
 }
