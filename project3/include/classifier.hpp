@@ -59,9 +59,6 @@ public:
     void build(std::vector<std::vector<double>> &objDBData,
     	std::vector<int> &objDBCategory, std::map<std::string, int> &objDBDict);
 
-    // helper function that calculates standard deviation of a matrix columnwise
-    std::vector<double> stdev(std::vector<std::vector<double>> featurels);
-
     // Classify
     int classify(std::vector<double> newObj);
 
@@ -72,6 +69,7 @@ class KNN: public Classifier{
 private:
     int size, numFeature, K;
     double MINDIST;
+    std::vector<double> stdevs;
 
 public:
     // constructor
@@ -104,6 +102,7 @@ class NaiveBayes: public Classifier{
 private:
     cv::Ptr<cv::ml::NormalBayesClassifier> nbc;
     int size, numFeature;
+    std::vector<float> mins, maxs, ranges;
 public:
     // constructor
     NaiveBayes();
@@ -120,8 +119,8 @@ public:
 
 
 
-
-
-
 void readObjDB(char *path, std::vector<std::vector<double>> &objDBData,
 	std::vector<int> &objDBCategory, std::map<std::string, int> &objDBDict );
+
+// helper function that calculates standard deviation of a matrix columnwise
+std::vector<double> stdev(std::vector<std::vector<double>> featurels);
