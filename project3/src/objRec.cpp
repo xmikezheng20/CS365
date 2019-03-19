@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
 		readObjDB(objDB, objDBData, objDBCategory, objDBCategoryDict);
 		euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
 		naiveBayesClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
-		knnClassifier.build(objDBData, objDBCategory, objDBCategoryDict, 5);
+		knnClassifier.build(objDBData, objDBCategory, objDBCategoryDict, 7);
 		printf("finished building\n");
 	}
 
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 		cv::VideoCapture *capdev;
 
 		// open the video device
-		capdev = new cv::VideoCapture(1); //default 0 for using webcam
+		capdev = new cv::VideoCapture(0); //default 0 for using webcam
 		if( !capdev->isOpened() ) {
 			printf("Unable to open video device\n");
 			return(-1);
@@ -220,7 +220,7 @@ int main(int argc, char *argv[]) {
 
 			cv::imshow("Processed", contoursVis);
 
-			int key = cv::waitKey(20);
+			int key = cv::waitKey(25);
 			//q/Q for exit
 			if(key == 81 or key == 113) {
 				break;
@@ -344,7 +344,7 @@ int main(int argc, char *argv[]) {
 								// printf("%d %d %d\n", euclideanClassifier.getObjDBDict()[p], euclideanCat, naiveBayesCat);
 							}
 
-							printf("Feature vector %.2f, %.2f, %.2f\n",feature[0],feature[1], feature[2]);
+							printf("Feature vector %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",feature[0],feature[1], feature[2], feature[3], feature[4], feature[5]);
 							printf("Category idx: Euclidean: %d; Naive Bayes: %d; knn: %d\n", euclideanCat, naiveBayesCat, knnCat);
 							for(std::map<std::string, int>::value_type& x : euclideanClassifier.getObjDBDict())
 							{
@@ -401,7 +401,7 @@ int main(int argc, char *argv[]) {
 					readObjDB(objDB, objDBData, objDBCategory, objDBCategoryDict);
 					euclideanClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
 					naiveBayesClassifier.build(objDBData, objDBCategory, objDBCategoryDict);
-					knnClassifier.build(objDBData, objDBCategory, objDBCategoryDict, 5);
+					knnClassifier.build(objDBData, objDBCategory, objDBCategoryDict, 7);
 				}
 				state = 1;
 			}
@@ -410,13 +410,14 @@ int main(int argc, char *argv[]) {
 
 		if (mode == 1) {
 			// print out the confusion matrix
+			printf("Classifier type 0: Euclidean; type 1: KNN; type 2: NBC\n");
 			if (trueCatsArray.size()>0) {
 				std::vector<std::vector<int>> euclidean_conf_mat = euclideanClassifier.confusion_matrix(trueCatsArray, euclideanClassCatsArray);
 				euclideanClassifier.print_confusion_matrix(euclidean_conf_mat);
-				std::vector<std::vector<int>> nbc_conf_mat = naiveBayesClassifier.confusion_matrix(trueCatsArray, naiveBayesClassCatsArray);
-				naiveBayesClassifier.print_confusion_matrix(nbc_conf_mat);
 				std::vector<std::vector<int>> knn_conf_mat = knnClassifier.confusion_matrix(trueCatsArray, knnClassCatsArray);
 				knnClassifier.print_confusion_matrix(knn_conf_mat);
+				std::vector<std::vector<int>> nbc_conf_mat = naiveBayesClassifier.confusion_matrix(trueCatsArray, naiveBayesClassCatsArray);
+				naiveBayesClassifier.print_confusion_matrix(nbc_conf_mat);
 			}
 		}
 
@@ -449,7 +450,7 @@ void writeDB(char *filename, char *cat, std::vector<double> feature) {
       printf("File not valid\n");
       exit(0);
     }
-	fprintf(fp, "%.6f,%.6f,%.6f,%s\n",feature[0],feature[1],feature[2],cat);
+	fprintf(fp, "%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%s\n",feature[0],feature[1],feature[2],feature[3],feature[4],feature[5],cat);
 
 	fclose(fp);
 
@@ -462,7 +463,7 @@ int createDB(char *filename) {
     if (!(fp=fopen(filename, "r"))) {
       printf("Creating database\n");
 	  fp=fopen(filename, "w");
-	  fprintf(fp, "aspectRatio, extent, solidity, class\n");
+	  fprintf(fp, "aspectRatio, extent, solidity, hu0, hu1, hu2, class\n");
 	  fclose(fp);
 	  return 0;
     }

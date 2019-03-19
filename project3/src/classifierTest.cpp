@@ -88,13 +88,16 @@ void test0() {
 	// make a test object feature vector
 	std::vector<double> newObj;
 	int cat;
-	newObj.push_back(3.8);
-	newObj.push_back(0.3);
-	newObj.push_back(0.5);
+	newObj.push_back(1.71);
+	newObj.push_back(0.92);
+	newObj.push_back(0.99);
+	newObj.push_back(0.19);
+	newObj.push_back(0.01);
+	newObj.push_back(0.00);
 
 	cat = euclideanClassifier.classify(newObj);
 
-	printf("Feature vector %.2f, %.2f, %.2f\n",newObj[0],newObj[1], newObj[2]);
+	printf("Feature vector %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",newObj[0],newObj[1], newObj[2], newObj[3], newObj[4], newObj[5]);
 	printf("Category idx: %d\n", cat);
 	for(std::map<std::string, int>::value_type& x : euclideanClassifier.getObjDBDict())
 	{
@@ -125,13 +128,16 @@ void test2() {
 	// make a test object feature vector
 	std::vector<double> newObj;
 	int cat;
-	newObj.push_back(9);
-	newObj.push_back(0.8);
-	newObj.push_back(0.9);
+	newObj.push_back(1.71);
+	newObj.push_back(0.92);
+	newObj.push_back(0.99);
+	newObj.push_back(0.19);
+	newObj.push_back(0.01);
+	newObj.push_back(0.00);
 
 	cat = naiveBayesClassifier.classify(newObj);
 
-	printf("Feature vector %.2f, %.2f, %.2f\n",newObj[0],newObj[1], newObj[2]);
+	printf("Feature vector %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",newObj[0],newObj[1], newObj[2], newObj[3], newObj[4], newObj[5]);
 	printf("Category idx: %d\n", cat);
 	for(std::map<std::string, int>::value_type& x : naiveBayesClassifier.getObjDBDict())
 	{
@@ -161,13 +167,16 @@ void test1() {
 	// make a test object feature vector
 	std::vector<double> newObj;
 	int cat;
-	newObj.push_back(9.1);
-	newObj.push_back(0.8);
-	newObj.push_back(0.8);
+	newObj.push_back(1.71);
+	newObj.push_back(0.92);
+	newObj.push_back(0.99);
+	newObj.push_back(0.19);
+	newObj.push_back(0.01);
+	newObj.push_back(0.00);
 
 	cat = knn.classify(newObj);
 
-	printf("Feature vector %.2f, %.2f, %.2f\n",newObj[0],newObj[1], newObj[2]);
+	printf("Feature vector %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",newObj[0],newObj[1], newObj[2], newObj[3], newObj[4], newObj[5]);
 	printf("Category idx: %d\n", cat);
 	for(std::map<std::string, int>::value_type& x : knn.getObjDBDict())
 	{
