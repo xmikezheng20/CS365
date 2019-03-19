@@ -193,8 +193,6 @@ int KNN::classify(std::vector<double> curObj){
         std::pair<double, int> curPair(curDist, i);
         distCatPairs.push_back(curPair);
     }
-
-
     // sort  distance - cat pair by distance
     std::sort(distCatPairs.begin(), distCatPairs.end());
 
@@ -212,38 +210,44 @@ int KNN::classify(std::vector<double> curObj){
         neighbors.push_back(distCatPairs[i].second);
     }
 
+    // for (int i =0; i<K; i++) {
+    //     std::cout<<this->objDBCategory[neighbors[i]] <<std::endl;
+    // }
+
+    std::map<int, int> catCountMap;
+
+
     int cats[this->K];
     for(int i=0; i<this->K; i++){
         int curIndex = neighbors[i];
         // printf("neighbors indexs are %d\n", neighbors[i]);
         int curCat = this->objDBCategory[curIndex];
-        cats[i] = curCat;
+        catCountMap[curCat] = 0;
+        cats[i]= curCat;
         // printf("cat is %d\n", cats[i]);
-
+    }
+    for (int i =0; i<this->K; i++) {
+        catCountMap[cats[i]]++;
     }
 
-    //calculate the most frequent class in the neighbors
-    int previous = cats[0];
-    int majority = cats[0];
-    int count = 1;
-    int maxCount = 1;
-    for (int i = 1; i < this->K; i++) {
-        // printf("cat is %d\n", cats[i]);
-        if (cats[i] == previous)
-            count++;
-        else {
-            if (count > maxCount) {
-                majority = cats[i-1];
-                maxCount = count;
-            }
-            previous = cats[i];
-            count = 1;
-        }
+    std::map<int, int> countCatMap;
+
+    for(std::map<int, int>::value_type& x : catCountMap)
+    {
+        countCatMap[x.second] = x.first;
     }
 
-    printf("KNN result %d/%d with min dist %.2f\n", count, K, distCatPairs[0].first);
+    // for(std::map<int, int>::value_type& x : countCatMap)
+    // {
+    //     std::cout<<x.first << " " <<x.second<<std::endl;
+    // }
+
+    int majority = (--countCatMap.end())->second;
+    int maxCount = (--countCatMap.end())->first;
+
+    printf("KNN result %d/%d with min dist %.2f\n", maxCount, K, distCatPairs[0].first);
     // another way to classify unknown
-    if (count < int(K/2)+1) {
+    if (maxCount < int(K/2)+1) {
         return this->objDBDict.size()-1;
     }
     return majority;
