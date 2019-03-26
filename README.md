@@ -4,7 +4,7 @@ Colby College CS365 SP19 Projects
 Mike Zheng and Heidi He
 - [Project 2: Content-Based Image Retrieval](https://github.com/xzheng902/CS365/blob/master/README.md#-project-2-content-based-image-retrieval-)
 - [Project 3: 2D Object Recognition](https://github.com/xzheng902/CS365/blob/master/README.md#-project-3-2d-object-recognition-)
-
+***
 # Project 2: Content-Based Image Retrieval
 
 # Instructions
@@ -69,6 +69,7 @@ Makefile: make cbirgui
 
 Run: ../bin/cbirgui ../data/<queryImageName> <database>
 
+[back to top](https://github.com/xzheng902/CS365/blob/master/README.md#cs365)
 
 ***
 # Project 3: 2D Object Recognition
@@ -120,3 +121,5 @@ some helper functions
 
 #### Classifier Test
 a helper file that tests each classifier class. Not a part of the main program.
+
+[back to top](https://github.com/xzheng902/CS365/blob/master/README.md#cs365)
