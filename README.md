@@ -2,8 +2,10 @@
 Colby College CS365 SP19 Projects
 
 Mike Zheng and Heidi He
-- [Project 2: Content-Based Image Retrieval](https://github.com/xzheng902/CS365/blob/master/README.md#-project-2-content-based-image-retrieval-)
-- [Project 3: 2D Object Recognition](https://github.com/xzheng902/CS365/blob/master/README.md#-project-3-2d-object-recognition-)
+- [Project 2: Content-Based Image Retrieval](https://github.com/xzheng902/CS365/blob/master/README.md#-project-2-content-based-image-retrieval)
+- [Project 3: 2D Object Recognition](https://github.com/xzheng902/CS365/blob/master/README.md#-project-3-2d-object-recognition)
+
+
 ***
 # Project 2: Content-Based Image Retrieval
 
