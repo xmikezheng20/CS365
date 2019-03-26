@@ -5,6 +5,8 @@ Mike Zheng and Heidi He
 
 <h1> Project 2: Content-Based Image Retrieval </h1>
 
+![alt text](https://drive.google.com/open?id=1UoSZIOS8dclRrlMZLHat20CPVEUB37R3)
+
 <h1> Instructions </h1>
 <h2>Compilation and Running </h2>
 Makefile - GUI : make cbirgui
