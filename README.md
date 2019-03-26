@@ -2,6 +2,8 @@
 Colby College CS365 SP19 Projects
 
 Mike Zheng and Heidi He
+- [Project 2: Content-Based Image Retrieval] (https://github.com/xzheng902/CS365/blob/master/README.md#-project-2-content-based-image-retrieval-)
+- [Project 3: 2D Object Recognition]
 
 <h1> Project 2: Content-Based Image Retrieval </h1>
 
@@ -68,15 +70,15 @@ the class that processes all histogram functions. the functions usually take in 
 Makefile: make cbirgui
 
 Run: ../bin/cbirgui ../data/<queryImageName> <database>
-  
-</br>
 
+
+***
 <h1> Project 3: 2D Object Recognition </h1>
 
 <h2>Compilation and Running </h2>
 Makefile - CommandLine: make objRec
 
-Run: 
+Run:
 
  for video: ../bin/objRec ../data/<database> 0
 
@@ -90,7 +92,7 @@ Mode 0 is video mode while mode 1 is image mode.
 
 State 0 is the training mode while state 1 is the testing mode.
 
-It either trains the model with the given image directory and writes to the database, or recognize the images in a given directory/ streaming video. 
+It either trains the model with the given image directory and writes to the database, or recognize the images in a given directory/ streaming video.
 
 When the user opens the OR system, if the user chooses to process still images, then there are training and testing modes. If the objectDB exists, then the system automatically enters testing mode. By pressing b, the user can switch to training mode, where features are collected and label (from file name) is put into the database. The user can pressing c, the user can get back to testing mode. If the user chooses video input, then the system can only do testing.
 
@@ -110,7 +112,7 @@ visualization
 <h2>Classifier Library </h2>
 parent class: Classifier
 
-the parent class has a field "type" that indicates which classifier to use; 
+the parent class has a field "type" that indicates which classifier to use;
 
 methods include getting the ojbect's dictionary,  construct and print confusion matrix.
 
@@ -120,5 +122,3 @@ some helper functions
 
 <h2>Classifier Test </h2>
 a helper file that tests each classifier class. Not a part of the main program.
-
-

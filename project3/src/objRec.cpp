@@ -382,7 +382,7 @@ int main(int argc, char *argv[]) {
 
 
 
-
+			//thresholded, morphed, labeledVis, final: contoursVis
 			cv::imshow("Processed", contoursVis);
 
 			key = cv::waitKey(0);
