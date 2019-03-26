@@ -5,12 +5,10 @@ Mike Zheng and Heidi He
 - [Project 2: Content-Based Image Retrieval](https://github.com/xzheng902/CS365/blob/master/README.md#-project-2-content-based-image-retrieval-)
 - [Project 3: 2D Object Recognition](https://github.com/xzheng902/CS365/blob/master/README.md#-project-3-2d-object-recognition-)
 
-<h1> Project 2: Content-Based Image Retrieval </h1>
+# Project 2: Content-Based Image Retrieval
 
-![alt text](https://drive.google.com/open?id=1UoSZIOS8dclRrlMZLHat20CPVEUB37R3)
-
-<h1> Instructions </h1>
-<h2>Compilation and Running </h2>
+# Instructions
+###Compilation and Running
 Makefile - GUI : make cbirgui
 
 Run: ../bin/cbirgui ../data/<queryImageName> <database>
@@ -19,7 +17,7 @@ Makefile - CommandLine: make cbir
 
 Run: ../bin/cbir ../data/&lt;queryImageName&gt; &lt;database&gt; &lt;# of image to report&gt; &lt;method index&gt;
 
-<h2>GUI: </h2>
+###GUI:
 the trackbar on top of the images enables a user to select matching methods, according to the following rules:
 
 0- baseline matching
@@ -38,8 +36,8 @@ the trackbar on top of the images enables a user to select matching methods, acc
 
 7- rgb + saturation in weighted average
 
-<h1>project structure</h1>
-<h2>cbirgui (main):</h2>
+###project structure
+####cbirgui (main):
 recursively read files from a directory.
 
 display GUI
@@ -52,7 +50,7 @@ show result for top 20 matches and update.
 
 (comparator for comparing similarity.)
 
-<h2>Img class:</h2>
+####Img class:
 each image class object contains:
 
 an image class has a path to the original image,
@@ -63,19 +61,19 @@ a similarity value that shows its similarity to the query image. The larger the 
 
 When comparing pictures, call related histogram function from the histogram library. And calculate the distance metric within the image class. Return the similarity value to the main function.
 
-<h2>Histogram library:</h2>
+####Histogram library:
 the class that processes all histogram functions. the functions usually take in a given path to an image and return a histogram.
 
-<h2>Compilation and Running</h2>
+####Compilation and Running
 Makefile: make cbirgui
 
 Run: ../bin/cbirgui ../data/<queryImageName> <database>
 
 
 ***
-<h1> Project 3: 2D Object Recognition </h1>
+# Project 3: 2D Object Recognition
 
-<h2>Compilation and Running </h2>
+###Compilation and Running
 Makefile - CommandLine: make objRec
 
 Run:
@@ -84,8 +82,8 @@ Run:
 
 for still images: ../bin/objRec ../data/<database> 1 ../../../<training or testing directory>/
 
-<h2>Project Structure:</h2>
-<h2>objRec (main)</h2>
+###Project Structure:
+####objRec (main)
 The main program identifies command line inputs to switch between video mode/ image mode & training mode/ testing mode.
 
 Mode 0 is video mode while mode 1 is image mode.
@@ -96,7 +94,7 @@ It either trains the model with the given image directory and writes to the data
 
 When the user opens the OR system, if the user chooses to process still images, then there are training and testing modes. If the objectDB exists, then the system automatically enters testing mode. By pressing b, the user can switch to training mode, where features are collected and label (from file name) is put into the database. The user can pressing c, the user can get back to testing mode. If the user chooses video input, then the system can only do testing.
 
-<h2>Processing </h2>
+####Processing
 a library of 2d image processing functions:
 
 morphological operations
@@ -109,7 +107,7 @@ extract features
 
 visualization
 
-<h2>Classifier Library </h2>
+####Classifier Library
 parent class: Classifier
 
 the parent class has a field "type" that indicates which classifier to use;
@@ -120,5 +118,5 @@ three child classes contain three classifiers: Euclidean Distance, KNN, and Naiv
 
 some helper functions
 
-<h2>Classifier Test </h2>
+####Classifier Test
 a helper file that tests each classifier class. Not a part of the main program.
