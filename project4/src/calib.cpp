@@ -26,6 +26,10 @@ void saveframe(cv::Mat &frame, int &frameid, std::vector<cv::Point2f> &corner_se
     std::vector<std::vector<cv::Point3f>> &point_list,
     std::vector<std::vector<cv::Point2f>> &corner_list);
 
+// calibrate camera and write out results
+void calibrate(std::vector<std::vector<cv::Point3f>> &point_list,
+    std::vector<std::vector<cv::Point2f>> &corner_list, cv::Size &refS);
+
 int main(int argc, char *argv[]) {
 
     // usage
@@ -110,30 +114,7 @@ int main(int argc, char *argv[]) {
             // calibrate the camera and write out camera matrix, distortion coefficients,
             // rotation, translation, and error
             if (frameid>4) {
-                double error;
-                double cameraMatInit[9] = {1,0,(double)refS.width/2, 0,1,(double)refS.height/2, 0,0,1};
-                cv::Mat cameraMat = cv::Mat(3,3,CV_64FC1, cameraMatInit);
-                cv::Mat distCoeffs;
-                std::vector<cv::Mat> rvecs, tvecs;
-                error = cv::calibrateCamera(point_list, corner_list, refS,
-                    cameraMat, distCoeffs, rvecs, tvecs,
-                    cv::CALIB_FIX_ASPECT_RATIO);
-                std::cout<<"camera matrix:\n"<<cameraMat<<std::endl;
-                std::cout<<"error:\n"<<error<<std::endl;
-                // write to file
-                std::ofstream file;
-                file.open ("../data/params.txt");
-                file << "CameraMatrix\n"<<cameraMat<<"\ndistCoeffs\n"
-                    <<distCoeffs<<"\nrvecs\n";
-                for (int i=0;i<rvecs.size();i++){
-                    file<<rvecs[i]<<"\n";
-                }
-                file<<"tvecs\n";
-                for (int i=0;i<tvecs.size();i++){
-                    file<<tvecs[i]<<"\n";
-                }
-                file<<"error\n"<<error;
-                file.close();
+                calibrate(point_list, corner_list, refS);
             } else {
                 printf("Need at least 5 images; currently %d\n", frameid);
             }
@@ -194,5 +175,36 @@ void saveframe(cv::Mat &frame, int &frameid, std::vector<cv::Point2f> &corner_se
     sprintf(buffer, "../data/calib.%03d.png", frameid++);
     cv::imwrite(buffer, frame, pars);
     printf("Image written: %s\n", buffer);
+
+}
+
+// calibrate camera and write out results
+void calibrate(std::vector<std::vector<cv::Point3f>> &point_list,
+    std::vector<std::vector<cv::Point2f>> &corner_list, cv::Size &refS) {
+
+    double error;
+    double cameraMatInit[9] = {1,0,(double)refS.width/2, 0,1,(double)refS.height/2, 0,0,1};
+    cv::Mat cameraMat = cv::Mat(3,3,CV_64FC1, cameraMatInit);
+    cv::Mat distCoeffs;
+    std::vector<cv::Mat> rvecs, tvecs;
+    error = cv::calibrateCamera(point_list, corner_list, refS,
+        cameraMat, distCoeffs, rvecs, tvecs,
+        cv::CALIB_FIX_ASPECT_RATIO);
+    std::cout<<"camera matrix:\n"<<cameraMat<<std::endl;
+    std::cout<<"error:\n"<<error<<std::endl;
+    // write to file
+    std::ofstream file;
+    file.open ("../data/params.txt");
+    file << "CameraMatrix\n"<<cameraMat<<"\ndistCoeffs\n"
+        <<distCoeffs<<"\nrvecs\n";
+    for (int i=0;i<rvecs.size();i++){
+        file<<rvecs[i]<<"\n";
+    }
+    file<<"tvecs\n";
+    for (int i=0;i<tvecs.size();i++){
+        file<<tvecs[i]<<"\n";
+    }
+    file<<"error\n"<<error;
+    file.close();
 
 }
