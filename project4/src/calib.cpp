@@ -21,6 +21,12 @@
 #include <fstream>
 
 
+struct camera{
+  cv::Mat cameraMat;
+  cv::Mat distCoeffs;
+  std::vector<cv::Mat>  rvec;
+  std::vector<cv::Mat>  tvec;
+};
 
 // save the frame (update point_list, corner_list)
 void saveframe(cv::Mat &frame, int &frameid, std::vector<cv::Point2f> &corner_set,
@@ -65,39 +71,36 @@ void saveframe(cv::Mat &frame, int &frameid, std::vector<cv::Point2f> &corner_se
 }
 /*given object points, image point, camera matrix,
 calculate camera position with rotation and translation vector*/
-std::pair<std::vector<cv::Mat>, std::vector<cv::Mat>> detect_pose(
+// std::pair<std::vector<cv::Mat>, std::vector<cv::Mat>> detect_pose(
+camera *detect_pose(
     std::vector<std::vector<cv::Point3f>> &point_list,
     std::vector<std::vector<cv::Point2f>> &corner_list,
-    cv::Mat cameraMat, cv::Mat distCoeffs){
+    camera &thisCamera){
 
-    std::vector<cv::Mat>  rvec;
-    std::vector<cv::Mat>  tvec;
-    // cv::Mat rvec;
-    // cv::Mat tvec;
 
+    std::vector<cv::Mat>  rvec,  tvec;
     for(int i=0; i<point_list.size(); i++){
         cv::Mat curRvec;
         cv::Mat curTvec;
-        cv::solvePnP(point_list[i], corner_list[i], cameraMat, distCoeffs, curRvec, curTvec);
+        cv::solvePnP(point_list[i], corner_list[i], thisCamera.cameraMat, thisCamera.distCoeffs, curRvec, curTvec);
         rvec.push_back(curRvec);
         tvec.push_back(curTvec);
     }
 
-    // std::cout.setf(std::ios::fixed, std::ios::floatfield);
-    // std::cout << std::fixed;
     for(int i=0; i<rvec.size(); i++){
-        std::cout<<std::setprecision(3) <<"rotation vector is: "<< rvec[i] <<std::endl;
-        std::cout<<std::setprecision(3) <<"translation vector is: "<< tvec[i] <<std::endl;
+        std::cout<<"rotation vector is: "<< rvec[i] <<std::endl;
+        std::cout<<"translation vector is: "<< tvec[i] <<std::endl;
 
     }
+    thisCamera.rvec = rvec;
+    thisCamera.tvec = tvec;
 
-
-    return std::make_pair(rvec, tvec);
+    return &thisCamera;
 
 }
 
 // calibrate camera and write out results
-void calibrate(std::vector<std::vector<cv::Point3f>> &point_list,
+camera calibrate(std::vector<std::vector<cv::Point3f>> &point_list,
     std::vector<std::vector<cv::Point2f>> &corner_list, cv::Size &refS) {
 
     double error;
@@ -125,13 +128,22 @@ void calibrate(std::vector<std::vector<cv::Point3f>> &point_list,
     file<<"error\n"<<error;
     file.close();
 
-    // std::pair<cv::Mat, cv::Mat> cameraPose;
+    camera calCamera;
+
+    calCamera.cameraMat = cameraMat;
+    calCamera.distCoeffs = refS;
+    calCamera.rvec = rvecs;
+    calCamera.tvec = tvecs;
+
+    return calCamera;
     // cameraPose = detect_pose(point_list, corner_list,cameraMat, distCoeffs);
-    detect_pose(point_list, corner_list,cameraMat, distCoeffs);
+    // detect_pose(point_list, corner_list,cameraMat, distCoeffs);
 }
 
 
 int main(int argc, char *argv[]) {
+
+    camera *curCamera;
 
     // usage
     if( argc < 1 ) {
@@ -170,12 +182,13 @@ int main(int argc, char *argv[]) {
 		  break;
 		}
 
+        // std::pair<cv::Mat, cv::Mat> cameraInfo;
+
+
         // detect target and extract corners
         cv::Mat grey;
-
         // convert to gray scale
         cv::cvtColor(frame, grey, cv::COLOR_BGR2GRAY);
-
         // detect corners
         cv::Size patternsize(9,6); //interior number of corners
         std::vector<cv::Point2f> corner_set; //this will be filled by the detected corners
@@ -199,15 +212,19 @@ int main(int argc, char *argv[]) {
         cv::drawChessboardCorners(frame, patternsize, cv::Mat(corner_set), patternfound);
 
 
-        //grabs the locations of the corners,
+        //if checkboard exist: grab the locations of the corners,
         //and then get the board's pose (rotation and translation).
         if(patternfound){
-            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
-            if (frameid>4) {
-                calibrate(point_list, corner_list, refS);
-            } else {
-                printf("Need at least 5 images; currently %d\n", frameid);
-            }
+            detect_pose(point_list, corner_list, curCamera);
+
+            // //save each frame
+            // saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
+            // //calibrate it again
+            // if (frameid>4) {
+            //     calibrate(point_list, corner_list, refS);
+            // } else {
+            //     printf("Need at least 5 images; currently %d\n", frameid);
+            // }
         }
 
 		cv::imshow("Video", frame);
@@ -231,7 +248,7 @@ int main(int argc, char *argv[]) {
             // calibrate the camera and write out camera matrix, distortion coefficients,
             // rotation, translation, and error
             if (frameid>4) {
-                calibrate(point_list, corner_list, refS);
+                curCamera = calibrate(point_list, corner_list, refS);
             } else {
                 printf("Need at least 5 images; currently %d\n", frameid);
             }
@@ -253,7 +270,7 @@ int main(int argc, char *argv[]) {
             saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
             saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
             if (frameid>4) {
-                calibrate(point_list, corner_list, refS);
+                curCamera = calibrate(point_list, corner_list, refS);
             } else {
                 printf("Need at least 5 images; currently %d\n", frameid);
             }
