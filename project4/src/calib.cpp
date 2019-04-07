@@ -20,15 +20,116 @@
 #include <iostream>
 #include <fstream>
 
+
+
 // save the frame (update point_list, corner_list)
 void saveframe(cv::Mat &frame, int &frameid, std::vector<cv::Point2f> &corner_set,
+    // std::cout<< "frame saved" <<std::endl;
     cv::Size patternsize,
     std::vector<std::vector<cv::Point3f>> &point_list,
-    std::vector<std::vector<cv::Point2f>> &corner_list);
+    std::vector<std::vector<cv::Point2f>> &corner_list) {
+
+    // check if corner set is empty
+    if(corner_set.empty()){
+        printf("Undefined corner set value, failed to save frame\n");
+        return;
+    }
+
+    corner_list.push_back(corner_set);
+    std::vector<cv::Point3f> point_set;
+
+    for (int i=0; i<patternsize.height; i++) {
+        for (int j=0; j<patternsize.width; j++) {
+            point_set.push_back(cv::Point3f(j, -i, 0));
+        }
+    }
+
+    point_list.push_back(point_set);
+
+    // // check point set and corner set
+    // for (int i=0; i<patternsize.height; i++) {
+    //     for (int j=0; j<patternsize.width; j++) {
+    //         printf("point idx %d: screen: (%.2f, %.2f); world: (%.2f, %.2f, %.2f)\n", i*patternsize.width+j,
+    //             corner_set[i*patternsize.width+j].x, corner_set[i*patternsize.width+j].y,
+    //             point_set[i*patternsize.width+j].x, point_set[i*patternsize.width+j].y, point_set[i*patternsize.width+j].z);
+    //     }
+    // }
+
+    // save frame as an image to data directory
+    char buffer[256];
+    std::vector<int> pars;
+    sprintf(buffer, "../data/calib.%03d.png", frameid++);
+    cv::imwrite(buffer, frame, pars);
+    printf("Image written: %s\n", buffer);
+
+}
+/*given object points, image point, camera matrix,
+calculate camera position with rotation and translation vector*/
+std::pair<std::vector<cv::Mat>, std::vector<cv::Mat>> detect_pose(
+    std::vector<std::vector<cv::Point3f>> &point_list,
+    std::vector<std::vector<cv::Point2f>> &corner_list,
+    cv::Mat cameraMat, cv::Mat distCoeffs){
+
+    std::vector<cv::Mat>  rvec;
+    std::vector<cv::Mat>  tvec;
+    // cv::Mat rvec;
+    // cv::Mat tvec;
+
+    for(int i=0; i<point_list.size(); i++){
+        cv::Mat curRvec;
+        cv::Mat curTvec;
+        cv::solvePnP(point_list[i], corner_list[i], cameraMat, distCoeffs, curRvec, curTvec);
+        rvec.push_back(curRvec);
+        tvec.push_back(curTvec);
+    }
+
+    // std::cout.setf(std::ios::fixed, std::ios::floatfield);
+    // std::cout << std::fixed;
+    for(int i=0; i<rvec.size(); i++){
+        std::cout<<std::setprecision(3) <<"rotation vector is: "<< rvec[i] <<std::endl;
+        std::cout<<std::setprecision(3) <<"translation vector is: "<< tvec[i] <<std::endl;
+
+    }
+
+
+    return std::make_pair(rvec, tvec);
+
+}
 
 // calibrate camera and write out results
 void calibrate(std::vector<std::vector<cv::Point3f>> &point_list,
-    std::vector<std::vector<cv::Point2f>> &corner_list, cv::Size &refS);
+    std::vector<std::vector<cv::Point2f>> &corner_list, cv::Size &refS) {
+
+    double error;
+    double cameraMatInit[9] = {1,0,(double)refS.width/2, 0,1,(double)refS.height/2, 0,0,1};
+    cv::Mat cameraMat = cv::Mat(3,3,CV_64FC1, cameraMatInit);
+    cv::Mat distCoeffs;
+    std::vector<cv::Mat> rvecs, tvecs;
+    error = cv::calibrateCamera(point_list, corner_list, refS,
+        cameraMat, distCoeffs, rvecs, tvecs,
+        cv::CALIB_FIX_ASPECT_RATIO);
+    std::cout<<"camera matrix:\n"<<cameraMat<<std::endl;
+    std::cout<<"error:\n"<<error<<std::endl;
+    // write to file
+    std::ofstream file;
+    file.open ("../data/params.txt");
+    file << "CameraMatrix\n"<<cameraMat<<"\ndistCoeffs\n"
+        <<distCoeffs<<"\nrvecs\n";
+    for (int i=0;i<rvecs.size();i++){
+        file<<rvecs[i]<<"\n";
+    }
+    file<<"tvecs\n";
+    for (int i=0;i<tvecs.size();i++){
+        file<<tvecs[i]<<"\n";
+    }
+    file<<"error\n"<<error;
+    file.close();
+
+    // std::pair<cv::Mat, cv::Mat> cameraPose;
+    // cameraPose = detect_pose(point_list, corner_list,cameraMat, distCoeffs);
+    detect_pose(point_list, corner_list,cameraMat, distCoeffs);
+}
+
 
 int main(int argc, char *argv[]) {
 
@@ -42,7 +143,7 @@ int main(int argc, char *argv[]) {
     int quit = 0;
 
     // open the video device
-    capdev = new cv::VideoCapture(2); //default 0 for using webcam
+    capdev = new cv::VideoCapture(0); //default 0 for using webcam
     if( !capdev->isOpened() ) {
         printf("Unable to open video device\n");
         return(-1);
@@ -87,6 +188,7 @@ int main(int argc, char *argv[]) {
 
         // std::cout<<patternfound<<std::endl;
 
+        //if found checkboard
         if(patternfound) {
             cv::cornerSubPix(grey, corner_set, cv::Size(11, 11), cv::Size(-1, -1),
                 cv::TermCriteria(cv::TermCriteria::EPS+cv::TermCriteria::COUNT, 30, 0.1));
@@ -97,16 +199,31 @@ int main(int argc, char *argv[]) {
         cv::drawChessboardCorners(frame, patternsize, cv::Mat(corner_set), patternfound);
 
 
+        //grabs the locations of the corners,
+        //and then get the board's pose (rotation and translation).
+        if(patternfound){
+            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
+            if (frameid>4) {
+                calibrate(point_list, corner_list, refS);
+            } else {
+                printf("Need at least 5 images; currently %d\n", frameid);
+            }
+        }
+
 		cv::imshow("Video", frame);
 
+
+        //keyboard interaction --------------------
 		int key = cv::waitKey(10);
 
         switch(key) {
         case 'q':
             quit = 1;
+            std::cout<<"q pressed"<<std::endl;
             break;
         case 's':
             // s to save frame for calibration
+            std::cout<<"frame saving triggered"<<std::endl;
             saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
             break;
         case 'c':
@@ -128,7 +245,21 @@ int main(int argc, char *argv[]) {
             corner_list.clear();
             break;
 
+        case 't':
+            //auto save frame and calibration for testing & debug - test task 4
+            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
+            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
+            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
+            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
+            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
+            if (frameid>4) {
+                calibrate(point_list, corner_list, refS);
+            } else {
+                printf("Need at least 5 images; currently %d\n", frameid);
+            }
+
         default:
+            // std::cout<<"no keyboard triggered"<<std::endl;
             break;
         }
 
@@ -140,71 +271,4 @@ int main(int argc, char *argv[]) {
 
 
     return(0);
-}
-
-// save the frame (update point_list, corner_list)
-void saveframe(cv::Mat &frame, int &frameid, std::vector<cv::Point2f> &corner_set,
-    cv::Size patternsize,
-    std::vector<std::vector<cv::Point3f>> &point_list,
-    std::vector<std::vector<cv::Point2f>> &corner_list) {
-
-
-    corner_list.push_back(corner_set);
-    std::vector<cv::Point3f> point_set;
-
-    for (int i=0; i<patternsize.height; i++) {
-        for (int j=0; j<patternsize.width; j++) {
-            point_set.push_back(cv::Point3f(j, -i, 0));
-        }
-    }
-
-    point_list.push_back(point_set);
-
-    // check point set and corner set
-    for (int i=0; i<patternsize.height; i++) {
-        for (int j=0; j<patternsize.width; j++) {
-            printf("point idx %d: screen: (%.2f, %.2f); world: (%.2f, %.2f, %.2f)\n", i*patternsize.width+j,
-                corner_set[i*patternsize.width+j].x, corner_set[i*patternsize.width+j].y,
-                point_set[i*patternsize.width+j].x, point_set[i*patternsize.width+j].y, point_set[i*patternsize.width+j].z);
-        }
-    }
-
-    // save frame as an image to data directory
-    char buffer[256];
-    std::vector<int> pars;
-    sprintf(buffer, "../data/calib.%03d.png", frameid++);
-    cv::imwrite(buffer, frame, pars);
-    printf("Image written: %s\n", buffer);
-
-}
-
-// calibrate camera and write out results
-void calibrate(std::vector<std::vector<cv::Point3f>> &point_list,
-    std::vector<std::vector<cv::Point2f>> &corner_list, cv::Size &refS) {
-
-    double error;
-    double cameraMatInit[9] = {1,0,(double)refS.width/2, 0,1,(double)refS.height/2, 0,0,1};
-    cv::Mat cameraMat = cv::Mat(3,3,CV_64FC1, cameraMatInit);
-    cv::Mat distCoeffs;
-    std::vector<cv::Mat> rvecs, tvecs;
-    error = cv::calibrateCamera(point_list, corner_list, refS,
-        cameraMat, distCoeffs, rvecs, tvecs,
-        cv::CALIB_FIX_ASPECT_RATIO);
-    std::cout<<"camera matrix:\n"<<cameraMat<<std::endl;
-    std::cout<<"error:\n"<<error<<std::endl;
-    // write to file
-    std::ofstream file;
-    file.open ("../data/params.txt");
-    file << "CameraMatrix\n"<<cameraMat<<"\ndistCoeffs\n"
-        <<distCoeffs<<"\nrvecs\n";
-    for (int i=0;i<rvecs.size();i++){
-        file<<rvecs[i]<<"\n";
-    }
-    file<<"tvecs\n";
-    for (int i=0;i<tvecs.size();i++){
-        file<<tvecs[i]<<"\n";
-    }
-    file<<"error\n"<<error;
-    file.close();
-
 }
