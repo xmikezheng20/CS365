@@ -178,9 +178,24 @@ int main(int argc, char *argv[]) {
                 curCam.first, curCam.second, rvec, tvec);
 
             if (solveSuccess) {
-                std::cout<<"tvec "<<tvec<<std::endl;
-                std::cout<<"rvec "<<rvec<<std::endl;
+                // std::cout<<"tvec "<<tvec<<std::endl;
+                // std::cout<<"rvec "<<rvec<<std::endl;
+
+                // draw xyz axes
+                std::vector<cv::Point3f> obj_pts;
+                std::vector<cv::Point2f> img_pts;
+                obj_pts.push_back(cv::Point3f(0,0,0));
+                obj_pts.push_back(cv::Point3f(1,0,0));
+                obj_pts.push_back(cv::Point3f(0,1,0));
+                obj_pts.push_back(cv::Point3f(0,0,1));
+                cv::projectPoints(obj_pts, rvec, tvec, curCam.first, curCam.second, img_pts);
+
+                cv::line(frame, img_pts[0], img_pts[1], cv::Scalar(255,0,0), 3); // x: blue
+                cv::line(frame, img_pts[0], img_pts[2], cv::Scalar(0,255,0), 3); // y: green
+                cv::line(frame, img_pts[0], img_pts[3], cv::Scalar(0,0,255), 3); // z: red
+
             }
+
         }
 
         cv::drawChessboardCorners(frame, patternsize, cv::Mat(corner_set), patternfound);
@@ -204,6 +219,7 @@ int main(int argc, char *argv[]) {
 
     // terminate the video capture
     printf("Terminating\n");
+    cv::destroyWindow("Video");
     delete capdev;
 
 
