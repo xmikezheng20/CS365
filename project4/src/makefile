@@ -43,7 +43,7 @@ BINDIR = ../bin
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 OBJ_calib = calib.o
-OBJ_augmented = augmented.o calib.o
+OBJ_augmented = augmented.o
 
 calib: $(OBJ_calib)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)

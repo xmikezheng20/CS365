@@ -20,21 +20,11 @@
 #include <iostream>
 #include <fstream>
 
-#include "calib.hpp"
-
-
-
 // save the frame (update point_list, corner_list)
 void saveframe(cv::Mat &frame, int &frameid, std::vector<cv::Point2f> &corner_set,
     cv::Size patternsize,
     std::vector<std::vector<cv::Point3f>> &point_list,
     std::vector<std::vector<cv::Point2f>> &corner_list) {
-    // std::cout<< "frame saved" <<std::endl;
-    // check if corner set is empty
-    if(corner_set.empty()){
-        printf("Undefined corner set value, failed to save frame\n");
-        return;
-    }
 
     corner_list.push_back(corner_set);
     std::vector<cv::Point3f> point_set;
@@ -66,7 +56,7 @@ void saveframe(cv::Mat &frame, int &frameid, std::vector<cv::Point2f> &corner_se
 }
 
 // calibrate camera and write out results
-camera calibrate(std::vector<std::vector<cv::Point3f>> &point_list,
+void calibrate(std::vector<std::vector<cv::Point3f>> &point_list,
     std::vector<std::vector<cv::Point2f>> &corner_list, cv::Size &refS) {
 
     double error;
@@ -94,29 +84,9 @@ camera calibrate(std::vector<std::vector<cv::Point3f>> &point_list,
     file<<"error\n"<<error;
     file.close();
 
-    printf("make a camera struct\n");
-
-    camera calCamera = camera();
-
-    calCamera.cameraMat = cameraMat;
-    calCamera.distCoeffs = distCoeffs;
-    calCamera.rvec = rvecs;
-    calCamera.tvec = tvecs;
-
-    std::cout<<"camera matrix now is:\n"<<calCamera.cameraMat<<std::endl;
-    std::cout<<"camera distortion coefficients is :\n"<< calCamera.distCoeffs<<std::endl;
-
-    printf("return camera struct\n");
-    return calCamera;
-    // cameraPose = detect_pose(point_list, corner_list,cameraMat, distCoeffs);
-    // detect_pose(point_list, corner_list,cameraMat, distCoeffs);
 }
 
-
 int main(int argc, char *argv[]) {
-
-    struct camera *curCamera = new camera();
-    bool calibrated;
 
     // usage
     if( argc < 1 ) {
@@ -142,6 +112,7 @@ int main(int argc, char *argv[]) {
     cv::namedWindow("Video", 1);
 	cv::Mat frame;
     int frameid = 0;
+    bool patternfound = false;
 
     std::vector<std::vector<cv::Point3f>> point_list;
     std::vector<std::vector<cv::Point2f>> corner_list;
@@ -154,24 +125,25 @@ int main(int argc, char *argv[]) {
 		  printf("frame is empty\n");
 		  break;
 		}
-        // std::pair<cv::Mat, cv::Mat> cameraInfo;
+
         // detect target and extract corners
         cv::Mat grey;
+
         // convert to gray scale
         cv::cvtColor(frame, grey, cv::COLOR_BGR2GRAY);
+
         // detect corners
         cv::Size patternsize(9,6); //interior number of corners
         std::vector<cv::Point2f> corner_set; //this will be filled by the detected corners
 
         //CALIB_CB_FAST_CHECK saves a lot of time on images
         //that do not contain any chessboard corners
-        bool patternfound = cv::findChessboardCorners(grey, patternsize, corner_set,
+        patternfound = cv::findChessboardCorners(grey, patternsize, corner_set,
                 cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE
                 + cv::CALIB_CB_FAST_CHECK);
 
         // std::cout<<patternfound<<std::endl;
 
-        //if found checkboard
         if(patternfound) {
             cv::cornerSubPix(grey, corner_set, cv::Size(11, 11), cv::Size(-1, -1),
                 cv::TermCriteria(cv::TermCriteria::EPS+cv::TermCriteria::COUNT, 30, 0.1));
@@ -182,38 +154,26 @@ int main(int argc, char *argv[]) {
         cv::drawChessboardCorners(frame, patternsize, cv::Mat(corner_set), patternfound);
 
 
-        //if checkboard exist: grab the locations of the corners,
-        //and then get the board's pose (rotation and translation).
-        if(patternfound && calibrated){
-            // std::cout<<"camera Matrix is :"<< curCamera->cameraMat<<std::endl;
-
-            detect_pose(point_list, corner_list, curCamera);
-
-        }
-
 		cv::imshow("Video", frame);
 
-
-        //keyboard interaction --------------------
 		int key = cv::waitKey(10);
 
         switch(key) {
         case 'q':
             quit = 1;
-            std::cout<<"q pressed"<<std::endl;
             break;
         case 's':
-            // s to save frame for calibration
-            std::cout<<"frame saving triggered"<<std::endl;
-            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
+            if (patternfound){
+                // s to save frame for calibration (only if pattern is detected)
+                saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
+            }
             break;
         case 'c':
             // c to calibrate if has 5 or more calibration images
             // calibrate the camera and write out camera matrix, distortion coefficients,
             // rotation, translation, and error
             if (frameid>4) {
-                *curCamera = calibrate(point_list, corner_list, refS);
-                calibrated = 1;
+                calibrate(point_list, corner_list, refS);
             } else {
                 printf("Need at least 5 images; currently %d\n", frameid);
             }
@@ -227,26 +187,7 @@ int main(int argc, char *argv[]) {
             corner_list.clear();
             break;
 
-        case 't':
-            //auto save frame and calibration for testing & debug - test task 4
-            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
-            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
-            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
-            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
-            saveframe(frame, frameid, corner_set, patternsize, point_list, corner_list);
-            if (frameid>4) {
-                *curCamera = calibrate(point_list, corner_list, refS);
-                printf("Calibrated after pressing 't'\n");
-                calibrated = 1;
-                std::cout<<"camera Matrix is :\n"<< curCamera->cameraMat<<std::endl;
-                std::cout<<"camera distortion coefficients is :\n"<< curCamera->distCoeffs<<std::endl;
-
-            } else {
-                printf("Need at least 5 images; currently %d\n", frameid);
-            }
-
         default:
-            // std::cout<<"no keyboard triggered"<<std::endl;
             break;
         }
 
