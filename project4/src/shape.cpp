@@ -16,6 +16,7 @@
 #include"shape.hpp"
 
 
+// draw xyz axes
 void drawAxes(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec, cv::Mat tvec) {
 
     // draw xyz axes
@@ -94,4 +95,27 @@ void drawPyramid(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rve
     cv::line(frame, img_pts[1], img_pts[4], cv::Scalar(255,0,0), 3);
     cv::line(frame, img_pts[2], img_pts[4], cv::Scalar(255,0,0), 3);
     cv::line(frame, img_pts[3], img_pts[4], cv::Scalar(255,0,0), 3);
+}
+
+
+// change the checkerboard target to a gray background
+// by drawing a rectangle over the checkerboard
+void mask_target(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec, cv::Mat tvec, cv::Size patternsize) {
+
+    std::vector<cv::Point3f> obj_pts;
+    std::vector<cv::Point2f> img_pts;
+    obj_pts.push_back(cv::Point3f(-1,1,0));
+    obj_pts.push_back(cv::Point3f(-1,-patternsize.height,0));
+    obj_pts.push_back(cv::Point3f(patternsize.width+1,-patternsize.height,0));
+    obj_pts.push_back(cv::Point3f(patternsize.width+1,1,0));
+
+    cv::projectPoints(obj_pts, rvec, tvec, curCam.first, curCam.second, img_pts);
+
+    cv::Point vertices[4];
+    for (int i=0;i<4;i++) {
+        vertices[i] = img_pts[i];
+    }
+
+    cv::fillConvexPoly(frame, vertices, 4, cv::Scalar(100,100,100));
+
 }

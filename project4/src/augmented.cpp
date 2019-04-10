@@ -94,7 +94,6 @@ std::pair<cv::Mat, cv::Mat> read_params(char* filename){
 
 }
 
-
 int main(int argc, char *argv[]) {
 
     // usage
@@ -180,12 +179,14 @@ int main(int argc, char *argv[]) {
                 curCam.first, curCam.second, rvec, tvec);
 
             if (solveSuccess) {
+
+                mask_target(frame, curCam, rvec, tvec, patternsize);
+
                 // std::cout<<"tvec "<<tvec<<std::endl;
                 // std::cout<<"rvec "<<rvec<<std::endl;
                 drawAxes(frame, curCam, rvec, tvec);
                 drawCube(frame, curCam, rvec, tvec, cv::Point3f(2,-3,0), 2);
                 drawPyramid(frame, curCam, rvec, tvec, cv::Point3f(2,-3,2), 2);
-
             }
 
         }
