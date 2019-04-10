@@ -19,6 +19,8 @@
 #include <iostream>
 #include <fstream>
 
+#include"shape.hpp"
+
 // read camera parameters from file
 std::pair<cv::Mat, cv::Mat> read_params(char* filename){
     std::string line;
@@ -91,7 +93,6 @@ std::pair<cv::Mat, cv::Mat> read_params(char* filename){
     return curCam;
 
 }
-
 
 int main(int argc, char *argv[]) {
 
@@ -178,27 +179,19 @@ int main(int argc, char *argv[]) {
                 curCam.first, curCam.second, rvec, tvec);
 
             if (solveSuccess) {
+
+                mask_target(frame, curCam, rvec, tvec, patternsize);
+
                 // std::cout<<"tvec "<<tvec<<std::endl;
                 // std::cout<<"rvec "<<rvec<<std::endl;
-
-                // draw xyz axes
-                std::vector<cv::Point3f> obj_pts;
-                std::vector<cv::Point2f> img_pts;
-                obj_pts.push_back(cv::Point3f(0,0,0));
-                obj_pts.push_back(cv::Point3f(1,0,0));
-                obj_pts.push_back(cv::Point3f(0,1,0));
-                obj_pts.push_back(cv::Point3f(0,0,1));
-                cv::projectPoints(obj_pts, rvec, tvec, curCam.first, curCam.second, img_pts);
-
-                cv::line(frame, img_pts[0], img_pts[1], cv::Scalar(255,0,0), 3); // x: blue
-                cv::line(frame, img_pts[0], img_pts[2], cv::Scalar(0,255,0), 3); // y: green
-                cv::line(frame, img_pts[0], img_pts[3], cv::Scalar(0,0,255), 3); // z: red
-
+                drawAxes(frame, curCam, rvec, tvec);
+                drawCube(frame, curCam, rvec, tvec, cv::Point3f(2,-3,0), 2);
+                drawPyramid(frame, curCam, rvec, tvec, cv::Point3f(2,-3,2), 2);
             }
 
         }
 
-        cv::drawChessboardCorners(frame, patternsize, cv::Mat(corner_set), patternfound);
+        // cv::drawChessboardCorners(frame, patternsize, cv::Mat(corner_set), patternfound);
 
 
 		cv::imshow("Video", frame);
