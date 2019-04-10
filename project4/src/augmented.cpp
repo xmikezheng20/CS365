@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
     int quit = 0;
 
     // open the video device
-    capdev = new cv::VideoCapture(0); //default 0 for using webcam
+    capdev = new cv::VideoCapture(1); //default 0 for using webcam
     if( !capdev->isOpened() ) {
         printf("Unable to open video device\n");
         return(-1);
@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
 		}
 
         // detect target and extract corners
-        cv::Mat grey;
+        cv::Mat grey, masked;
 
         // convert to gray scale
         cv::cvtColor(frame, grey, cv::COLOR_BGR2GRAY);
@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
 
         // std::cout<<patternfound<<std::endl;
 
-        if(patternfound) {
+        while (patternfound) {
             cv::cornerSubPix(grey, corner_set, cv::Size(11, 11), cv::Size(-1, -1),
                 cv::TermCriteria(cv::TermCriteria::EPS+cv::TermCriteria::COUNT, 30, 0.1));
 
@@ -187,7 +187,16 @@ int main(int argc, char *argv[]) {
                 drawAxes(frame, curCam, rvec, tvec);
                 drawCube(frame, curCam, rvec, tvec, cv::Point3f(2,-3,0), 2);
                 drawPyramid(frame, curCam, rvec, tvec, cv::Point3f(2,-3,2), 2);
+            } else {
+                break;
             }
+
+            cv::cvtColor(frame, grey, cv::COLOR_BGR2GRAY);
+
+            patternfound = cv::findChessboardCorners(grey, patternsize, corner_set,
+                    cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE
+                    + cv::CALIB_CB_FAST_CHECK);
+
 
         }
 
