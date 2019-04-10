@@ -2,19 +2,21 @@
 	calib.cpp
 	Mike Zheng and Heidi He
 	CS365 project 4
-	4/8/19
-
-    pose object
+	4/10/19
 
     to compile:
-        make augmented
+        make ar_img
     to run:
-        ../bin/augmented ../data/params.txt
+        ../bin/ar_img ../data/ ../data/params.txt
+
+    ar of static image
+    image must be taken by the same camera
 */
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <dirent.h>
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <fstream>
@@ -94,16 +96,61 @@ std::pair<cv::Mat, cv::Mat> read_params(char* filename){
 
 }
 
+// read images from a directory
+std::vector<std::string> readDir(char *dirname) {
+
+    DIR *dirp;
+	struct dirent *dp;
+    std::vector<std::string> imgNames;
+
+	printf("Accessing directory %s\n", dirname);
+
+	// open the directory
+	dirp = opendir( dirname );
+	if( dirp == NULL ) {
+		printf("Cannot open directory %s\n", dirname);
+		exit(-1);
+	}
+
+	// loop over the contents of the directory, looking for images
+	while( (dp = readdir(dirp)) != NULL ) {
+		if( strstr(dp->d_name, ".jpg") ||
+				strstr(dp->d_name, ".png") ||
+				strstr(dp->d_name, ".ppm") ||
+				strstr(dp->d_name, ".tif") ) {
+
+			// printf("image file: %s\n", dp->d_name);
+            imgNames.push_back(std::string(dirname)+std::string(dp->d_name));
+
+		}
+	}
+
+	// close the directory
+	closedir(dirp);
+
+    return imgNames;
+}
+
+
+
+
+
+
 int main(int argc, char *argv[]) {
 
     // usage
-    if( argc < 2) {
-        printf("Usage: %s <params.txt>\n", argv[0]);
+    if( argc < 3) {
+        printf("Usage: %s <image directory> <params.txt>\n", argv[0]);
         exit(-1);
     }
 
-    char filename[256];
-    strcpy(filename, argv[1]);
+    char filename[256], imgdir[256], imgname[256];
+    strcpy(imgdir, argv[1]);
+    strcpy(filename, argv[2]);
+
+    // read the img names
+    std::vector<std::string> imgNames;
+    imgNames = readDir(imgdir);
 
 
     std::pair<cv::Mat, cv::Mat> curCam;
@@ -111,50 +158,41 @@ int main(int argc, char *argv[]) {
     // std::cout<<curCam.first<<std::endl;
     // std::cout<<curCam.second<<std::endl;
 
-    cv::VideoCapture *capdev;
-    int quit = 0;
+    cv::namedWindow("Original", 1);
+    cv::namedWindow("AR", 1);
+    cv::moveWindow("AR", 640, 0);
 
-    // open the video device
-    capdev = new cv::VideoCapture(1); //default 0 for using webcam
-    if( !capdev->isOpened() ) {
-        printf("Unable to open video device\n");
-        return(-1);
-    }
+    cv::Mat src, ar;
 
-    cv::Size refS( (int) capdev->get(cv::CAP_PROP_FRAME_WIDTH ),
-               (int) capdev->get(cv::CAP_PROP_FRAME_HEIGHT));
 
-    printf("Expected size: %d %d\n", refS.width, refS.height);
+    for (int i=0; i<imgNames.size(); i++) {
 
-    cv::namedWindow("Video", 1);
-    cv::Mat frame;
+        // read the image
+        src = cv::imread(imgNames[i]);
 
-    bool patternfound = false;
-
-    // set to handle 9*6 checkerboard
-    cv::Size patternsize(9,6); //interior number of corners
-    std::vector<cv::Point3f> point_set;
-    for (int i=0; i<patternsize.height; i++) {
-        for (int j=0; j<patternsize.width; j++) {
-            point_set.push_back(cv::Point3f(j, -i, 0));
+        // test if the read was successful
+        if(src.data == NULL) {
+            printf("Unable to read image %s\n", imgNames[i].c_str());
+            exit(-1);
         }
-    }
 
+        // ar
+        printf("Processing image %s\n", imgNames[i].c_str());
 
-    // start video capture
-	for(;!quit;) {
-		*capdev >> frame; // get a new frame from the camera, treat as a stream
+        // set to handle 9*6 checkerboard
+        cv::Size patternsize(9,6); //interior number of corners
+        std::vector<cv::Point3f> point_set;
+        for (int i=0; i<patternsize.height; i++) {
+            for (int j=0; j<patternsize.width; j++) {
+                point_set.push_back(cv::Point3f(j, -i, 0));
+            }
+        }
 
-		if( frame.empty() ) {
-		  printf("frame is empty\n");
-		  break;
-		}
-
-        // detect target and extract corners
         cv::Mat grey;
+        bool patternfound;
 
         // convert to gray scale
-        cv::cvtColor(frame, grey, cv::COLOR_BGR2GRAY);
+        cv::cvtColor(src, grey, cv::COLOR_BGR2GRAY);
 
         // detect corners
         std::vector<cv::Point2f> corner_set; //this will be filled by the detected corners
@@ -165,9 +203,7 @@ int main(int argc, char *argv[]) {
                 cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE
                 + cv::CALIB_CB_FAST_CHECK);
 
-        // std::cout<<patternfound<<std::endl;
-
-        while (patternfound) {
+        if(patternfound) {
             cv::cornerSubPix(grey, corner_set, cv::Size(11, 11), cv::Size(-1, -1),
                 cv::TermCriteria(cv::TermCriteria::EPS+cv::TermCriteria::COUNT, 30, 0.1));
 
@@ -179,51 +215,33 @@ int main(int argc, char *argv[]) {
                 curCam.first, curCam.second, rvec, tvec);
 
             if (solveSuccess) {
+                ar = src.clone();
 
-                mask_target(frame, curCam, rvec, tvec, patternsize);
+                mask_target(ar, curCam, rvec, tvec, patternsize);
 
                 // std::cout<<"tvec "<<tvec<<std::endl;
                 // std::cout<<"rvec "<<rvec<<std::endl;
-                drawAxes(frame, curCam, rvec, tvec);
-                drawCube(frame, curCam, rvec, tvec, cv::Point3f(2,-3,0), 2);
-                drawPyramid(frame, curCam, rvec, tvec, cv::Point3f(2,-3,2), 2);
-            } else {
-                break;
+                drawAxes(ar, curCam, rvec, tvec);
+                drawCube(ar, curCam, rvec, tvec, cv::Point3f(5,-2,0), 3);
+                drawPyramid(ar, curCam, rvec, tvec, cv::Point3f(5,-2,3), 3);
             }
-
-            cv::cvtColor(frame, grey, cv::COLOR_BGR2GRAY);
-
-            patternfound = cv::findChessboardCorners(grey, patternsize, corner_set,
-                    cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE
-                    + cv::CALIB_CB_FAST_CHECK);
-
-
         }
 
-        // cv::drawChessboardCorners(frame, patternsize, cv::Mat(corner_set), patternfound);
+        // show the image in a window
+        cv::imshow("Original", src);
+        cv::imshow("AR", ar);
 
 
-		cv::imshow("Video", frame);
-
-		int key = cv::waitKey(10);
-
-        switch(key) {
-        case 'q':
-            quit = 1;
-            break;
-        default:
-            break;
-        }
-
+        // wait for a key press (indefinitely)
+        cv::waitKey(0);
     }
 
+    // get rid of the window
+    cv::destroyWindow("Original");
+    cv::destroyWindow("AR");
 
-
-    // terminate the video capture
+    // terminate the program
     printf("Terminating\n");
-    cv::destroyWindow("Video");
-    delete capdev;
-
 
 
     return (0);
