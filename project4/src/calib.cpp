@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
     int quit = 0;
 
     // open the video device
-    capdev = new cv::VideoCapture(0); //default 0 for using webcam
+    capdev = new cv::VideoCapture(1); //default 0 for using webcam
     if( !capdev->isOpened() ) {
         printf("Unable to open video device\n");
         return(-1);

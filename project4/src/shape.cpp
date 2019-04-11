@@ -28,9 +28,9 @@ void drawAxes(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec, 
     obj_pts.push_back(cv::Point3f(0,0,1));
     cv::projectPoints(obj_pts, rvec, tvec, curCam.first, curCam.second, img_pts);
 
-    cv::line(frame, img_pts[0], img_pts[1], cv::Scalar(255,0,0), 3); // x: blue
-    cv::line(frame, img_pts[0], img_pts[2], cv::Scalar(0,255,0), 3); // y: green
-    cv::line(frame, img_pts[0], img_pts[3], cv::Scalar(0,0,255), 3); // z: red
+    cv::arrowedLine(frame, img_pts[0], img_pts[1], cv::Scalar(255,0,0), 2); // x: blue
+    cv::arrowedLine(frame, img_pts[0], img_pts[2], cv::Scalar(0,255,0), 2); // y: green
+    cv::arrowedLine(frame, img_pts[0], img_pts[3], cv::Scalar(0,0,255), 2); // z: red
 
 }
 
