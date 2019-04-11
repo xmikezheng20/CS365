@@ -45,6 +45,7 @@ BINDIR = ../bin
 OBJ_calib = calib.o
 OBJ_augmented = augmented.o shape.o
 OBJ_ar_img = ar_img.o shape.o
+OBJ_ar_harris = ar_harris.o shape.o
 
 calib: $(OBJ_calib)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
@@ -53,6 +54,9 @@ augmented: $(OBJ_augmented)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
 
 ar_img: $(OBJ_ar_img)
+	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
+
+ar_harris: $(OBJ_ar_harris)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
 
 clean:

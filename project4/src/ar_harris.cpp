@@ -1,15 +1,15 @@
 /*
-	augmented.cpp
+	ar_harris.cpp
 	Mike Zheng and Heidi He
 	CS365 project 4
 	4/8/19
 
-    pose object
+    use harris corner as feature
 
     to compile:
-        make augmented
+        make ar_harris
     to run:
-        ../bin/augmented ../data/params.txt
+        ../bin/ar_harris ../data/params.txt
 */
 
 #include <cstdio>
@@ -18,6 +18,7 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <fstream>
+#include <math.h>
 
 #include"shape.hpp"
 
@@ -94,6 +95,44 @@ std::pair<cv::Mat, cv::Mat> read_params(char* filename){
 
 }
 
+// find harris corner
+std::vector<cv::Point2f> findHarrisCorners(cv::Mat grey) {
+    int blockSize = 6;
+    int apertureSize = 7;
+    double k = 0.04;
+    int thresh = 120;
+    int max_thresh = 255;
+    int dilation_size = 2;
+
+    cv::Mat dilation_element = cv::getStructuringElement( cv::MORPH_RECT,
+                                 cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                                 cv::Point( dilation_size, dilation_size ) );
+
+    std::vector<cv::Point2f> corner_set;
+
+    cv::Mat dst = cv::Mat::zeros( grey.size(), CV_32FC1 );
+    cv::cornerHarris( grey, dst, blockSize, apertureSize, k );
+
+    cv::Mat dst_norm, dst_norm_scaled, thresholded, dilation_dst;
+    cv::Mat dst_cc_labels, dst_cc_stats, dst_cc_centroids;
+    cv::normalize( dst, dst_norm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat() );
+    cv::convertScaleAbs( dst_norm, dst_norm_scaled );
+    cv::threshold(dst_norm_scaled, thresholded, thresh, max_thresh, 0);
+    /// Apply the dilation operation
+    cv::dilate( thresholded, dilation_dst, dilation_element );
+    // std::cout<<dst_norm<<std::endl;
+
+    cv::connectedComponentsWithStats(dilation_dst, dst_cc_labels, dst_cc_stats, dst_cc_centroids);
+
+    for (int i=2; i<dst_cc_centroids.size().height; i++){
+        // std::cout<<cv::Point2f(dst_cc_centroids.at<double>(0,i), dst_cc_centroids.at<double>(1,i))<<std::endl;
+        corner_set.push_back(cv::Point2f(dst_cc_centroids.at<double>(i,0), dst_cc_centroids.at<double>(i,1)));
+    }
+
+    return corner_set;
+
+}
+
 int main(int argc, char *argv[]) {
 
     // usage
@@ -131,15 +170,13 @@ int main(int argc, char *argv[]) {
 
     bool patternfound = false;
 
-    // set to handle 9*6 checkerboard
-    cv::Size patternsize(9,6); //interior number of corners
+    // set to handle iphone 6s screen
     std::vector<cv::Point3f> point_set;
-    for (int i=0; i<patternsize.height; i++) {
-        for (int j=0; j<patternsize.width; j++) {
-            point_set.push_back(cv::Point3f(j, -i, 0));
-        }
-    }
-
+    point_set.push_back(cv::Point3f(1.9, 0.8, 0));
+    point_set.push_back(cv::Point3f(0, 0, 0));
+    point_set.push_back(cv::Point3f(5.9, 0, 0));
+    point_set.push_back(cv::Point3f(0, -10.5, 0));
+    point_set.push_back(cv::Point3f(5.9, -10.5, 0));
 
     // start video capture
 	for(;!quit;) {
@@ -156,52 +193,39 @@ int main(int argc, char *argv[]) {
         // convert to gray scale
         cv::cvtColor(frame, grey, cv::COLOR_BGR2GRAY);
 
-        // detect corners
-        std::vector<cv::Point2f> corner_set; //this will be filled by the detected corners
+        std::vector<cv::Point2f> corner_set = findHarrisCorners(grey);
 
-        //CALIB_CB_FAST_CHECK saves a lot of time on images
-        //that do not contain any chessboard corners
-        patternfound = cv::findChessboardCorners(grey, patternsize, corner_set,
-                cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE
-                + cv::CALIB_CB_FAST_CHECK);
-
-        // std::cout<<patternfound<<std::endl;
-
-        while (patternfound) {
+        if (corner_set.size()>0) {
             cv::cornerSubPix(grey, corner_set, cv::Size(11, 11), cv::Size(-1, -1),
                 cv::TermCriteria(cv::TermCriteria::EPS+cv::TermCriteria::COUNT, 30, 0.1));
 
-            // printf("The first corner is (%.2f,%.2f)\n", corner_set[0].x,corner_set[0].y);
+            if(corner_set.size()>=5){
+                std::vector<cv::Point2f> corner_set_5;
 
-            // // solve for pose
-            cv::Mat rvec, tvec;
-            bool solveSuccess = cv::solvePnP(point_set, corner_set,
-                curCam.first, curCam.second, rvec, tvec);
+                for (int i=0;i<5;i++) {
+                    // std::cout<<corner_set[i]<<std::endl;
+                    corner_set_5.push_back(corner_set[i]);
+                    cv::circle( frame, cv::Point(corner_set[i].x,corner_set[i].y), 5,  cv::Scalar(0,0,255), 2, 8, 0 );
+                }
 
-            if (solveSuccess) {
 
-                mask_target(frame, curCam, rvec, tvec, patternsize);
+                cv::Mat rvec, tvec;
+                bool solveSuccess = cv::solvePnP(point_set, corner_set_5,
+                    curCam.first, curCam.second, rvec, tvec);
 
-                // std::cout<<"tvec "<<tvec<<std::endl;
-                // std::cout<<"rvec "<<rvec<<std::endl;
-                drawAxes(frame, curCam, rvec, tvec);
-                drawCube(frame, curCam, rvec, tvec, cv::Point3f(2,-3,0), 2);
-                drawPyramid(frame, curCam, rvec, tvec, cv::Point3f(2,-3,2), 2);
-            } else {
-                break;
+                if (solveSuccess) {
+                    // std::cout<<"tvec "<<tvec<<std::endl;
+                    // std::cout<<"rvec "<<rvec<<std::endl;
+                    drawAxes(frame, curCam, rvec, tvec);
+                    drawCube(frame, curCam, rvec, tvec, cv::Point3f(2,-3,0), 2);
+                    drawPyramid(frame, curCam, rvec, tvec, cv::Point3f(2,-3,2), 2);
+                } else {
+                    break;
+                }
+
             }
 
-            cv::cvtColor(frame, grey, cv::COLOR_BGR2GRAY);
-
-            patternfound = cv::findChessboardCorners(grey, patternsize, corner_set,
-                    cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE
-                    + cv::CALIB_CB_FAST_CHECK);
-
-
         }
-
-        // cv::drawChessboardCorners(frame, patternsize, cv::Mat(corner_set), patternfound);
-
 
 		cv::imshow("Video", frame);
 
@@ -216,7 +240,6 @@ int main(int argc, char *argv[]) {
         }
 
     }
-
 
 
     // terminate the video capture
