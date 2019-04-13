@@ -133,9 +133,6 @@ std::vector<std::string> readDir(char *dirname) {
 
 
 
-
-
-
 int main(int argc, char *argv[]) {
 
     // usage
@@ -168,7 +165,7 @@ int main(int argc, char *argv[]) {
     for (int i=0; i<imgNames.size(); i++) {
 
         // read the image
-        src = cv::imread(imgNames[i]);
+        src = cv::imread(imgNames[i]);//
 
         // test if the read was successful
         if(src.data == NULL) {
@@ -223,7 +220,14 @@ int main(int argc, char *argv[]) {
                 // std::cout<<"rvec "<<rvec<<std::endl;
                 drawAxes(ar, curCam, rvec, tvec);
                 drawCube(ar, curCam, rvec, tvec, cv::Point3f(5,-2,0), 3);
-                drawPyramid(ar, curCam, rvec, tvec, cv::Point3f(5,-2,3), 3);
+                // drawPyramid(ar, curCam, rvec, tvec, cv::Point3f(5,-2,3), 3);
+                printf("drawing reandom circles\n");
+                for(int i=0; i<10; i++){
+                    drawCircle(ar, curCam, rvec, tvec, cv::Point3f(i,-5,0),10*i);
+                }
+                drawHeart(ar, curCam, rvec, tvec, cv::Point3f(3,-1,0), 2);
+                // drawCircle(ar, curCam, rvec, tvec, cv::Point3f(5,-5,0),10);
+                drawDiamond(ar, curCam, rvec, tvec, cv::Point3f(5,-2,3), 3);
             }
         }
 
