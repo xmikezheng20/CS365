@@ -28,7 +28,7 @@ LDFLAGS = -L/usr/local/lib
 #LDFLAGS = -L/usr/lib/x86_64-linux-gnu # opencv libraries are here
 
 # opencv libraries
-LDLIBS = -lopencv_core -lopencv_highgui -lopencv_video -lopencv_videoio -lopencv_imgproc -lopencv_imgcodecs -lopencv_calib3d
+LDLIBS = -lopencv_core -lopencv_highgui -lopencv_video -lopencv_videoio -lopencv_imgproc -lopencv_imgcodecs -lopencv_calib3d -lopencv_aruco
 
 
 BINDIR = ../bin
@@ -46,6 +46,7 @@ OBJ_calib = calib.o
 OBJ_augmented = augmented.o shape.o
 OBJ_ar_img = ar_img.o shape.o
 OBJ_ar_harris = ar_harris.o shape.o
+OBJ_ar_aruco = ar_aruco.o shape.o
 
 calib: $(OBJ_calib)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
@@ -57,6 +58,9 @@ ar_img: $(OBJ_ar_img)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
 
 ar_harris: $(OBJ_ar_harris)
+	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
+
+ar_aruco: $(OBJ_ar_aruco)
 	$(CC) $^ -o $(BINDIR)/$@ $(LDFLAGS) $(LDLIBS)
 
 clean:

@@ -1,15 +1,15 @@
 /*
-	augmented.cpp
+	ar_aruco.cpp
 	Mike Zheng and Heidi He
 	CS365 project 4
-	4/8/19
+	4/13/19
 
     pose object
 
     to compile:
-        make augmented
+        make ar_aruco
     to run:
-        ../bin/augmented ../data/params.txt
+        ../bin/ar_aruco ../data/params.txt
 */
 
 #include <cstdio>
@@ -132,14 +132,8 @@ int main(int argc, char *argv[]) {
     bool patternfound = false;
 
     // set to handle 9*6 checkerboard
-    cv::Size patternsize(9,6); //interior number of corners
-    std::vector<cv::Point3f> point_set;
-    for (int i=0; i<patternsize.height; i++) {
-        for (int j=0; j<patternsize.width; j++) {
-            point_set.push_back(cv::Point3f(j, -i, 0));
-        }
-    }
-
+    cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+    cv::Ptr<cv::aruco::GridBoard> board = cv::aruco::GridBoard::create(5, 7, 0.04, 0.01, dictionary);
 
     // start video capture
 	for(;!quit;) {
@@ -150,6 +144,8 @@ int main(int argc, char *argv[]) {
 		  break;
 		}
 
+
+        /*
         // detect target and extract corners
         cv::Mat grey;
 
@@ -210,6 +206,7 @@ int main(int argc, char *argv[]) {
 
         }
 
+        */
         // cv::drawChessboardCorners(frame, patternsize, cv::Mat(corner_set), patternfound);
 
 

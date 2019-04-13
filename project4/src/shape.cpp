@@ -111,7 +111,7 @@ void drawCircle(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec
     cv::projectPoints(obj_pts, rvec, tvec, curCam.first, curCam.second, img_pts);
 
     cv::circle(frame, img_pts[0], size,cv::Scalar(225,225,100),8);
-    printf("circle drawn\n");
+    // printf("circle drawn\n");
 }
 
 // draw a cone/ diamond at location pos with size
@@ -218,15 +218,16 @@ void drawHeart(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec,
         }
     }
     //draw lines - bottom
-    for (int i=0;i<9;i++) {
+    for (int i=0;i<10;i++) {
         if(i==9){
             cv::line(frame, img_pts[i], img_pts[i-9], cv::Scalar(244, 116, 66), 5);
         }else{
             cv::line(frame, img_pts[i], img_pts[i+1], cv::Scalar(244, 116, 66), 5);
         }
     }
+
     //draw lines - top
-    for (int i=0;i<9;i++) {
+    for (int i=0;i<10;i++) {
         if(i==9){
             cv::line(frame, img_pts[i+10], img_pts[i+10-9], cv::Scalar(244, 116, 66), 5);
         }else{
@@ -234,13 +235,11 @@ void drawHeart(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec,
         }
     }
 
-    //fill bottom
-    cv::fillConvexPoly(frame, verticesBottom, 10, cv::Scalar(65, 169, 244));
+
     //draw parellel lines
     for (int i=0;i<10;i++) {
         cv::line(frame, img_pts[i], img_pts[i+10], cv::Scalar(244, 116, 66), 2);
     }
-    cv::fillConvexPoly(frame, verticesTop, 10, cv::Scalar(65, 169, 244));
 
 }
 

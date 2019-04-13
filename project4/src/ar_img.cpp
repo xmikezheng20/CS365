@@ -1,5 +1,5 @@
 /*
-	calib.cpp
+	ar_img.cpp
 	Mike Zheng and Heidi He
 	CS365 project 4
 	4/10/19
@@ -221,7 +221,7 @@ int main(int argc, char *argv[]) {
                 drawAxes(ar, curCam, rvec, tvec);
                 drawCube(ar, curCam, rvec, tvec, cv::Point3f(5,-2,0), 3);
                 // drawPyramid(ar, curCam, rvec, tvec, cv::Point3f(5,-2,3), 3);
-                printf("drawing reandom circles\n");
+                // printf("drawing reandom circles\n");
                 for(int i=0; i<10; i++){
                     drawCircle(ar, curCam, rvec, tvec, cv::Point3f(i,-5,0),10*i);
                 }
