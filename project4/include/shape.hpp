@@ -17,6 +17,8 @@ void drawAxes(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec, 
 
 void drawCube(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec, cv::Mat tvec, cv::Point3f pos, float size);
 
+void drawPyramid(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec, cv::Mat tvec, cv::Point3f pos, float size);
+
 void drawDiamond(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec, cv::Mat tvec, cv::Point3f pos, float size);
 
 //draw circle
