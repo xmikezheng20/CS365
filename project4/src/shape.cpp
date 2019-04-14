@@ -218,27 +218,28 @@ void drawHeart(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec,
         }
     }
     //draw lines - bottom
+    // watermelon: 106, 154, 232
     for (int i=0;i<10;i++) {
         if(i==9){
-            cv::line(frame, img_pts[i], img_pts[i-9], cv::Scalar(244, 116, 66), 5);
+            cv::line(frame, img_pts[i], img_pts[i-9], cv::Scalar(106, 154, 232), 5);
         }else{
-            cv::line(frame, img_pts[i], img_pts[i+1], cv::Scalar(244, 116, 66), 5);
+            cv::line(frame, img_pts[i], img_pts[i+1], cv::Scalar(106, 154, 232), 5);
         }
     }
 
     //draw lines - top
     for (int i=0;i<10;i++) {
         if(i==9){
-            cv::line(frame, img_pts[i+10], img_pts[i+10-9], cv::Scalar(244, 116, 66), 5);
+            cv::line(frame, img_pts[i+10], img_pts[i+10-9], cv::Scalar(106, 154, 232), 5);
         }else{
-            cv::line(frame, img_pts[i+10], img_pts[i+10+1], cv::Scalar(244, 116, 66), 5);
+            cv::line(frame, img_pts[i+10], img_pts[i+10+1], cv::Scalar(106, 154, 232), 5);
         }
     }
 
 
     //draw parellel lines
     for (int i=0;i<10;i++) {
-        cv::line(frame, img_pts[i], img_pts[i+10], cv::Scalar(244, 116, 66), 2);
+        cv::line(frame, img_pts[i], img_pts[i+10], cv::Scalar(106, 154, 232), 2);
     }
 
 }
@@ -261,6 +262,6 @@ void mask_target(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rve
         vertices[i] = img_pts[i];
     }
 
-    cv::fillConvexPoly(frame, vertices, 4, cv::Scalar(100,100,100));
+    cv::fillConvexPoly(frame, vertices, 4, cv::Scalar(237,219,116)); //219, 237, 116
 
 }

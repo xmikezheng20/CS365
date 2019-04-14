@@ -16,10 +16,12 @@
 #include <cstdlib>
 #include <cstring>
 #include <opencv2/opencv.hpp>
+#include <opencv2/aruco.hpp>
 #include <iostream>
 #include <fstream>
 
-#include"shape.hpp"
+
+#include "shape.hpp"
 
 // read camera parameters from file
 std::pair<cv::Mat, cv::Mat> read_params(char* filename){
@@ -131,6 +133,10 @@ int main(int argc, char *argv[]) {
 
     bool patternfound = false;
 
+    cv::Mat cameraMatrix, distCoeffs;
+    cameraMatrix = curCam.first;
+    distCoeffs = curCam.second;
+
     // set to handle 9*6 checkerboard
     cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
     cv::Ptr<cv::aruco::GridBoard> board = cv::aruco::GridBoard::create(5, 7, 0.04, 0.01, dictionary);
@@ -143,6 +149,27 @@ int main(int argc, char *argv[]) {
 		  printf("frame is empty\n");
 		  break;
 		}
+
+        cv::Mat image, imageCopy;
+        capdev->retrieve(image);
+        image.copyTo(imageCopy);
+        std::vector<int> ids;
+        std::vector<std::vector<cv::Point2f> > corners;
+        cv::aruco::detectMarkers(image, dictionary, corners, ids);
+        // if at least one marker detected
+        if (ids.size() > 0) {
+            cv::aruco::drawDetectedMarkers(imageCopy, corners, ids);
+            cv::Mat rvec, tvec;
+            int valid = estimatePoseBoard(corners, ids, board, cameraMatrix, distCoeffs, rvec, tvec);
+            // if at least one board marker detected
+            if(valid > 0){
+                drawCube(imageCopy, curCam, rvec, tvec, cv::Point3f(0.05,0.06,0), 0.1);
+                drawDiamond(imageCopy, curCam, rvec, tvec, cv::Point3f(0.1,0.3,0), 0.2);
+
+                cv::aruco::drawAxis(imageCopy, cameraMatrix, distCoeffs, rvec, tvec, 0.1);
+
+            }
+        }
 
 
         /*
@@ -210,7 +237,8 @@ int main(int argc, char *argv[]) {
         // cv::drawChessboardCorners(frame, patternsize, cv::Mat(corner_set), patternfound);
 
 
-		cv::imshow("Video", frame);
+        // cv::imshow("Video", frame);
+		cv::imshow("Video", imageCopy); //
 
 		int key = cv::waitKey(10);
 
