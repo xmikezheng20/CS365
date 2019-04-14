@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
                 // std::cout<<"tvec "<<tvec<<std::endl;
                 // std::cout<<"rvec "<<rvec<<std::endl;
                 drawAxes(frame, curCam, rvec, tvec);
-
+                
                 drawDiamond(frame, curCam, rvec, tvec, cv::Point3f(4,2,0), 3);
 
                 drawCube(frame, curCam, rvec, tvec, cv::Point3f(0,-3,0), 2);
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
 
                 // printf("drawing circles\n");
                 for(int i=0; i<10; i++){
-                    drawCircle(frame, curCam, rvec, tvec, cv::Point3f(i,-7,0),5*i);
+                    drawCircle(frame, curCam, rvec, tvec, cv::Point3f(i,-7,0),5);
                 }
                 drawHeart(frame, curCam, rvec, tvec, cv::Point3f(5,-4,0), 1);
                 // drawCircle(ar, curCam, rvec, tvec, cv::Point3f(5,-5,0),10);

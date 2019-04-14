@@ -28,9 +28,9 @@ void drawAxes(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec, 
     obj_pts.push_back(cv::Point3f(0,0,1));
     cv::projectPoints(obj_pts, rvec, tvec, curCam.first, curCam.second, img_pts);
 
-    cv::arrowedLine(frame, img_pts[0], img_pts[1], cv::Scalar(255,0,0), 2); // x: blue
-    cv::arrowedLine(frame, img_pts[0], img_pts[2], cv::Scalar(0,255,0), 2); // y: green
-    cv::arrowedLine(frame, img_pts[0], img_pts[3], cv::Scalar(0,0,255), 2); // z: red
+    cv::arrowedLine(frame, img_pts[0], img_pts[1], cv::Scalar(99, 114, 137), 2); // x: blue
+    cv::arrowedLine(frame, img_pts[0], img_pts[2], cv::Scalar(99, 137, 111), 2); // y: green
+    cv::arrowedLine(frame, img_pts[0], img_pts[3], cv::Scalar(107, 99, 137), 2); // z: red
 
 }
 
@@ -55,18 +55,18 @@ void drawCube(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec, 
     cv::projectPoints(obj_pts, rvec, tvec, curCam.first, curCam.second, img_pts);
 
     // draw lines
-    cv::line(frame, img_pts[0], img_pts[1], cv::Scalar(0,0,255), 3);
-    cv::line(frame, img_pts[0], img_pts[2], cv::Scalar(0,0,255), 3);
-    cv::line(frame, img_pts[3], img_pts[1], cv::Scalar(0,0,255), 3);
-    cv::line(frame, img_pts[3], img_pts[2], cv::Scalar(0,0,255), 3);
-    cv::line(frame, img_pts[4], img_pts[5], cv::Scalar(0,0,255), 3);
-    cv::line(frame, img_pts[4], img_pts[6], cv::Scalar(0,0,255), 3);
-    cv::line(frame, img_pts[7], img_pts[5], cv::Scalar(0,0,255), 3);
-    cv::line(frame, img_pts[7], img_pts[6], cv::Scalar(0,0,255), 3);
-    cv::line(frame, img_pts[0], img_pts[4], cv::Scalar(0,0,255), 3);
-    cv::line(frame, img_pts[1], img_pts[5], cv::Scalar(0,0,255), 3);
-    cv::line(frame, img_pts[2], img_pts[6], cv::Scalar(0,0,255), 3);
-    cv::line(frame, img_pts[3], img_pts[7], cv::Scalar(0,0,255), 3);
+    cv::line(frame, img_pts[0], img_pts[1], cv::Scalar(63, 89, 219), 3);//63, 89, 219
+    cv::line(frame, img_pts[0], img_pts[2], cv::Scalar(63, 89, 219), 3);
+    cv::line(frame, img_pts[3], img_pts[1], cv::Scalar(63, 89, 219), 3);
+    cv::line(frame, img_pts[3], img_pts[2], cv::Scalar(63, 89, 219), 3);
+    cv::line(frame, img_pts[4], img_pts[5], cv::Scalar(63, 89, 219), 3);
+    cv::line(frame, img_pts[4], img_pts[6], cv::Scalar(63, 89, 219), 3);
+    cv::line(frame, img_pts[7], img_pts[5], cv::Scalar(63, 89, 219), 3);
+    cv::line(frame, img_pts[7], img_pts[6], cv::Scalar(63, 89, 219), 3);
+    cv::line(frame, img_pts[0], img_pts[4], cv::Scalar(63, 89, 219), 3);
+    cv::line(frame, img_pts[1], img_pts[5], cv::Scalar(63, 89, 219), 3);
+    cv::line(frame, img_pts[2], img_pts[6], cv::Scalar(63, 89, 219), 3);
+    cv::line(frame, img_pts[3], img_pts[7], cv::Scalar(63, 89, 219), 3);
 }
 
 // draw a pyramid at location pos with size
@@ -87,14 +87,14 @@ void drawPyramid(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rve
     cv::projectPoints(obj_pts, rvec, tvec, curCam.first, curCam.second, img_pts);
 
     // draw lines
-    cv::line(frame, img_pts[0], img_pts[1], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[0], img_pts[2], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[3], img_pts[1], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[3], img_pts[2], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[0], img_pts[4], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[1], img_pts[4], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[2], img_pts[4], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[3], img_pts[4], cv::Scalar(255,0,0), 3);
+    cv::line(frame, img_pts[0], img_pts[1], cv::Scalar(106, 185, 232), 3); //106, 185, 232
+    cv::line(frame, img_pts[0], img_pts[2], cv::Scalar(106, 185, 232), 3);
+    cv::line(frame, img_pts[3], img_pts[1], cv::Scalar(106, 185, 232), 3);
+    cv::line(frame, img_pts[3], img_pts[2], cv::Scalar(106, 185, 232), 3);
+    cv::line(frame, img_pts[0], img_pts[4], cv::Scalar(106, 185, 232), 3);
+    cv::line(frame, img_pts[1], img_pts[4], cv::Scalar(106, 185, 232), 3);
+    cv::line(frame, img_pts[2], img_pts[4], cv::Scalar(106, 185, 232), 3);
+    cv::line(frame, img_pts[3], img_pts[4], cv::Scalar(106, 185, 232), 3);
 }
 
 
@@ -110,7 +110,7 @@ void drawCircle(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rvec
 
     cv::projectPoints(obj_pts, rvec, tvec, curCam.first, curCam.second, img_pts);
 
-    cv::circle(frame, img_pts[0], size,cv::Scalar(225,225,100),8);
+    cv::circle(frame, img_pts[0], size,cv::Scalar(107, 99, 137),8); //107, 99, 137
     // printf("circle drawn\n");
 }
 
@@ -144,26 +144,26 @@ void drawDiamond(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rve
         vertices[i] = img_pts[i];
     }
 
-    cv::fillConvexPoly(frame, vertices, 8, cv::Scalar(225,100,100));
+    cv::fillConvexPoly(frame, vertices, 8, cv::Scalar(145,126,183));
 
     // draw lines
-    cv::line(frame, img_pts[0], img_pts[1], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[1], img_pts[2], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[2], img_pts[3], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[3], img_pts[4], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[4], img_pts[5], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[5], img_pts[6], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[6], img_pts[7], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[7], img_pts[0], cv::Scalar(255,0,0), 3);
+    cv::line(frame, img_pts[0], img_pts[1], cv::Scalar(178, 105, 108), 3); // 145,126,183
+    cv::line(frame, img_pts[1], img_pts[2], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[2], img_pts[3], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[3], img_pts[4], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[4], img_pts[5], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[5], img_pts[6], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[6], img_pts[7], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[7], img_pts[0], cv::Scalar(178, 105, 108), 3);
     //to top piont
-    cv::line(frame, img_pts[0], img_pts[8], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[1], img_pts[8], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[2], img_pts[8], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[3], img_pts[8], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[4], img_pts[8], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[5], img_pts[8], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[6], img_pts[8], cv::Scalar(255,0,0), 3);
-    cv::line(frame, img_pts[7], img_pts[8], cv::Scalar(255,0,0), 3);
+    cv::line(frame, img_pts[0], img_pts[8], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[1], img_pts[8], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[2], img_pts[8], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[3], img_pts[8], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[4], img_pts[8], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[5], img_pts[8], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[6], img_pts[8], cv::Scalar(178, 105, 108), 3);
+    cv::line(frame, img_pts[7], img_pts[8], cv::Scalar(178, 105, 108), 3);
 }
 
 
@@ -262,6 +262,6 @@ void mask_target(cv::Mat& frame, std::pair<cv::Mat, cv::Mat> curCam, cv::Mat rve
         vertices[i] = img_pts[i];
     }
 
-    cv::fillConvexPoly(frame, vertices, 4, cv::Scalar(237,219,116)); //219, 237, 116
+    cv::fillConvexPoly(frame, vertices, 4, cv::Scalar(183,175,126 )); //183,175,126
 
 }
