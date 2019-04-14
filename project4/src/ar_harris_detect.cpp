@@ -1,5 +1,5 @@
 /*
-	ar_harris.cpp
+	ar_harris_detect.cpp
 	Mike Zheng and Heidi He
 	CS365 project 4
 	4/8/19
@@ -7,9 +7,9 @@
     use harris corner as feature
 
     to compile:
-        make ar_harris
+        make ar_harris_detect
     to run:
-        ../bin/ar_harris ../data/params.txt
+        ../bin/ar_harris_detect ../data/params.txt
 */
 
 #include <cstdio>
@@ -133,103 +133,6 @@ std::vector<cv::Point2f> findHarrisCorners(cv::Mat grey) {
 
 }
 
-
-bool compareCoords(cv::Point3f p1, cv::Point3f p2)
-{
-    return (p1.y<p2.y);
-}
-
-
-// this function attempts to rectify the image
-// it works only when the image is not extremely tilted
-std::vector<cv::Point2f> reorient(std::vector<cv::Point2f> corner_set_5){
-
-    // std::cout<<corner_set_5<<std::endl;
-    cv::Point2f vtx[4];
-    cv::RotatedRect box = cv::minAreaRect(corner_set_5);
-    box.points(vtx);
-    // Draw the bounding box
-    // for(int j = 0; j < 4; j++ ){
-    //     cv::line(frame, vtx[j], vtx[(j+1)%4], cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
-    // }
-    // cv::line(frame, corner_set_5[0], corner_set_5[1], cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
-    // cv::line(frame, corner_set_5[1], corner_set_5[3], cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
-    // cv::line(frame, corner_set_5[3], corner_set_5[4], cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
-    // cv::line(frame, corner_set_5[2], corner_set_5[4], cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
-    // cv::line(frame, corner_set_5[2], corner_set_5[0], cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
-
-    // for (int i=0; i<5; i++) {
-    //     std::cout<<corner_set_5[i]<<std::endl;
-    // }
-
-    // cv::circle(frame, cv::Point((int)(vtx[0].x+vtx[2].x)/2, (int)(vtx[0].y+vtx[2].y)/2), 5, cv::Scalar(255, 255, 255), -1);
-
-    // calculate angle
-    float blob_angle_deg = box.angle;
-    if (box.size.width >= box.size.height) {
-      blob_angle_deg = blob_angle_deg-90;
-    }
-
-    double rot_cos = cos(-blob_angle_deg*3.14159265/180);
-    double rot_sin = sin(-blob_angle_deg*3.14159265/180);
-
-    // rectify the points
-    double coords[15] = {corner_set_5[0].x,corner_set_5[1].x,corner_set_5[2].x,corner_set_5[3].x,corner_set_5[4].x,
-        corner_set_5[0].y,corner_set_5[1].y,corner_set_5[2].y,corner_set_5[3].y,corner_set_5[4].y,
-        1,1,1,1,1};
-    cv::Mat corner_mat = cv::Mat(3,5,CV_64FC1,coords);
-
-    double translation[9] = {1,0, -(vtx[0].x+vtx[2].x)/2, 0,1, -(vtx[0].y+vtx[2].y)/2, 0,0,1};
-    cv::Mat translation_mat = cv::Mat(3,3,CV_64FC1,translation);
-    double rotation[9] = {rot_cos,-rot_sin, 0, rot_sin, rot_cos, 0, 0,0,1};
-    cv::Mat rotation_mat = cv::Mat(3,3,CV_64FC1,rotation);
-    double translation2[9] = {1,0, (vtx[0].x+vtx[2].x)/2, 0,1, (vtx[0].y+vtx[2].y)/2, 0,0,1};
-    cv::Mat translation2_mat = cv::Mat(3,3,CV_64FC1,translation2);
-
-    // std::cout<<translation_mat<<std::endl;
-    // std::cout<<corner_mat<<std::endl;
-
-    cv::Mat corner_mat_new = translation2_mat*rotation_mat*translation_mat*corner_mat;
-    // std::cout<<corner_mat_new<<std::endl;
-
-    // get the indeces
-    std::vector<cv::Point3f> corner_set_new;
-    std::vector<cv::Point2f> corner_set_5_reorient;
-    for (int i=0; i<5; i++) {
-        corner_set_new.push_back(cv::Point3f(corner_mat_new.at<double>(0,i), corner_mat_new.at<double>(1,i), i));
-    }
-
-    std::sort(corner_set_new.begin(), corner_set_new.end(), compareCoords);
-    for (int i=0; i<5; i++) {
-        corner_set_5_reorient.push_back(cv::Point2f(corner_set_5[(int)corner_set_new[i].z].x,corner_set_5[(int)corner_set_new[i].z].y));
-    }
-
-
-    // manual correction
-    if (abs(corner_set_5_reorient[0].x-(vtx[0].x+vtx[2].x)/2)>30){
-        // std::cout<<"reverse"<<std::endl;
-        std::reverse(corner_set_5_reorient.begin(), corner_set_5_reorient.end());
-    }
-    // for (int i=0; i<5; i++) {
-    //     std::cout<<corner_set_5_reorient[i]<<std::endl;
-    // }
-    if (corner_set_5_reorient[1].x>corner_set_5_reorient[2].x) {
-        cv::Point2f tmp = cv::Point2f(corner_set_5_reorient[1].x,corner_set_5_reorient[1].y);
-        corner_set_5_reorient[1] = corner_set_5_reorient[2];
-        corner_set_5_reorient[2] = tmp;
-    }
-    if (corner_set_5_reorient[3].x>corner_set_5_reorient[4].x) {
-        cv::Point2f tmp = cv::Point2f(corner_set_5_reorient[3].x,corner_set_5_reorient[3].y);
-        corner_set_5_reorient[3] = corner_set_5_reorient[4];
-        corner_set_5_reorient[4] = tmp;
-    }
-    // for (int i=0; i<5; i++) {
-    //     std::cout<<corner_set_5_reorient[i]<<std::endl;
-    // }
-    return corner_set_5_reorient;
-}
-
-
 int main(int argc, char *argv[]) {
 
     // usage
@@ -296,36 +199,9 @@ int main(int argc, char *argv[]) {
             cv::cornerSubPix(grey, corner_set, cv::Size(11, 11), cv::Size(-1, -1),
                 cv::TermCriteria(cv::TermCriteria::EPS+cv::TermCriteria::COUNT, 30, 0.1));
 
-            if(corner_set.size()>=5){
-                std::vector<cv::Point2f> corner_set_5;
-
-                for (int i=0;i<5;i++) {
-                    // std::cout<<corner_set[i]<<std::endl;
-                    corner_set_5.push_back(corner_set[i]);
-                    cv::circle( frame, cv::Point(corner_set[i].x,corner_set[i].y), 5,  cv::Scalar(0,0,255), 2, 8, 0 );
-                }
-
-                // this function call attemps to rectify the shape
-                // does not work well yet
-                corner_set_5 = reorient(corner_set_5);
-
-
-                cv::Mat rvec, tvec;
-                bool solveSuccess = cv::solvePnP(point_set, corner_set_5,
-                    curCam.first, curCam.second, rvec, tvec);
-
-                if (solveSuccess) {
-                    // std::cout<<"tvec "<<tvec<<std::endl;
-                    // std::cout<<"rvec "<<rvec<<std::endl;
-                    drawAxes(frame, curCam, rvec, tvec);
-                    drawCube(frame, curCam, rvec, tvec, cv::Point3f(2,-3,0), 2);
-                    drawPyramid(frame, curCam, rvec, tvec, cv::Point3f(2,-3,2), 2);
-                } else {
-                    break;
-                }
-
+            for (int i=0; i<corner_set.size();i++){
+                cv::circle( frame, cv::Point(corner_set[i].x,corner_set[i].y), 5,  cv::Scalar(0,0,255), 2, 8, 0 );
             }
-
         }
 
 		cv::imshow("Video", frame);
