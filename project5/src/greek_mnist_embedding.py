@@ -103,19 +103,22 @@ def main(argv):
     print("Calculating ssd with respect to alpha (idx 1)")
     alpha_exp = greek_data_output[1,:]
     alpha_ssd = ssd(alpha_exp, greek_data_output)
-    for i in range(len(greek_labels)):
+    alpha_argsort = np.argsort(alpha_ssd)
+    for i in alpha_argsort:
         print("idx: %2d; label: %s; ssd: %.2f"%(i, idx2letter[greek_labels[i]], alpha_ssd[i]))
 
     print("Calculating ssd with respect to beta (idx 0)")
     beta_exp = greek_data_output[0,:]
     beta_ssd = ssd(beta_exp, greek_data_output)
-    for i in range(len(greek_labels)):
+    beta_argsort = np.argsort(beta_ssd)
+    for i in beta_argsort:
         print("idx: %2d; label: %s; ssd: %.2f"%(i, idx2letter[greek_labels[i]], beta_ssd[i]))
 
     print("Calculating ssd with respect to gamma (idx 4)")
     gamma_exp = greek_data_output[4,:]
     gamma_ssd = ssd(gamma_exp, greek_data_output)
-    for i in range(len(greek_labels)):
+    gamma_argsort = np.argsort(gamma_ssd)
+    for i in gamma_argsort:
         print("idx: %2d; label: %s; ssd: %.2f"%(i, idx2letter[greek_labels[i]], gamma_ssd[i]))
 
 
