@@ -9,7 +9,7 @@
 # evaluate on mnist test set first 10 images:
 # python3 mnist_evaluate.py ../models/mnist_cnn_simple.h5 0
 # evaluate on hand-written digits:
-# python3 mnist_evaluate.py ../models/mnist_cnn_simple.h5 1 ../data/
+# python3 mnist_evaluate.py ../models/mnist_cnn_simple.h5 1 ../data/digits/
 
 from __future__ import print_function
 import keras
@@ -24,7 +24,7 @@ from keras.models import load_model
 
 import sys
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import os
 import cv2
 
@@ -49,7 +49,7 @@ def main(argv):
     # load the model
     print("Loading model from %s" %argv[1])
     model = load_model(argv[1])
-    print("Finished loading model")
+    # print("Finished loading model")
 
     # load mnist test data and predict
     if argv[2] == "0":

@@ -26,6 +26,12 @@ import h5py
 
 import sys
 import numpy as np
+
+# these two lines are used for running on server
+import matplotlib
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 
 np.random.seed(42)
@@ -98,7 +104,8 @@ def main(argv):
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Test'], loc='upper left')
-    plt.show()
+    # plt.savefig("../results/mnist_cnn_simple_training.png", dpi=300)
+    # plt.show()
 
 
 
