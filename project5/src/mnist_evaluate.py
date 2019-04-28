@@ -98,7 +98,10 @@ def main(argv):
         # plt.close()
 
         # predict
-        results = model.predict(np.array(x_test))
+        x_test = np.array(x_test)
+        x_test = x_test.astype('float32')
+        x_test /= 255
+        results = model.predict(x_test)
 
     else:
         print("Unknown test data source, exiting")
