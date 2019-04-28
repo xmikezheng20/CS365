@@ -41,7 +41,7 @@ def main(argv):
         print("Unable to read from directory, exiting")
         exit()
 
-    letter2idx = {"alpha":0, "beta":1, "gamma":3}
+    letter2idx = {"alpha":0, "beta":1, "gamma":2}
 
     # open files to write
     if argv[2][-1]=="/":
