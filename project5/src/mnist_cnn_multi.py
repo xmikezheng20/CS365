@@ -77,7 +77,7 @@ def main(argv):
 
     batch_size = 128
     num_classes = 10
-    epochs = 2 #1 temperarly
+    epochs = 12 #1 temperarly
 
     # input image dimensions
     img_rows, img_cols = 28, 28
@@ -107,15 +107,15 @@ def main(argv):
     y_test = keras.utils.to_categorical(y_test, num_classes)
 
     #final list
-    # poolingSizeList = [2, 4, 8]
-    # filterSizeList = [3, 5, 7]
-    # numbFilterList = [[32,32], [32,64], [32,64], [64, 64]]
-    # denseNode = [128, 256, 512]
+    poolingSizeList = [2, 4, 8]
+    filterSizeList = [3, 5, 7]
+    numbFilterList = [[32,32], [32,64], [32,64], [64, 64]]
+    denseNode = [128, 256, 512]
 
-    poolingSizeList = [2, 4]
-    filterSizeList = [3]
-    numbFilterList = [[32,32], [32,64]]
-    denseNode = [128]
+    # poolingSizeList = [2, 4]
+    # filterSizeList = [3]
+    # numbFilterList = [[32,32], [32,64]]
+    # denseNode = [128]
     # poolingSizeList = [2]
     # filterSizeList = [3]
     # numbFilterList = [[32,32]]
@@ -124,7 +124,7 @@ def main(argv):
     #number index of model
     index = 0
     path = '../results/'
-    csvfile = open(path+'mnist_cnn_multi_test.csv', 'w')
+    csvfile = open(path+'mnist_cnn_multi.csv', 'w')
     #first row - headers
     indexes = 'header,poolingSize,filterSize,numFilter,denseNode'
     for i in range(epochs):
