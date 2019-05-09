@@ -71,28 +71,13 @@ class Model():
         self.curModel.save(name)
 
 
-def write():
-    path = '../data/'
-    with open(path+'mnist_cnn_multi.csv', 'w') as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        #first row - headers
-        indexes = 'header,poolingSize,filterSize,numFilter,denseNode'
-        for i in range(12) :
-            indexes += ',train' + str(i) + ',test' + str(i)
-
-
-        csvwriter.writerow(indexes)
-        csvwriter.writerow(['Spam', 'Spam1', 'spam2'])
-
-    print('writing done')
-
 def main(argv):
 
     # newModel.prepare()
 
     batch_size = 128
     num_classes = 10
-    epochs = 12 #1 temperarly
+    epochs = 2 #1 temperarly
 
     # input image dimensions
     img_rows, img_cols = 28, 28
@@ -121,74 +106,85 @@ def main(argv):
     y_train = keras.utils.to_categorical(y_train, num_classes)
     y_test = keras.utils.to_categorical(y_test, num_classes)
 
-    poolingSizeList = [2, 4, 8]
-    filterSizeList = [3, 5, 7]
-    numbFilterList = [[32,32], [32,64], [32,64], [64, 64]]
-    denseNode = [128, 256, 512]
+    #final list
+    # poolingSizeList = [2, 4, 8]
+    # filterSizeList = [3, 5, 7]
+    # numbFilterList = [[32,32], [32,64], [32,64], [64, 64]]
+    # denseNode = [128, 256, 512]
+
+    poolingSizeList = [2, 4]
+    filterSizeList = [3]
+    numbFilterList = [[32,32], [32,64]]
+    denseNode = [128]
     # poolingSizeList = [2]
     # filterSizeList = [3]
-    # numbFilterList = [[32,32], [32,64], [32,64], [64, 64]]
+    # numbFilterList = [[32,32]]
     # denseNode = [128]
 
     #number index of model
     index = 0
-    path = '../data/'
-    csvfile = open(path+'mnist_cnn_multi.csv', 'w')
-    csvwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    path = '../results/'
+    csvfile = open(path+'mnist_cnn_multi_test.csv', 'w')
     #first row - headers
     indexes = 'header,poolingSize,filterSize,numFilter,denseNode'
-    for i in range(epochs) :
-        indexes += ',train' + str(i) + ',test' + str(i)
-    csvwriter.writerow(indexes)
-
+    for i in range(epochs):
+        indexes += ',train' + str(i)
+    for j in range(epochs):
+        indexes +=  ',test' + str(j)
+    indexes += "\n"
+    csvfile.write(indexes)
 
     #start training models
     for i in poolingSizeList:
         for j in filterSizeList:
-            for k in denseNode:
-                newModel = Model()
-                newModel.set_input_shape(input_shape)
-                newModel.trainModel(2, 3, 32, 32, 128)
-                # newModel.trainModel(i, j, 32, 32, denseNode)
-                # newModel.trainModel(2, 3, 32, 32, 128)
+            for o in numbFilterList:
+                for k in denseNode:
 
-                #compile model
-                newModel.get_model().compile(loss=keras.losses.categorical_crossentropy,
-                          optimizer=keras.optimizers.Adam(),
-                          metrics=['accuracy'])
+                    newModel = Model()
+                    newModel.set_input_shape(input_shape)
+                    newModel.trainModel(i, j, o[0], o[1], k)
 
-                # train and evaluate the model
-                history = newModel.get_model().fit(x_train, y_train,
-                                      batch_size=batch_size,
-                                      epochs=epochs,
-                                      verbose=1,
-                                      validation_data=(x_test, y_test))
+                    #compile model
+                    newModel.get_model().compile(loss=keras.losses.categorical_crossentropy,
+                              optimizer=keras.optimizers.Adam(),
+                              metrics=['accuracy'])
+
+                    # train and evaluate the model
+                    history = newModel.get_model().fit(x_train, y_train,
+                                          batch_size=batch_size,
+                                          epochs=epochs,
+                                          verbose=1,
+                                          validation_data=(x_test, y_test))
 
 
-                newModel.saveModel(index)
-                index += 1
+                    newModel.saveModel(index)
+                    index += 1
 
-                trainResult = []
-                testResult = []
-                #write to csv
-                # index + poolingSize + filterSize + numFilter + denseNode + train1 + test1 + train2 + test2...
-                for m in range(27):
-                    curRow = str(index) + ',' + str(i) + ',' + str(j) + ','+ str(32) + ',' + str(k)
-                for n in range(epochs):
+                    trainResult = []
+                    testResult = []
+                    #write to csv
+                    # index + poolingSize + filterSize + numFilter + denseNode + train1 + test1 + train2 + test2...
+                    # for m in range(108):
+                    curRow = str(index) + ',' + str(i) + ',' + str(j) + ','+ str(o[0])+' '+str(o[1]) + ',' + str(k)
                     #train results
-                    trainAcc = format(history.history['acc'][n],'.4f')
-                    trainResult.append(trainAcc)
-                    print("training accuracy is")
-                    print(trainAcc)
+                    for n in range(epochs):
+                        trainAcc = format(history.history['acc'][n],'.4f')
+                        trainResult.append(trainAcc)
+                        # print("training accuracy is")
+                        # print(trainAcc)
+                        curRow += ',' + str(trainResult[n])
                     #test results
-                    testAcc = format(history.history['val_acc'][n], '.4f')
-                    testResult.append(testAcc)
-                    print("testing accuracy is")
-                    print(testAcc)
-                    curRow += ',' + str(trainResult[n]) + ',' + str(testResult[n])
-                csvwriter.writerow(curRow)
+                    for p in range(epochs):
+                        testAcc = format(history.history['val_acc'][p], '.4f')
+                        testResult.append(testAcc)
+                        # print("testing accuracy is")
+                        # print(testAcc)
+                        curRow += ',' + str(testResult[p])
+                    curRow += "\n"
+                    # csvwriter.writerow(curRow)
+                    csvfile.write(curRow)
 
-                print('writing done')
+                    print('writing done')
 
     csvfile.close()
 
