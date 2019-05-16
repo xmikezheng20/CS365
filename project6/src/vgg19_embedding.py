@@ -8,6 +8,8 @@
     output a #images*1000 matrix
 
     We use vgg19
+
+    sort using shell command: sort -t"," -k1n,1 ../data/data_subset_embedding_4096.csv > ../data/data_subset_embedding_4096_reorder.csv
 '''
 
 from __future__ import print_function
@@ -34,28 +36,47 @@ import csv
 
 import image_resize
 
+def getIds(filelist):
+    idlist = []
+    for filename in filelist:
+        idlist.append(int(filename.split('/')[-1].split('_')[0]))
+
+    return np.matrix(idlist).T
+
 
 def main(argv):
 
     # ssl._create_default_https_context = ssl._create_unverified_context #debug for system error
     #
     dir = "/var/tmp/xzheng20_mhe_cs365_final/data_subset"
+    # dir = "/var/tmp/xzheng20_mhe_cs365_final/jpg2/"
     # dir = '../data/tmp_dataset' #local test dataset
-    input_image_data = image_resize.readImgFromDir(dir)
-    input_image_data.astype('float64')
-    print(input_image_data.shape)
+    filelist, input_image_data = image_resize.readImgFromDir(dir)
+    idmatrix = getIds(filelist)
 
     print("load pretrained model")
     base_model = VGG19(weights='imagenet', include_top = True)
     embedding_model = Model(inputs=base_model.input, outputs=base_model.layers[-2].output)
-    embedding_model.summary()
-    # model_path = '../models/vgg19_1000.h5'
-    # model = load_model(model_path)
-    results = embedding_model.predict(input_image_data, verbose=1)
-    print("with 4096 cat")
-    print(results.shape)
+    # embedding_model.summary()
 
-    np.savetxt("../data/dataset_matrix.csv", results, delimiter=",")
+    resultslist = []
+
+    for batch in input_image_data:
+        batch.astype('float64')
+
+        results = embedding_model.predict(batch, verbose=1)
+        print("with 4096 cat")
+        print(results.shape)
+        resultslist.append(results)
+
+    results_concatenate = np.vstack(resultslist)
+    print(results_concatenate.shape)
+
+    output = np.hstack((idmatrix.astype(np.float32),results_concatenate.astype(np.float32)))
+    print(output.shape)
+
+    # np.savetxt("../data/data_subset_embedding_4096.csv", output, delimiter=",", fmt="%.6f")
+    # np.savetxt("../data/data_full_embedding_4096.csv", output, delimiter=",", fmt="%.6f")
 
     #for debug
 

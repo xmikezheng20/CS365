@@ -30,18 +30,28 @@ def readdir(dir):
     return filelist
 
 # read all images from a directory and put them into a numpy matrix (n*224*224*3)
-def readImgFromDir(dir):
+def readImgFromDir(dir, batch=1000):
     filelist = readdir(dir)
     imglist = []
     for file in filelist:
+        print("Processing ",file)
         img = readResizeImage(file)
         img = np.expand_dims(img,axis=3)
         imglist.append(img)
 
-    imglist = np.concatenate(imglist,axis=3)
-    imglist = np.transpose(imglist, (3,0,1,2))
+    imgbatchlist = []
+    numbatch = int(len(imglist)/batch)
+    for i in range(numbatch):
+        imgbatch = np.concatenate(imglist[i*batch:(i+1)*batch],axis=3)
+        imgbatch = np.transpose(imgbatch, (3,0,1,2))
+        print(imgbatch.shape)
+        imgbatchlist.append(imgbatch)
+    imgbatch = np.concatenate(imglist[numbatch*batch:],axis=3)
+    imgbatch = np.transpose(imgbatch, (3,0,1,2))
+    print(imgbatch.shape)
+    imgbatchlist.append(imgbatch)
 
-    return imglist
+    return filelist, imgbatchlist
 
 
 # read a single image from a path and resize into
@@ -99,8 +109,9 @@ def main(argv):
 
     dir = argv[1]
 
-    npdata = readImgFromDir(dir)
-    print(npdata.shape)
+    filelist, data = readImgFromDir(dir)
+
+    print(len(data))
 
 
 

@@ -6,7 +6,9 @@
 # creator, type, material, year
 #
 # python3 metadata_parser.py /Users/xiaoyuezheng/Desktop/Rijksmuseum_data_raw/metadata_subset
-
+#
+# sort using shell command: sort -t"," -k1n,1 ../data/metadata_first.csv > ../data/metadata_first_reorder.csv
+# sort -t"," -k1n,1 ../data/metadata_subset_first.csv > ../data/metadata_subset_first_reorder.csv
 import sys
 import os
 import xml.etree.ElementTree as ET
