@@ -8,7 +8,7 @@
     python3 classify.py ../data/data_subset_embedding_4096_reorder.csv ../data/metadata_subset_first_reorder.csv
     python3 classify.py ../data/data_subset_embedding_4096_reorder_train.csv ../data/metadata_subset_first_reorder_train.csv
     python3 classify.py ../data/data_subset_embedding_4096_reorder_test.csv ../data/metadata_subset_first_reorder_test.csv
-
+    python3 classify.py /var/tmp/xzheng20_mhe_cs365_final/data/data_subset_embedding_4096_reorder_test.csv /var/tmp/xzheng20_mhe_cs365_final/data/metadata_subset_first_reorder_test.csv
 '''
 
 import sys
@@ -71,51 +71,51 @@ def main(argv):
 
 #############################################
 
-
-
-    top25idx = np.argsort(counts)[::-1].tolist()[:25]
-
-
-    data_top25 = []
-    labels_top25 = []
-
-    for i in range(data.shape[0]):
-        if labelsmat[i,0] in top25idx:
-            labels_top25.append(labelsmat[i,0])
-            data_top25.append(data[i,:])
-
-    data_top25 = np.matrix(data_top25)
-    labels_top25 = np.matrix(labels_top25).T
-    # print(data_top25.shape)
-    # print(len(labels_top25))
-
-    unique_top25, inverse_top25, counts_top25 = np.unique(labels_top25, return_counts=True, return_inverse=True, axis=0)
-    # print(unique_top25)
-    # print(counts_top25)
-    # print(inverse_top25)
-
-    print("Labels:")
-    for i in range(unique_top25.shape[0]):
-        print(i," : ",inv_dict[unique_top25[i,0]])
-
-
-    # CLASSIFY
-    K = 5
-    print( 'Building KNN Classifier (K=%d)'%K )
-    knnc = classifiers.KNN( data_top25, inverse_top25, K)
-
-    print( 'KNN Training Set Results' )
-
-    newcats, newlabels = knnc.classify( data_top25)
-
-    confmtx = knnc.confusion_matrix( np.matrix(inverse_top25).T, newlabels )
-    print( knnc.confusion_matrix_str(confmtx) )
-
-    # for i in range(labels_top25.shape[0]):
-    #     print(inverse_top25[i,0], newlabels[i,0])
-
-    print("accuracy", knnc.accuracy(np.matrix(inverse_top25).T, newlabels))
-
+    #
+    #
+    # top25idx = np.argsort(counts)[::-1].tolist()[:25]
+    #
+    #
+    # data_top25 = []
+    # labels_top25 = []
+    #
+    # for i in range(data.shape[0]):
+    #     if labelsmat[i,0] in top25idx:
+    #         labels_top25.append(labelsmat[i,0])
+    #         data_top25.append(data[i,:])
+    #
+    # data_top25 = np.matrix(data_top25)
+    # labels_top25 = np.matrix(labels_top25).T
+    # # print(data_top25.shape)
+    # # print(len(labels_top25))
+    #
+    # unique_top25, inverse_top25, counts_top25 = np.unique(labels_top25, return_counts=True, return_inverse=True, axis=0)
+    # # print(unique_top25)
+    # # print(counts_top25)
+    # # print(inverse_top25)
+    #
+    # print("Labels:")
+    # for i in range(unique_top25.shape[0]):
+    #     print(i," : ",inv_dict[unique_top25[i,0]])
+    #
+    #
+    # # CLASSIFY
+    # K = 5
+    # print( 'Building KNN Classifier (K=%d)'%K )
+    # knnc = classifiers.KNN( data_top25, inverse_top25, K)
+    #
+    # print( 'KNN Training Set Results' )
+    #
+    # newcats, newlabels = knnc.classify( data_top25)
+    #
+    # confmtx = knnc.confusion_matrix( np.matrix(inverse_top25).T, newlabels )
+    # print( knnc.confusion_matrix_str(confmtx) )
+    #
+    # # for i in range(labels_top25.shape[0]):
+    # #     print(inverse_top25[i,0], newlabels[i,0])
+    #
+    # print("accuracy", knnc.accuracy(np.matrix(inverse_top25).T, newlabels))
+    #
 
 
 #####################################
@@ -131,6 +131,7 @@ def main(argv):
 
     print("NN testing data")
     test_new_cats = nnc.classify(test_data)
+    print(test_cats.shape)
     print("NN fisnished prediction")
     print(nnc.accuracy(test_cats, test_new_cats))
 

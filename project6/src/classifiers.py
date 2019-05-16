@@ -42,6 +42,7 @@ class Classifier:
         num = truecats.shape[0]
         correct = 0
         for i in range(num):
+            print("pred / true ",int(truecats[i,0]),'/', int(classcats[i,0]))
             if int(truecats[i,0])==int(classcats[i,0]):
                 correct+=1
         print("Correct/all = ",correct,"/",num)
@@ -244,20 +245,22 @@ class NeuralNet(Classifier):
     def classify(self, x_test, path = '../models/NNClassifier.h5'):
         classifier = self.getModel(path)
         y_pred = classifier.predict(x_test)
-        y_pred_final = np.array()
+        y_pred_final =  np.empty([self.num_item,1])
 
         for i,result in enumerate(y_pred):
-            for j,val in enumerate(result):
-                s += "%d: %.2f; " % (j,val)
-            s += "\nPredicted category: %d; True category: %d" % (result.argmax(axis=-1), y_test[i])
-            print(s)
+            # for j,val in enumerate(result):
+                # s += "%d: %.2f; " % (j,val)
+            pre_cat = result.argmax(axis=-1)
+            # s += "\nPredicted category: %d; True category: %d" % (result.argmax(axis=-1), y_test[i])
+            # print(s)
+            y_pred_final[i][0] = result.argmax(axis=-1)
 
+        # y_pred_final = np.array(y_pred_final)
+        # y_pred_final = y_pred_final.T
 
+        print(y_pred_final.shape)
 
-
-        print(y_pred.shape)
-
-        return y_pred
+        return y_pred_final
 
 
 # read file to np matrix
