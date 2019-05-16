@@ -61,7 +61,7 @@ def main(argv):
     # print(datamat)
     # print(datamat.shape)
 
-    # numdata = 2000
+    # numdata = 3000
     numdata = datamat.shape[0]
 
     datamat = datamat[:numdata,:]
@@ -74,10 +74,11 @@ def main(argv):
     labelsmat, dict = readlabels(metadatafilename)
     # print(dict)
     # print(labelsmat)
-    # print(labelsmat.shape)
     inv_dict = {v: k for k, v in dict.items()}
 
     labelsmat = labelsmat[:numdata,:]
+
+    # print(labelsmat.shape)
 
 
 
@@ -193,7 +194,7 @@ def main(argv):
     print("Testing accuracy", accuracy)
 
     # print the confusion matrix
-    confmtx = knnc.confusion_matrix( labels_top25_test, newcats )
+    confmtx = knnc.confusion_matrix( labels_top25_test, newlabels )
 
     plt.matshow(confmtx)
     plt.title("Testing: %d data; %.4f accruacy." %(labels_top25_test.shape[0], accuracy))
