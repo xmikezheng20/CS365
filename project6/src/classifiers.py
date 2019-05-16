@@ -42,7 +42,7 @@ class Classifier:
         num = truecats.shape[0]
         correct = 0
         for i in range(num):
-            if (int(truecats[i,0]) == int(classcats[i,0])):
+            if int(truecats[i,0])==int(classcats[i,0]):
                 correct+=1
         print("Correct/all = ",correct,"/",num)
         return float(correct)/num

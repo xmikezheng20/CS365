@@ -59,20 +59,10 @@ def main(argv):
     embedding_model = Model(inputs=base_model.input, outputs=base_model.layers[-2].output)
     # embedding_model.summary()
 
-    resultslist = []
+    results = embedding_model.predict(input_image_data, verbose=1)
+    print(results.shape)
 
-    for batch in input_image_data:
-        batch.astype('float64')
-
-        results = embedding_model.predict(batch, verbose=1)
-        print("with 4096 cat")
-        print(results.shape)
-        resultslist.append(results)
-
-    results_concatenate = np.vstack(resultslist)
-    print(results_concatenate.shape)
-
-    output = np.hstack((idmatrix.astype(np.float32),results_concatenate.astype(np.float32)))
+    output = np.hstack((idmatrix.astype(np.float32),results.astype(np.float32)))
     print(output.shape)
 
     # np.savetxt("../data/data_subset_embedding_4096.csv", output, delimiter=",", fmt="%.6f")

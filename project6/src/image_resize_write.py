@@ -39,8 +39,13 @@ def readImgFromDir(dir):
         img = np.expand_dims(img,axis=3)
         imglist.append(img)
 
-    imglist = np.concatenate(imglist,axis=3)
-    imglist = np.transpose(imglist, (3,0,1,2))
+    # fp = open("../data/image_resize_data.csv","w")
+    fp = open("/var/tmp/xzheng20_mhe_cs365_final/image_resize_data.csv","w")
+    for i in range(len(imglist)):
+        fp.write(str(filelist[i].split('/')[-1].split('_')[0])+",")
+        fp.write(",".join(str(x) for x in imglist[i].reshape((1,150528)).tolist()[0]))
+        fp.write("\n")
+    fp.close()
 
     return filelist, imglist
 
@@ -102,7 +107,7 @@ def main(argv):
 
     filelist, data = readImgFromDir(dir)
 
-    print(data.shape)
+    # print(data.shape)
 
 
 
