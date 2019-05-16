@@ -77,10 +77,12 @@ def main(argv):
 
     dir = argv[1]
 
-    fp_1 = open("../data/metadata_first.csv","w")
+    # fp_1 = open("../data/metadata_first.csv","w")
+    fp_1 = open("/var/tmp/xzheng20_mhe_cs365_final/data_final/process/metadata_first.csv", "w")
     fp_1.write("id,creator,type,material,date\n")
 
-    fp_2 = open("../data/metadata_full.csv","w")
+    # fp_2 = open("../data/metadata_full.csv","w")
+    fp_2 = open("/var/tmp/xzheng20_mhe_cs365_final/data_final/process/metadata_full.csv", "w")
     item_nums = [12,15,29,3]
     list = ["id"]
     for i in range(item_nums[0]):

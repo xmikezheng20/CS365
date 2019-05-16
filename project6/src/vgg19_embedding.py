@@ -48,9 +48,10 @@ def main(argv):
 
     # ssl._create_default_https_context = ssl._create_unverified_context #debug for system error
     #
-    dir = "/var/tmp/xzheng20_mhe_cs365_final/data_subset"
+    # dir = "/var/tmp/xzheng20_mhe_cs365_final/data_subset/"
     # dir = "/var/tmp/xzheng20_mhe_cs365_final/jpg2/"
     # dir = '../data/tmp_dataset' #local test dataset
+    dir = "/var/tmp/xzheng20_mhe_cs365_final/data_final/data_10000/"
     filelist, input_image_data = image_resize.readImgFromDir(dir)
     idmatrix = getIds(filelist)
 
@@ -64,6 +65,8 @@ def main(argv):
 
     output = np.hstack((idmatrix.astype(np.float32),results.astype(np.float32)))
     print(output.shape)
+
+    np.savetxt("/var/tmp/xzheng20_mhe_cs365_final/data_final/process/data_embedding_4096.csv", output, delimiter=",", fmt="%.6f")
 
     # np.savetxt("../data/data_subset_embedding_4096.csv", output, delimiter=",", fmt="%.6f")
     # np.savetxt("../data/data_full_embedding_4096.csv", output, delimiter=",", fmt="%.6f")

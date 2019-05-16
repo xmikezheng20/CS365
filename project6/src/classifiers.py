@@ -42,7 +42,7 @@ class Classifier:
         num = truecats.shape[0]
         correct = 0
         for i in range(num):
-            print("pred / true ",int(truecats[i,0]),'/', int(classcats[i,0]))
+            # print("pred / true ",int(truecats[i,0]),'/', int(classcats[i,0]))
             if int(truecats[i,0])==int(classcats[i,0]):
                 correct+=1
         print("Correct/all = ",correct,"/",num)
@@ -139,8 +139,10 @@ class KNN(Classifier):
             # sum the first three columns
             # this is the distance to the first class
         for i in range(self.num_classes):
+            print("calculating class",i)
             tmp = np.zeros((A.shape[0],self.exemplars[i].shape[0]))
             for j in range(A.shape[0]):
+                # print(" calculate data",j)
                 for k in range(self.exemplars[i].shape[0]):
                     tmp[j,k] = scipy.spatial.distance.euclidean(A[j,:], self.exemplars[i][k,:])
 
