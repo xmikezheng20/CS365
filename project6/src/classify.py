@@ -6,6 +6,8 @@
     classify art type using the vgg-embedding (4096-vector)
 
     python3 classify.py ../data/data_subset_embedding_4096_reorder.csv ../data/metadata_subset_first_reorder.csv
+    python3 classify.py ../data/data_subset_embedding_4096_reorder_train.csv ../data/metadata_subset_first_reorder_train.csv
+    python3 classify.py ../data/data_subset_embedding_4096_reorder_test.csv ../data/metadata_subset_first_reorder_test.csv
 
 '''
 
@@ -64,7 +66,19 @@ def main(argv):
     # print(unique)
     # print(counts)
 
-    # CLASSIFY
+    nnc= classifiers.NeuralNet(data, labelsmat)
+    # nnc.train()
+    # print("NN training done")
+    test_data = data
+    test_cats = labelsmat
+
+    print("NN testing data")
+    test_new_cats = nnc.classify(test_data)
+    print("NN fisnished prediction")
+    print(nnc.accuracy(test_cats, test_new_cats))
+
+'''
+    # CLASSIFY by KNN
     K = 3
     print( 'Building KNN Classifier (K=%d)'%K )
     knnc = classifiers.KNN( data, labelsmat, K)
@@ -77,7 +91,7 @@ def main(argv):
     # print( knnc.confusion_matrix_str(confmtx) )
     for i in range(labelsmat.shape[0]):
         print(labelsmat[i,0], newcats[i,0])
-
+'''
 
 
 
