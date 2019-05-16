@@ -11,9 +11,9 @@ import os
 import numpy as np
 
 # # these two lines are used for running on server
-# import matplotlib
-# # Force matplotlib to not use any Xwindows backend.
-# matplotlib.use('Agg')
+import matplotlib
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import cv2
@@ -35,6 +35,7 @@ def readImgFromDir(dir):
     imglist = []
     for file in filelist:
         print("Processing ",file)
+        # file = "/var/tmp/xzheng20_mhe_cs365_final/data_final/data_10000/0000001_SK-A-4878.jpg"
         img = readResizeImage(file)
         img = np.expand_dims(img,axis=3)
         imglist.append(img)
@@ -79,13 +80,16 @@ def readResizeImage(path):
         img_cropped=img_resized
 
     # print("cropped image has dimension ",img_cropped.shape)
-
+    #
     # plt.imshow(img)
-    # plt.show()
+    # plt.savefig("src.png", dpi=300)
+    # # plt.show()
     # plt.imshow(img_resized)
-    # plt.show()
+    # plt.savefig("resize.png", dpi=300)
+    # # plt.show()
     # plt.imshow(img_cropped)
-    # plt.show()
+    # plt.savefig("crop.png", dpi=300)
+    # # plt.show()
     # exit()
 
     return img_cropped
