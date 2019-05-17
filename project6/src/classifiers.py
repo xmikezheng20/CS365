@@ -207,7 +207,7 @@ class NeuralNet(Classifier):
     def train(self):
 
         batch_size = 10
-        epoches = 8
+        epoches = 12
 
         # convert class vectors to binary class matrices
         self.y_train = keras.utils.to_categorical(self.y_train, self.num_classes)
@@ -247,20 +247,17 @@ class NeuralNet(Classifier):
     def classify(self, x_test, path = '../models/NNClassifier.h5'):
         classifier = self.getModel(path)
         y_pred = classifier.predict(x_test)
+        print("y_pred shape is", y_pred.shape)
+
         y_pred_final =  np.empty([self.num_item,1])
 
         for i,result in enumerate(y_pred):
-            # for j,val in enumerate(result):
-                # s += "%d: %.2f; " % (j,val)
-            pre_cat = result.argmax(axis=-1)
-            # s += "\nPredicted category: %d; True category: %d" % (result.argmax(axis=-1), y_test[i])
-            # print(s)
             y_pred_final[i][0] = result.argmax(axis=-1)
 
         # y_pred_final = np.array(y_pred_final)
         # y_pred_final = y_pred_final.T
 
-        print(y_pred_final.shape)
+        print("y_pred_final shape is", y_pred_final.shape)
 
         return y_pred_final
 
