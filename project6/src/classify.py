@@ -144,7 +144,8 @@ def main(argv):
     data_top25_test = np.vstack(data_top25_test)
     labels_top25_test = np.matrix(labels_top25_test).T
 
-
+    # print("text saved")
+    # np.savetxt("../results/types.csv", labels_top25_train, delimiter=",", fmt="%.6f")
     # nnc = classifiers.NeuralNet(data_top25_train, labels_top25_train)
     # nnc.train()
     # print("NN training done")
