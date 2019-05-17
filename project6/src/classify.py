@@ -9,7 +9,7 @@
     python3 classify.py ../data/data_subset_embedding_4096_reorder_train.csv ../data/metadata_subset_first_reorder_train.csv
     python3 classify.py ../data/data_subset_embedding_4096_reorder_test.csv ../data/metadata_subset_first_reorder_test.csv
     python3 classify.py /var/tmp/xzheng20_mhe_cs365_final/data/data_subset_embedding_4096_reorder_test.csv /var/tmp/xzheng20_mhe_cs365_final/data/metadata_subset_first_reorder_test.csv
-    python3 classify.py /var/tmp/xzheng20_mhe_cs365_final/data_final/process/data_embedding_4096_ordered.csv /var/tmp/xzheng20_mhe_cs365_final/data_final/process/metadata_first_ordered.csv
+    python3 classify.py /var/tmp/xzheng20_mhe_cs365_final/data_final/process/data_embedding_4096_ordered.csv /var/tmp/xzheng20_mhe_cs365_final/data_final/process/metadata_first_ordered.csv 1
 
 '''
 
@@ -51,12 +51,13 @@ def readlabels(filename):
 def main(argv):
 
     # usage
-    if len(argv)<3:
-        print("Usage: python3 %s <data.csv> <metadata.csv>"%argv[0])
+    if len(argv)<4:
+        print("Usage: python3 %s <data.csv> <metadata.csv> <0 - KNN; 1 -ANN>"%argv[0])
         exit()
 
     datafilename = argv[1]
     metadatafilename = argv[2]
+    classifierType = int(argv[3])
 
     # read data
     datamat = np.genfromtxt(datafilename, delimiter=',')
@@ -121,128 +122,135 @@ def main(argv):
     #
 
 
-#####################################
+##################################### ANN #############
+    if classifierType == 1 :
+        print("******************ANN classifier:**************")
 
-    print(data_top25.shape[0])
-    # print(inverse_top25.shape)
+        print(data_top25.shape[0])
+        # print(inverse_top25.shape)
 
-    data_top25_train = []
-    data_top25_test = []
-    labels_top25_train = []
-    labels_top25_test = []
+        data_top25_train = []
+        data_top25_test = []
+        labels_top25_train = []
+        labels_top25_test = []
 
-    for i in range(labels_top25.shape[0]):
-        if np.random.random()>0.2:
-            labels_top25_train.append(inverse_top25[i])
-            data_top25_train.append(data_top25[i,:])
-        else:
-            labels_top25_test.append(inverse_top25[i])
-            data_top25_test.append(data_top25[i,:])
+        for i in range(labels_top25.shape[0]):
+            if np.random.random()>0.2:
+                labels_top25_train.append(inverse_top25[i])
+                data_top25_train.append(data_top25[i,:])
+            else:
+                labels_top25_test.append(inverse_top25[i])
+                data_top25_test.append(data_top25[i,:])
 
-    data_top25_train = np.vstack(data_top25_train)
-    labels_top25_train = np.matrix(labels_top25_train).T
-    data_top25_test = np.vstack(data_top25_test)
-    labels_top25_test = np.matrix(labels_top25_test).T
+        data_top25_train = np.vstack(data_top25_train)
+        labels_top25_train = np.matrix(labels_top25_train).T
+        data_top25_test = np.vstack(data_top25_test)
+        labels_top25_test = np.matrix(labels_top25_test).T
 
-    # print("text saved")
-    # np.savetxt("../results/types.csv", labels_top25_train, delimiter=",", fmt="%.6f")
-    # nnc = classifiers.NeuralNet(data_top25_train, labels_top25_train)
-    # nnc.train()
-    # print("NN training done")
-    # test_data = data
-    # test_cats = labelsmat
+        # print("text saved")
+        # np.savetxt("../results/types.csv", labels_top25_train, delimiter=",", fmt="%.6f")
+        # nnc = classifiers.NeuralNet(data_top25_train, labels_top25_train)
+        # nnc.train()
+        # print("NN training done")
+        # test_data = data
+        # test_cats = labelsmat
 
-    # print("training data")
+        # print("training data")
 
 
-    nnc = classifiers.NeuralNet(data_top25_test, labels_top25_test)
-    print("NN testing data")
-    test_new_cats = nnc.classify(data_top25_test)
-    print(labels_top25_test.shape)
-    print("NN fisnished prediction")
-    print(nnc.accuracy(labels_top25_test, test_new_cats))
+        nnc = classifiers.NeuralNet(data_top25_test, labels_top25_test)
+        print("NN testing data")
+        test_new_cats = nnc.classify(data_top25_test)
+        print(labels_top25_test.shape)
+        print("NN fisnished prediction")
+        print(nnc.accuracy(labels_top25_test, test_new_cats))
 
 ##############################
-    #
-    # # split training testing
-    #
-    # print(data_top25.shape[0])
-    # # print(inverse_top25.shape)
-    #
-    # data_top25_train = []
-    # data_top25_test = []
-    # labels_top25_train = []
-    # labels_top25_test = []
-    #
-    # for i in range(labels_top25.shape[0]):
-    #     if np.random.random()>0.2:
-    #         labels_top25_train.append(inverse_top25[i])
-    #         data_top25_train.append(data_top25[i,:])
-    #     else:
-    #         labels_top25_test.append(inverse_top25[i])
-    #         data_top25_test.append(data_top25[i,:])
-    #
-    # data_top25_train = np.vstack(data_top25_train)
-    # labels_top25_train = np.matrix(labels_top25_train).T
-    # data_top25_test = np.vstack(data_top25_test)
-    # labels_top25_test = np.matrix(labels_top25_test).T
-    #
-    # print(data_top25_train.shape)
-    # print(labels_top25_train.shape)
-    # print(data_top25_test.shape)
-    # print(labels_top25_test.shape)
+    elif classifierType == 0:
+        print("******************KNN classifier:**************")
 
-    # print(data_top25_train)
-    # print(labels_top25_train)
-    # print(data_top25_test)
-    # print(labels_top25_test)
+        # split training testing
 
-    #
-    #
-    #
-    #
-    #
-    #
-    # #
-    # # CLASSIFY
-    # K = 7
-    # print( 'Building KNN Classifier (K=%d)'%K )
-    # knnc = classifiers.KNN( data_top25_train, labels_top25_train, K)
-    #
-    # print( 'KNN Training Set Results' )
-    #
-    # newcats, newlabels = knnc.classify( data_top25_train)
-    #
-    # accuracy = knnc.accuracy(labels_top25_train, newlabels)
-    # print("Training accuracy", accuracy)
-    #
-    # confmtx = knnc.confusion_matrix( labels_top25_train, newlabels )
-    #
-    # plt.matshow(confmtx)
-    # plt.title("Training: %d data; %.4f accruacy."%( labels_top25_train.shape[0], accuracy))
-    # plt.savefig("../results/training.png", dpi=300)
-    #
-    # print( knnc.confusion_matrix_str(confmtx) )
-    #
-    #
-    # print( 'KNN Test Set Results' )
-    #
-    # newcats, newlabels = knnc.classify(data_top25_test)
-    #
-    # accuracy = knnc.accuracy(labels_top25_test, newlabels)
-    #
-    # print("Testing accuracy", accuracy)
-    #
-    # # print the confusion matrix
-    # confmtx = knnc.confusion_matrix( labels_top25_test, newlabels )
-    #
-    # plt.matshow(confmtx)
-    # plt.title("Testing: %d data; %.4f accruacy." %(labels_top25_test.shape[0], accuracy))
-    # plt.savefig("../results/testing.png", dpi=300)
-    #
-    # print( knnc.confusion_matrix_str(confmtx) )
+        print(data_top25.shape[0])
+        # print(inverse_top25.shape)
+
+        data_top25_train = []
+        data_top25_test = []
+        labels_top25_train = []
+        labels_top25_test = []
+
+        for i in range(labels_top25.shape[0]):
+            if np.random.random()>0.2:
+                labels_top25_train.append(inverse_top25[i])
+                data_top25_train.append(data_top25[i,:])
+            else:
+                labels_top25_test.append(inverse_top25[i])
+                data_top25_test.append(data_top25[i,:])
+
+        data_top25_train = np.vstack(data_top25_train)
+        labels_top25_train = np.matrix(labels_top25_train).T
+        data_top25_test = np.vstack(data_top25_test)
+        labels_top25_test = np.matrix(labels_top25_test).T
+
+        # print(data_top25_train.shape)
+        # print(labels_top25_train.shape)
+        # print(data_top25_test.shape)
+        # print(labels_top25_test.shape)
+        #
+        # print(data_top25_train)
+        # print(labels_top25_train)
+        # print(data_top25_test)
+        # print(labels_top25_test)
 
 
+
+
+
+
+
+        #
+        # CLASSIFY
+        K = 7
+        print( 'Building KNN Classifier (K=%d)'%K )
+        knnc = classifiers.KNN( data_top25_train, labels_top25_train, K)
+
+        print( 'KNN Training Set Results' )
+
+        newcats, newlabels = knnc.classify( data_top25_train)
+
+        accuracy = knnc.accuracy(labels_top25_train, newlabels)
+        print("Training accuracy", accuracy)
+
+        confmtx = knnc.confusion_matrix( labels_top25_train, newlabels )
+
+        plt.matshow(confmtx)
+        plt.title("Training: %d data; %.4f accruacy."%( labels_top25_train.shape[0], accuracy))
+        plt.savefig("../results/training.png", dpi=300)
+
+        print( knnc.confusion_matrix_str(confmtx) )
+
+
+        print( 'KNN Test Set Results' )
+
+        newcats, newlabels = knnc.classify(data_top25_test)
+
+        accuracy = knnc.accuracy(labels_top25_test, newlabels)
+
+        print("Testing accuracy", accuracy)
+
+        # print the confusion matrix
+        confmtx = knnc.confusion_matrix( labels_top25_test, newlabels )
+
+        plt.matshow(confmtx)
+        plt.title("Testing: %d data; %.4f accruacy." %(labels_top25_test.shape[0], accuracy))
+        plt.savefig("../results/testing.png", dpi=300)
+
+        print( knnc.confusion_matrix_str(confmtx) )
+
+    else:
+        print("invalid argv[-1]")
+        print("Usage: python3 %s <data.csv> <metadata.csv> <0 - KNN; 1 - ANN>"%argv[0])
+        sys.exit()
 
 
 
