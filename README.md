@@ -4,6 +4,9 @@ Colby College CS365 SP19 Projects
 Mike Zheng and Heidi He
 - [Project 2: Content-Based Image Retrieval](https://github.com/xzheng902/CS365/blob/master/README.md#project-2-content-based-image-retrieval)
 - [Project 3: 2D Object Recognition](https://github.com/xzheng902/CS365/blob/master/README.md#project-3-2d-object-recognition)
+- [Project 4: Calibration and Augmented Reality](https://github.com/xzheng902/CS365/blob/master/README.md#project-4-calibration-and-augmented-reality)
+- [Project 5: Recognition using deep network](https://github.com/xzheng902/CS365/blob/master/README.md#project-5-recognition-using-deep-network)
+- [Project 6: Deep neural network in artistic data classification](https://github.com/xzheng902/CS365/blob/master/README.md#project-6-deep-neural-network-in-artistic-data-classification)
 
 
 ***
