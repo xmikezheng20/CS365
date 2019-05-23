@@ -13,7 +13,7 @@ Mike Zheng and Heidi He
 ### Compilation and Running
 Makefile - GUI : make cbirgui
 
-Run: ../bin/cbirgui ../data/<queryImageName> <database>
+Run: ../bin/cbirgui ../data/&lt;queryImageName&gt; &lt;database&gt;
 
 Makefile - CommandLine: make cbir
 
@@ -69,7 +69,7 @@ the class that processes all histogram functions. the functions usually take in 
 #### Compilation and Running
 Makefile: make cbirgui
 
-Run: ../bin/cbirgui ../data/<queryImageName> <database>
+Run: ../bin/cbirgui ../data/&lt;queryImageName&gt; &lt;database&gt;
 
 [back to top](https://github.com/xzheng902/CS365/blob/master/README.md#cs365)
 
@@ -81,9 +81,9 @@ Makefile - CommandLine: make objRec
 
 Run:
 
- for video: ../bin/objRec ../data/<database> 0
+ for video: ../bin/objRec ../data/&lt;database&gt; 0
 
-for still images: ../bin/objRec ../data/<database> 1 ../../../<training or testing directory>/
+for still images: ../bin/objRec ../data/&lt;database&gt; 1 ../../../&lt;training or testing directory&gt;/
 
 ### Project Structure:
 #### objRec (main)
@@ -123,5 +123,160 @@ some helper functions
 
 #### Classifier Test
 a helper file that tests each classifier class. Not a part of the main program.
+
+[back to top](https://github.com/xzheng902/CS365/blob/master/README.md#cs365)
+
+***
+# Project 4: Calibration and Augmented Reality
+
+### Compilation and Running
+augmented:
+    make augmented
+    ../bin/augmented ../data/params.txt
+
+ar_aruco:
+    make ar_aruco
+    ../bin/ar_aruco ../data/params.txt
+
+ar_img:
+    make ar_img
+    ../bin/ar_img &lt;image directory&gt; &lt;params.txt&gt;
+
+ar_harris:
+    make ar_harris
+    ../bin/ar_harris &lt;params.txt&gt;
+
+ar_harris_detect:
+    make ar_harris_detect
+    ../bin/ar_harris_detect &lt;params.txt&gt;
+
+calib
+    make calib
+    ../bin/calib
+
+Run:
+    for video: ../bin/objRec ../data/&lt;database&gt; 0
+
+    for still images: ../bin/objRec ../data/&lt;database&gt; 1 ../../.. &lt;training or testing directory&gt;/
+
+### Project Structure:
+augmented(main)
+read parameters to get the camera matrix and distortion coefficient
+
+get/update extrinsic parameters
+
+open camera and initiate window
+
+detect mark
+
+draw objects
+
+ar_aruco
+similar to augmented.cpp but using the Aruco module instead
+
+ar_harris
+detect harris corner, find iphone target and apply augmented reality
+
+ar_harris_detect
+detect harris corner
+
+ar_img ( augmented reality from image)
+read images from a given directory
+
+draw/update shapes on detected targets in each image
+
+shape
+draw shapes with given intrinsic and extrinsic parameters
+
+calib
+camera calibration
+
+write to params.txt on camera matrix and distortion coefficient
+
+[back to top](https://github.com/xzheng902/CS365/blob/master/README.md#cs365)
+
+***
+# Project 5: Recognition using deep network
+### Project Structure:
+Simple CNN training:
+a network with two convolution layers with 32 3x3 filters, a max pooling layer with a 2x2 window, a dropout layer with a 0.25 dropout rate, a flatten layer, a dense layer with 128 nodes and relu activation, a second dropout layer with a 0.5 dropout rate, and a final dense layer for the output with 10 nodes and the softmax activation function. When compiling the model, use categorical cross-entropy as the loss function and adam as the optimizer. The metric should be accuracy.
+
+python3 mnist_cnn_simple.py
+
+Multi Simple CNN training:
+Train the networks several times with 108 types of parameters. Then output a csv file the accuracy in each epoch on the training model and test set.
+
+python3 mnist_cnn_multi.py
+
+Evaluate Mnist Test:
+Evaluate the trained network on the first ten digits of the mnist dataset and visualize the results or evaluate on hand-written images
+
+evaluate on mnist test set first 10 images:
+    python3 mnist_evaluate.py ../models/mnist_cnn_simple.h5 0
+evaluate on hand-written digits:
+    python3 mnist_evaluate.py ../models/mnist_cnn_simple.h5 1 ../data/digits/
+
+Layer analysis mnist:
+examine the first layers of the mnist_cnn_simple network
+
+python3 mnist_layer_analysis.py ../models/mnist_cnn_simple.h5
+
+View mnist:
+view images of digits in the mnist dataset
+
+python3 mnist_view.py (default 10) or python3 mnist_view.py 5
+
+CNN Gabor:
+a network with a fixed 32 gabor filter first layer, a convolution layers with 32 3x3 filters, a max pooling layer with a 2x2 window, a dropout layer with a 0.25 dropout rate, a flatten layer, a dense layer with 128 nodes and relu activation, a second dropout layer with a 0.5 dropout rate, and a final dense layer for the output with 10 nodes and the softmax activation function. When compiling the model, use categorical cross-entropy as the loss function and adam as the optimizer. The metric should be accuracy.
+
+python3 mnist_cnn_garbor.py
+
+Greek MNIST embedding:
+use mnist network as an embedding space to classify greek letters
+
+ greek_mnist_embedding.py ../models/mnist_cnn_simple.h5 ../data/greek_training_data.csv ../data/greek_training_labels.csv ../data/greek_testing_data.csv ../data/greek_testing_labels.csv
+
+Data processing for greek letters:
+process greek data images to data+label
+
+python3 greek_data_processing.py ../data/greek/ ../data/
+
+Classifier:
+A KNN classifier.  It can use raw intensity data to test the classifier. the classifier is used in greek_mnist_embedding.py
+
+python3 classifiers.py ../data/greek_training_data.csv ../data/greek_training_labels.csv ../data/greek_testing_data.csv ../data/greek_testing_labels.csv
+
+[back to top](https://github.com/xzheng902/CS365/blob/master/README.md#cs365)
+
+***
+# Project 6: Deep neural network in artistic data classification
+### Proposal:
+Summary:
+Classifying images from artistic data is an interesting and important task. Due to the amount of data and the interest of the public, accurate classification and identification of artworks is highly relevant. Artistic data also have distinct characteristics, making the problem challenging. While images of artworks usually are taken in museums, the environment and scale can be somewhat controlled. There are also several major categories of artworks, such as painting and sculpture. Though the images between categories are highly different, images of the same category can be very similar. Training a network to handle both the inter-category classification and intra-category classification can be challenging.
+
+The Rijksmuseum Challenge is an artistic image classification challenge in 2014 by the Rijksmuseum in Amsterdam, Netherlands. The dataset consists of 112,039 photographic reproductions of the artworks and there are four classification challenges: artist, type, material, and year. While there are more recent artistic datasets, we think the size of this dataset is suitable for this project. The original paper uses a SVM-based classification, and we propose to use a pre-trained deep network to improve the classification.
+
+Resources:
+The Rijksmuseum Challenge (2014):
+
+ Dataset: https://figshare.com/articles/Rijksmuseum_Challenge_2014/5660617 (14.49GB)
+
+ Reference: The Rijksmuseum Challenge: Museum-Centered Visual Recognition, Thomas Mensink and Jan van Gemert, in ACM International Conference on Multimedia Retrieval (ICMR) 2014 https://ivi.fnwi.uva.nl/isis/publications/2014/MensinkICMIR2014/MensinkICMIR2014.pdf
+
+Tasks:
+Task 1: Download the dataset and pre-process the images properly to create the input of the convolutional neural network.
+
+Task 2: Load a keras pre-trained VGG network/ResNet network and enable it to process the input data.
+
+Task 3: Figure out an embedding method with the network and implement classifiers on top of it to classify artist, type, material, and year.
+
+Task 4: Compare results between different networks with the original paper (SVM).
+
+Possible task 5: fine-tune the network and try to improve performance.
+
+Final Task: Presentation and write-up.
+
+### Report:
+[Final report](https://wiki.colby.edu/pages/viewpage.action?pageId=432964714)
 
 [back to top](https://github.com/xzheng902/CS365/blob/master/README.md#cs365)
